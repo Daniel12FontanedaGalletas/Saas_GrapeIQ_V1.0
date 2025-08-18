@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+psycopg2-binary
+python-dotenv
+pydantic
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+pandas
+# Nuevas librerías para la predicción y gráficos
+prophet
+matplotlib

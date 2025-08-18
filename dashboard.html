@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrapeIQ Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #F8F7F4; /* Tono de fondo cálido y aseptico */
+        }
+        .loader {
+            border: 4px solid #e0e0e0;
+            border-top: 4px solid #5C1A33; /* Color vino */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1.5s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .wine-grad {
+            background-image: linear-gradient(to right, #5C1A33, #8C2B4F);
+        }
+    </style>
+</head>
+<body class="text-stone-800">
+
+    <div id="login-container" class="flex items-center justify-center h-screen bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1558422239-4445a4980a3a?q=80&w=2940&auto=format&fit=crop');">
+        <div class="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl w-full max-w-sm">
+            <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="w-48 mx-auto mb-6">
+            <div class="space-y-4">
+                <div>
+                    <label for="username" class="block text-stone-700 mb-2 font-semibold">Usuario</label>
+                    <input type="text" id="username" class="w-full px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
+                </div>
+                <div>
+                    <label for="password" class="block text-stone-700 mb-2 font-semibold">Contraseña</label>
+                    <input type="password" id="password" class="w-full px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
+                </div>
+                <button id="login-btn" type="button" class="w-full wine-grad text-white py-3 rounded-full font-bold text-lg hover:opacity-90 transition-opacity">Entrar</button>
+                <p id="login-error" class="text-red-600 text-sm pt-2 text-center font-semibold"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboard-container" class="hidden p-4 sm:p-8">
+        <header class="flex justify-between items-center mb-8">
+            <div class="flex items-center gap-4">
+                <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+                <span class="text-3xl font-light text-stone-400">|</span>
+                <h1 class="text-3xl font-semibold text-stone-700">Dashboard de Análisis</h1>
+            </div>
+            <button id="logout-btn" type="button" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800 transition-colors">Cerrar Sesión</button>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="font-semibold text-stone-500 mb-2">Ventas Totales</h3><p id="kpi-total-sales" class="text-4xl font-bold text-stone-800">€0.00</p></div>
+            <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="font-semibold text-stone-500 mb-2">Unidades Transferidas</h3><p id="kpi-inventory-transfers" class="text-4xl font-bold text-stone-800">0</p></div>
+            <div class="bg-white p-4 rounded-2xl shadow-lg h-80"><canvas id="salesBySkuChart"></canvas></div>
+            <div class="bg-white p-4 rounded-2xl shadow-lg h-80"><canvas id="salesByChannelChart"></canvas></div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4 text-stone-800">Catálogo de Productos</h3><ul id="product-list" class="h-96 overflow-y-auto space-y-2"></ul></div>
+            <div class="bg-white p-6 rounded-2xl shadow-lg col-span-1 lg:col-span-2">
+                <h3 class="text-xl font-bold mb-4 text-stone-800">Generar Predicción Global de Ventas</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label for="sales-csv-input" class="block mb-2 font-semibold">1. Selecciona tu archivo de ventas (.csv)</label>
+                        <input type="file" id="sales-csv-input" accept=".csv" class="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-stone-100 file:text-[#5C1A33] hover:file:bg-stone-200 transition-colors"/>
+                    </div>
+                    <button id="upload-btn" type="button" class="w-full bg-stone-700 text-white py-3 rounded-full font-bold hover:bg-stone-800 disabled:bg-stone-300 transition-colors" disabled>2. Subir y Procesar Archivo</button>
+                    <button id="run-forecast-btn" type="button" class="w-full wine-grad text-white py-3 rounded-full font-bold hover:opacity-90 disabled:bg-stone-300 disabled:bg-image-none transition-opacity" disabled>3. Generar Predicción</button>
+                    <div id="status-container" class="hidden flex justify-center items-center gap-3 p-3 bg-stone-100 rounded-full"><div id="loader" class="loader"></div><span id="status-text" class="text-stone-600 font-semibold">Procesando...</span></div>
+                </div>
+                <div class="mt-6">
+                    <h4 class="font-semibold text-stone-800">Gráfico de Predicción:</h4>
+                    <div id="forecast-result-container" class="bg-stone-50 p-3 rounded-2xl mt-2 border flex justify-center items-center h-96">
+                        <p id="forecast-placeholder" class="text-stone-500">El gráfico de la predicción aparecerá aquí.</p>
+                        <img id="forecast-image" class="hidden w-full h-full object-contain"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        let charts = {};
+
+        const DOMElements = {
+            loginContainer: document.getElementById('login-container'),
+            dashboardContainer: document.getElementById('dashboard-container'),
+            loginBtn: document.getElementById('login-btn'),
+            loginError: document.getElementById('login-error'),
+            usernameInput: document.getElementById('username'),
+            passwordInput: document.getElementById('password'),
+            logoutBtn: document.getElementById('logout-btn'),
+            salesCsvInput: document.getElementById('sales-csv-input'),
+            uploadBtn: document.getElementById('upload-btn'),
+            runForecastBtn: document.getElementById('run-forecast-btn'),
+            statusContainer: document.getElementById('status-container'),
+            statusText: document.getElementById('status-text'),
+            forecastImage: document.getElementById('forecast-image'),
+            forecastPlaceholder: document.getElementById('forecast-placeholder'),
+            kpiSales: document.getElementById('kpi-total-sales'),
+            kpiTransfers: document.getElementById('kpi-inventory-transfers'),
+            productList: document.getElementById('product-list'),
+        };
+
+        async function apiFetch(endpoint, options = {}) {
+            const headers = {};
+            const token = localStorage.getItem('grapeiq_token');
+            if (!(options.body instanceof FormData)) { headers['Content-Type'] = 'application/json'; }
+            if (token) { headers['Authorization'] = `Bearer ${token}`; }
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+            if (response.status === 401) { logout(); throw new Error("Sesión expirada."); }
+            if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.detail || 'Ocurrió un error en la API'); }
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                return response.json();
+            }
+            return response.text();
+        }
+
+        async function handleLogin() {
+            DOMElements.loginError.textContent = '';
+            const formData = new FormData();
+            formData.append('username', DOMElements.usernameInput.value);
+            formData.append('password', DOMElements.passwordInput.value);
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/token`, { method: 'POST', body: formData });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Usuario o contraseña incorrectos.');
+                }
+                localStorage.setItem('grapeiq_token', data.access_token);
+                showDashboard();
+            } catch (error) {
+                DOMElements.loginError.textContent = error.message;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('grapeiq_token');
+            DOMElements.loginContainer.style.display = 'flex';
+            DOMElements.dashboardContainer.style.display = 'none';
+        }
+
+        function handleFileSelect() {
+            DOMElements.uploadBtn.disabled = !DOMElements.salesCsvInput.files.length;
+            DOMElements.runForecastBtn.disabled = true;
+        }
+
+        async function handleUpload() {
+            const file = DOMElements.salesCsvInput.files[0];
+            if (!file) return;
+            setStatus(true, 'Subiendo y procesando archivo...');
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                await apiFetch('/api/ingest/upload/sales-csv', { method: 'POST', body: formData });
+                pollForUploadStatus();
+            } catch (error) {
+                setStatus(false);
+                alert(`Error en la subida: ${error.message}`);
+            }
+        }
+
+        async function handleForecast() {
+            setStatus(true, 'Generando predicción...');
+            DOMElements.forecastImage.style.display = 'none';
+            DOMElements.forecastPlaceholder.style.display = 'block';
+            DOMElements.forecastPlaceholder.textContent = 'El gráfico de la predicción aparecerá aquí.';
+            try {
+                await apiFetch('/api/forecast/run', { method: 'POST' });
+                pollForForecastResults();
+            } catch (error) {
+                setStatus(false);
+                alert(`Error al iniciar la predicción: ${error.message}`);
+            }
+        }
+
+        function pollForUploadStatus() {
+            const intervalId = setInterval(async () => {
+                try {
+                    const { status } = await apiFetch('/api/ingest/upload/status');
+                    if (status === 'complete') {
+                        clearInterval(intervalId);
+                        setStatus(false);
+                        alert('¡Archivo procesado con éxito! El dashboard se actualizará.');
+                        loadDashboardData();
+                        DOMElements.runForecastBtn.disabled = false;
+                    } else if (status.startsWith('failed')) {
+                        clearInterval(intervalId);
+                        setStatus(false);
+                        alert(`Error en el servidor al procesar el archivo: ${status}`);
+                    }
+                } catch (error) {
+                    clearInterval(intervalId);
+                    setStatus(false);
+                    alert(`Error al consultar el estado de la subida: ${error.message}`);
+                }
+            }, 3000);
+        }
+
+        function pollForForecastResults() {
+            const intervalId = setInterval(async () => {
+                try {
+                    const result = await apiFetch('/api/forecast/results');
+                    if (result.status === 'complete') {
+                        clearInterval(intervalId);
+                        setStatus(false);
+                        DOMElements.forecastPlaceholder.style.display = 'none';
+                        DOMElements.forecastImage.src = result.image;
+                        DOMElements.forecastImage.style.display = 'block';
+                        DOMElements.runForecastBtn.disabled = false;
+                    } else if (result.status === 'error') {
+                        clearInterval(intervalId);
+                        setStatus(false);
+                        alert(`Error al generar la predicción: ${result.message}`);
+                        DOMElements.forecastPlaceholder.textContent = `Error: ${result.message}`;
+                    }
+                } catch (error) {
+                    clearInterval(intervalId);
+                    setStatus(false);
+                    alert(`Error al obtener resultados: ${error.message}`);
+                }
+            }, 3000);
+        }
+
+        function setStatus(isLoading, message = '') {
+            if (isLoading) {
+                DOMElements.statusContainer.style.display = 'flex';
+                DOMElements.statusText.textContent = message;
+                DOMElements.uploadBtn.disabled = true;
+                DOMElements.runForecastBtn.disabled = true;
+            } else {
+                DOMElements.statusContainer.style.display = 'none';
+                DOMElements.uploadBtn.disabled = false;
+            }
+        }
+
+        function showDashboard() {
+            DOMElements.loginContainer.style.display = 'none';
+            DOMElements.dashboardContainer.style.display = 'block';
+            loadDashboardData();
+        }
+
+        async function loadDashboardData() {
+            try {
+                const [kpis, products, sales] = await Promise.all([apiFetch('/api/data/kpis'), apiFetch('/api/data/products'), apiFetch('/api/data/sales')]);
+                DOMElements.kpiSales.textContent = `€${parseFloat(kpis.total_sales).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                DOMElements.kpiTransfers.textContent = parseFloat(kpis.total_inventory_transfers).toLocaleString('es-ES');
+                renderList(DOMElements.productList, products, item => `<span class="font-bold text-[#5C1A33]">${item.sku}:</span> ${item.name || 'N/A'}`);
+                renderSalesBySkuChart(sales);
+                renderSalesByChannelChart(sales);
+                if(sales && sales.length > 0) {
+                    DOMElements.runForecastBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error al cargar datos del dashboard:', error);
+                alert('No se pudieron cargar los datos del dashboard. ' + error.message);
+            }
+        }
+
+        function renderList(listElement, data, formatter) {
+            listElement.innerHTML = data && data.length > 0 ? data.map(item => `<li class="p-3 text-sm border-b border-stone-100 last:border-b-0">${formatter(item)}</li>`).join('') : '<li class="p-3 text-sm text-stone-500">No hay datos disponibles.</li>';
+        }
+
+        function renderChart(chartId, existingChart, type, data, options) {
+            const ctx = document.getElementById(chartId).getContext('2d');
+            if (existingChart) existingChart.destroy();
+            return new Chart(ctx, { type, data, options });
+        }
+
+        function renderSalesBySkuChart(sales) {
+            const salesBySku = sales.reduce((acc, sale) => { acc[sale.sku] = (acc[sale.sku] || 0) + sale.sales_value; return acc; }, {});
+            const top10Skus = Object.entries(salesBySku).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            charts.sku = renderChart('salesBySkuChart', charts.sku, 'bar', { 
+                labels: top10Skus.map(item => item[0]), 
+                datasets: [{ 
+                    label: 'Top 10 Ventas por SKU (€)', 
+                    data: top10Skus.map(item => item[1]), 
+                    backgroundColor: 'rgba(92, 26, 51, 0.7)',
+                    borderColor: 'rgba(92, 26, 51, 1)',
+                    borderWidth: 1,
+                    borderRadius: 8
+                }] 
+            }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } });
+        }
+
+        function renderSalesByChannelChart(sales) {
+            const salesByChannel = sales.reduce((acc, sale) => { const channel = sale.channel || 'Desconocido'; acc[channel] = (acc[channel] || 0) + sale.sales_value; return acc; }, {});
+            charts.channel = renderChart('salesByChannelChart', charts.channel, 'doughnut', { 
+                labels: Object.keys(salesByChannel), 
+                datasets: [{ 
+                    data: Object.values(salesByChannel), 
+                    backgroundColor: ['rgba(92, 26, 51, 0.8)', 'rgba(140, 43, 79, 0.8)', 'rgba(180, 80, 110, 0.8)'],
+                    borderColor: '#FFFFFF',
+                    borderWidth: 4
+                }] 
+            }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { font: { weight: 'bold' } } } } });
+        }
+        
+        function init() {
+            if (localStorage.getItem('grapeiq_token')) {
+                showDashboard();
+            } else {
+                DOMElements.loginContainer.style.display = 'flex';
+            }
+            DOMElements.loginBtn.addEventListener('click', handleLogin);
+            DOMElements.logoutBtn.addEventListener('click', logout);
+            DOMElements.salesCsvInput.addEventListener('change', handleFileSelect);
+            DOMElements.uploadBtn.addEventListener('click', handleUpload);
+            DOMElements.runForecastBtn.addEventListener('click', handleForecast);
+        }
+        
+        init();
+    });
+</script>
+
+</body>
+</html>
