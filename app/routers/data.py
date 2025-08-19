@@ -3,15 +3,12 @@ import json
 from decimal import Decimal
 from datetime import date
 
-# --- INICIO DE LA CORRECCIÓN ---
-# Todas las importaciones necesarias se colocan aquí, al principio del archivo.
 from ..database import get_db_connection
 from ..services.security import get_current_user
-# --- FIN DE LA CORRECCIÓN ---
 
 router = APIRouter(
     prefix="/api/data",
-    tags=["Data"],
+    tags=["Data (Legacy)"],
     dependencies=[Depends(get_current_user)]
 )
 
@@ -34,7 +31,15 @@ def get_products(user: dict = Depends(get_current_user)):
     tenant_id = user.get("tenant_id")
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT sku, name, category, supplier FROM products WHERE tenant_id = %s ORDER BY name", (tenant_id,))
+            cur.execute(
+    """
+    SELECT id, name, sku, product_type, price_per_unit, cost_per_unit, stock_quantity 
+    FROM products 
+    WHERE tenant_id = %s 
+    ORDER BY name
+    """,
+    (tenant_id,)
+)
             columns = [desc[0] for desc in cur.description]
             products = cur.fetchall()
             return db_to_json(products, columns)

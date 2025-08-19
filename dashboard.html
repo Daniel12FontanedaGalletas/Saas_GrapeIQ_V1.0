@@ -9,23 +9,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: #F8F7F4; /* Tono de fondo cálido y aseptico */
-        }
-        .loader {
-            border: 4px solid #e0e0e0;
-            border-top: 4px solid #5C1A33; /* Color vino */
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1.5s linear infinite;
-        }
+        body { font-family: 'Montserrat', sans-serif; background-color: #F8F7F4; }
+        .loader { border: 4px solid #e0e0e0; border-top: 4px solid #5C1A33; border-radius: 50%; width: 24px; height: 24px; animation: spin 1.5s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .wine-grad {
-            background-image: linear-gradient(to right, #5C1A33, #8C2B4F);
-        }
+        .wine-grad { background-image: linear-gradient(to right, #5C1A33, #8C2B4F); }
+        #map { height: 500px; border-radius: 1rem; z-index: 0; }
+        .tab { cursor: pointer; }
+        .tab-active { border-color: #5C1A33; color: #5C1A33; font-weight: 700; }
     </style>
 </head>
 <body class="text-stone-800">
@@ -34,14 +27,8 @@
         <div class="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl w-full max-w-sm">
             <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="w-48 mx-auto mb-6">
             <div class="space-y-4">
-                <div>
-                    <label for="username" class="block text-stone-700 mb-2 font-semibold">Usuario</label>
-                    <input type="text" id="username" class="w-full px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
-                </div>
-                <div>
-                    <label for="password" class="block text-stone-700 mb-2 font-semibold">Contraseña</label>
-                    <input type="password" id="password" class="w-full px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
-                </div>
+                <div><label for="username" class="block text-stone-700 mb-2 font-semibold">Usuario</label><input type="text" id="username" class="w-full px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
+                <div><label for="password" class="block text-stone-700 mb-2 font-semibold">Contraseña</label><input type="password" id="password" class="w-full px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
                 <button id="login-btn" type="button" class="w-full wine-grad text-white py-3 rounded-full font-bold text-lg hover:opacity-90 transition-opacity">Entrar</button>
                 <p id="login-error" class="text-red-600 text-sm pt-2 text-center font-semibold"></p>
             </div>
@@ -49,42 +36,154 @@
     </div>
 
     <div id="dashboard-container" class="hidden p-4 sm:p-8">
-        <header class="flex justify-between items-center mb-8">
+        <header class="flex justify-between items-center mb-6">
             <div class="flex items-center gap-4">
                 <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
                 <span class="text-3xl font-light text-stone-400">|</span>
-                <h1 class="text-3xl font-semibold text-stone-700">Dashboard de Análisis</h1>
+                <h1 id="header-title" class="text-3xl font-semibold text-stone-700">Análisis de Rendimiento</h1>
             </div>
             <button id="logout-btn" type="button" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800 transition-colors">Cerrar Sesión</button>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="font-semibold text-stone-500 mb-2">Ventas Totales</h3><p id="kpi-total-sales" class="text-4xl font-bold text-stone-800">€0.00</p></div>
-            <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="font-semibold text-stone-500 mb-2">Unidades Transferidas</h3><p id="kpi-inventory-transfers" class="text-4xl font-bold text-stone-800">0</p></div>
-            <div class="bg-white p-4 rounded-2xl shadow-lg h-80"><canvas id="salesBySkuChart"></canvas></div>
-            <div class="bg-white p-4 rounded-2xl shadow-lg h-80"><canvas id="salesByChannelChart"></canvas></div>
+        <div class="mb-6 border-b border-stone-200">
+            <nav class="flex space-x-8" aria-label="Tabs">
+                <button data-tab="performance" data-title="Análisis de Rendimiento" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent tab-active">Análisis de Rendimiento</button>
+                <button data-tab="forecast" data-title="Previsiones y Demanda" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Previsiones y Demanda</button>
+                <button data-tab="catalog" data-title="Catálogo" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Catálogo</button>
+                <button data-tab="daily-log" data-title="Registro Diario" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</button>
+                <button data-tab="weather" data-title="Clima" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Clima</button>
+                <button data-tab="settings" data-title="Configuración" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Configuración</button>
+            </nav>
         </div>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4 text-stone-800">Catálogo de Productos</h3><ul id="product-list" class="h-96 overflow-y-auto space-y-2"></ul></div>
-            <div class="bg-white p-6 rounded-2xl shadow-lg col-span-1 lg:col-span-2">
-                <h3 class="text-xl font-bold mb-4 text-stone-800">Generar Predicción Global de Ventas</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label for="sales-csv-input" class="block mb-2 font-semibold">1. Selecciona tu archivo de ventas (.csv)</label>
-                        <input type="file" id="sales-csv-input" accept=".csv" class="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-stone-100 file:text-[#5C1A33] hover:file:bg-stone-200 transition-colors"/>
-                    </div>
-                    <button id="upload-btn" type="button" class="w-full bg-stone-700 text-white py-3 rounded-full font-bold hover:bg-stone-800 disabled:bg-stone-300 transition-colors" disabled>2. Subir y Procesar Archivo</button>
-                    <button id="run-forecast-btn" type="button" class="w-full wine-grad text-white py-3 rounded-full font-bold hover:opacity-90 disabled:bg-stone-300 disabled:bg-image-none transition-opacity" disabled>3. Generar Predicción</button>
-                    <div id="status-container" class="hidden flex justify-center items-center gap-3 p-3 bg-stone-100 rounded-full"><div id="loader" class="loader"></div><span id="status-text" class="text-stone-600 font-semibold">Procesando...</span></div>
+
+        <main>
+            <div id="content-performance">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="font-semibold text-stone-500 mb-2">Ventas Totales</h3><p id="kpi-total-sales" class="text-4xl font-bold text-stone-800">€0.00</p></div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="font-semibold text-stone-500 mb-2">Unidades Transferidas</h3><p id="kpi-inventory-transfers" class="text-4xl font-bold text-stone-800">0</p></div>
+                    <div class="bg-white p-4 rounded-2xl shadow-lg h-80"><canvas id="salesBySkuChart"></canvas></div>
+                    <div class="bg-white p-4 rounded-2xl shadow-lg h-80"><canvas id="salesByChannelChart"></canvas></div>
                 </div>
-                <div class="mt-6">
-                    <h4 class="font-semibold text-stone-800">Gráfico de Predicción:</h4>
-                    <div id="forecast-result-container" class="bg-stone-50 p-3 rounded-2xl mt-2 border flex justify-center items-center h-96">
-                        <p id="forecast-placeholder" class="text-stone-500">El gráfico de la predicción aparecerá aquí.</p>
-                        <img id="forecast-image" class="hidden w-full h-full object-contain"/>
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-stone-800">Resumen de Productos (Datos CSV)</h3>
+                    <ul id="product-list" class="h-96 overflow-y-auto space-y-2"></ul>
+                </div>
+            </div>
+
+            <div id="content-forecast" class="hidden">
+                 <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4 text-stone-800">Generar Predicción Global de Ventas (basado en CSV)</h3>
+                    <div class="space-y-4 max-w-xl mx-auto">
+                        <div><label for="sales-csv-input" class="block mb-2 font-semibold">1. Selecciona tu archivo de ventas (.csv)</label><input type="file" id="sales-csv-input" accept=".csv" class="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-stone-100 file:text-[#5C1A33] hover:file:bg-stone-200 transition-colors"/></div>
+                        <button id="upload-btn" type="button" class="w-full bg-stone-700 text-white py-3 rounded-full font-bold hover:bg-stone-800 disabled:bg-stone-300 transition-colors" disabled>2. Subir y Procesar Archivo</button>
+                        <button id="run-forecast-btn" type="button" class="w-full wine-grad text-white py-3 rounded-full font-bold hover:opacity-90 disabled:bg-stone-300 disabled:bg-image-none transition-opacity" disabled>3. Generar Predicción</button>
+                        <div id="status-container" class="hidden flex justify-center items-center gap-3 p-3 bg-stone-100 rounded-full"><div id="loader" class="loader"></div><span id="status-text" class="text-stone-600 font-semibold">Procesando...</span></div>
+                    </div>
+                    <div class="mt-6">
+                        <h4 class="font-semibold text-stone-800">Gráfico de Predicción:</h4>
+                        <div id="forecast-result-container" class="bg-stone-50 p-3 rounded-2xl mt-2 border flex justify-center items-center h-96"><p id="forecast-placeholder" class="text-stone-500">El gráfico de la predicción aparecerá aquí.</p><img id="forecast-image" class="hidden w-full h-full object-contain"/></div>
                     </div>
                 </div>
+            </div>
+
+            <div id="content-catalog" class="hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="relative">
+                        <input type="text" id="sku-filter-input" placeholder="Buscar por SKU..." class="w-full max-w-xs pl-10 pr-4 py-2 border border-stone-300 rounded-full">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </div>
+                    <button id="add-product-btn" class="wine-grad text-white px-5 py-2 rounded-full font-semibold hover:opacity-90 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Añadir Vino
+                    </button>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <div class="max-h-[60vh] overflow-y-auto">
+                        <table class="w-full text-left">
+                            <thead class="border-b border-stone-200 sticky top-0 bg-white">
+                                <tr>
+                                    <th class="p-4 font-bold">Nombre del Vino</th>
+                                    <th class="p-4 font-bold">SKU</th>
+                                    <th class="p-4 font-bold">Precio</th>
+                                    <th class="p-4 font-bold">Coste</th>
+                                    <th class="p-4 font-bold">Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody id="product-table-body"></tbody>
+                        </table>
+                    </div>
+                    <p id="catalog-placeholder" class="hidden text-center py-8 text-stone-500">Aún no has añadido ningún producto. ¡Añade el primero!</p>
+                    <div id="catalog-pagination" class="flex justify-center items-center gap-4 mt-4"></div>
+                </div>
+            </div>
+            
+            <div id="content-daily-log" class="hidden text-center p-16 bg-white rounded-2xl shadow-lg"><h2 class="text-2xl font-bold">Registro Diario</h2><p class="text-stone-500">Próximamente: El formulario para registrar tu actividad diaria.</p></div>
+            
+            <div id="content-weather" class="hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="text-xl font-bold mb-4 text-stone-800">Previsión Meteorológica</h3>
+                        <div>
+                            <label for="location-select" class="block mb-2 font-semibold">Selecciona una ubicación</label>
+                            <select id="location-select" class="w-full px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
+                                <option data-lat="42.60" data-lon="-5.57" data-name="León">León</option>
+                                <option data-lat="42.46" data-lon="-2.44" data-name="Logroño">Logroño</option>
+                                <option data-lat="41.65" data-lon="-4.72" data-name="Valladolid">Valladolid</option>
+                                <option data-lat="43.54" data-lon="-5.66" data-name="Gijón">Gijón</option>
+                            </select>
+                        </div>
+                        <div id="weather-data-container" class="mt-6 space-y-4">
+                            <p class="text-center text-stone-500">Selecciona una ubicación para ver la predicción.</p>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="text-xl font-bold mb-4 text-stone-800">Mapa de Nubosidad (NASA)</h3>
+                        <div id="map"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-settings" class="hidden text-center p-16 bg-white rounded-2xl shadow-lg"><h2 class="text-2xl font-bold">Configuración</h2><p class="text-stone-500">Próximamente: La gestión de tu cuenta, usuarios y facturación.</p></div>
+        </main>
+    </div>
+
+    <div id="add-product-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white text-stone-800 w-full max-w-4xl p-8 rounded-3xl shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+            <div>
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="bg-[#5C1A33] text-white p-2 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    </div>
+                    <div><h2 class="text-2xl font-bold">Añadir Nuevo Vino al Catálogo</h2><p class="text-stone-500 text-sm">Completa los campos para añadir un nuevo producto.</p></div>
+                </div>
+                <form id="add-product-form" class="space-y-4">
+                    <h3 class="font-bold text-lg border-b border-stone-200 pb-2">Datos del vino</h3>
+                    <div><label for="product-name" class="block mb-1 text-sm font-semibold">Nombre del Vino <span class="text-red-500">*</span></label><input type="text" id="product-name" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
+                    <div><label for="product-sku" class="block mb-1 text-sm font-semibold">SKU / Código de Producto <span class="text-red-500">*</span></label><input type="text" id="product-sku" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label for="product-price" class="block mb-1 text-sm font-semibold">Precio de Venta (€) <span class="text-red-500">*</span></label><input type="number" step="0.01" id="product-price" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
+                        <div><label for="product-type" class="block mb-1 text-sm font-semibold">Tipo de Vino <span class="text-red-500">*</span></label><select id="product-type" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"><option value="">Selecciona una opción</option><option value="Tinto">Tinto</option><option value="Blanco">Blanco</option><option value="Rosado">Rosado</option><option value="Espumoso">Espumoso</option><option value="Generoso">Generoso</option></select></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label for="product-cost" class="block mb-1 text-sm font-semibold">Coste de Producción (€)</label><input type="number" step="0.01" id="product-cost" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
+                        <div><label for="product-quantity" class="block mb-1 text-sm font-semibold">Cantidad (Stock inicial)</label><input type="number" id="product-quantity" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
+                    </div>
+                    <div class="md:col-span-2 flex justify-end gap-4 mt-6">
+                        <button id="cancel-product-btn" type="button" class="bg-stone-200 px-6 py-3 rounded-full font-bold hover:bg-stone-300">Cancelar</button>
+                        <button id="save-product-btn" type="submit" class="wine-grad text-white px-6 py-3 rounded-full font-bold hover:opacity-90">Guardar Vino</button>
+                    </div>
+                </form>
+            </div>
+            <div class="bg-stone-50 p-6 rounded-2xl border border-stone-200">
+                <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg">Métricas en Tiempo Real</h3><button id="clear-metrics-btn" class="text-sm text-stone-500 hover:text-stone-800">Borrar</button></div>
+                <div class="grid grid-cols-2 gap-4 text-center">
+                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Precio de venta</p><p id="metric-price" class="font-bold text-xl">-</p></div>
+                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Coste por botella</p><p id="metric-cost" class="font-bold text-xl">-</p></div>
+                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Margen por botella</p><p id="metric-margin-abs" class="font-bold text-xl">-</p></div>
+                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Margen %</p><p id="metric-margin-perc" class="font-bold text-xl">-</p></div>
+                    <div class="bg-white p-3 rounded-lg border col-span-2"><p class="text-stone-500 text-sm">Ingresos totales (estim.)</p><p id="metric-total-revenue" class="font-bold text-3xl text-green-600">-</p></div>
+                </div>
+                <p class="text-xs text-stone-500 mt-4 text-center">Las métricas se actualizan automáticamente al escribir.</p>
             </div>
         </div>
     </div>
@@ -93,15 +192,22 @@
     document.addEventListener('DOMContentLoaded', () => {
         const API_BASE_URL = 'http://127.0.0.1:8000';
         let charts = {};
+        let map = null;
+        let currentPage = 1;
+        const pageSize = 10;
+        let skuFilterTimeout;
 
         const DOMElements = {
             loginContainer: document.getElementById('login-container'),
             dashboardContainer: document.getElementById('dashboard-container'),
             loginBtn: document.getElementById('login-btn'),
-            loginError: document.getElementById('login-error'),
-            usernameInput: document.getElementById('username'),
-            passwordInput: document.getElementById('password'),
             logoutBtn: document.getElementById('logout-btn'),
+            headerTitle: document.getElementById('header-title'),
+            // Performance
+            kpiSales: document.getElementById('kpi-total-sales'),
+            kpiTransfers: document.getElementById('kpi-inventory-transfers'),
+            productList: document.getElementById('product-list'),
+            // Forecast (CSV)
             salesCsvInput: document.getElementById('sales-csv-input'),
             uploadBtn: document.getElementById('upload-btn'),
             runForecastBtn: document.getElementById('run-forecast-btn'),
@@ -109,151 +215,61 @@
             statusText: document.getElementById('status-text'),
             forecastImage: document.getElementById('forecast-image'),
             forecastPlaceholder: document.getElementById('forecast-placeholder'),
-            kpiSales: document.getElementById('kpi-total-sales'),
-            kpiTransfers: document.getElementById('kpi-inventory-transfers'),
-            productList: document.getElementById('product-list'),
+            // Weather
+            locationSelect: document.getElementById('location-select'),
+            weatherContainer: document.getElementById('weather-data-container'),
+            // Catalog
+            catalog: {
+                addProductBtn: document.getElementById('add-product-btn'),
+                tableBody: document.getElementById('product-table-body'),
+                placeholder: document.getElementById('catalog-placeholder'),
+                pagination: document.getElementById('catalog-pagination'),
+                filterInput: document.getElementById('sku-filter-input'),
+                modal: {
+                    container: document.getElementById('add-product-modal'),
+                    form: document.getElementById('add-product-form'),
+                    cancelBtn: document.getElementById('cancel-product-btn'),
+                    clearMetricsBtn: document.getElementById('clear-metrics-btn'),
+                    inputs: {
+                        name: document.getElementById('product-name'), sku: document.getElementById('product-sku'),
+                        price: document.getElementById('product-price'), type: document.getElementById('product-type'),
+                        cost: document.getElementById('product-cost'), quantity: document.getElementById('product-quantity'),
+                    },
+                    metrics: {
+                        price: document.getElementById('metric-price'), cost: document.getElementById('metric-cost'),
+                        marginAbs: document.getElementById('metric-margin-abs'), marginPerc: document.getElementById('metric-margin-perc'),
+                        totalRevenue: document.getElementById('metric-total-revenue'),
+                    }
+                }
+            }
+        };
+
+        const tabs = document.querySelectorAll('.tab');
+        const contentDivs = {
+            performance: document.getElementById('content-performance'), forecast: document.getElementById('content-forecast'),
+            catalog: document.getElementById('content-catalog'), 'daily-log': document.getElementById('content-daily-log'),
+            weather: document.getElementById('content-weather'), settings: document.getElementById('content-settings'),
         };
 
         async function apiFetch(endpoint, options = {}) {
-            const headers = {};
+            const headers = { 'Content-Type': 'application/json' };
             const token = localStorage.getItem('grapeiq_token');
-            if (!(options.body instanceof FormData)) { headers['Content-Type'] = 'application/json'; }
             if (token) { headers['Authorization'] = `Bearer ${token}`; }
+            if (options.body && options.body instanceof FormData) { delete headers['Content-Type']; }
             const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
             if (response.status === 401) { logout(); throw new Error("Sesión expirada."); }
             if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.detail || 'Ocurrió un error en la API'); }
             const contentType = response.headers.get("content-type");
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                return response.json();
-            }
-            return response.text();
-        }
-
-        async function handleLogin() {
-            DOMElements.loginError.textContent = '';
-            const formData = new FormData();
-            formData.append('username', DOMElements.usernameInput.value);
-            formData.append('password', DOMElements.passwordInput.value);
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/auth/token`, { method: 'POST', body: formData });
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.detail || 'Usuario o contraseña incorrectos.');
-                }
-                localStorage.setItem('grapeiq_token', data.access_token);
-                showDashboard();
-            } catch (error) {
-                DOMElements.loginError.textContent = error.message;
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('grapeiq_token');
-            DOMElements.loginContainer.style.display = 'flex';
-            DOMElements.dashboardContainer.style.display = 'none';
-        }
-
-        function handleFileSelect() {
-            DOMElements.uploadBtn.disabled = !DOMElements.salesCsvInput.files.length;
-            DOMElements.runForecastBtn.disabled = true;
-        }
-
-        async function handleUpload() {
-            const file = DOMElements.salesCsvInput.files[0];
-            if (!file) return;
-            setStatus(true, 'Subiendo y procesando archivo...');
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-                await apiFetch('/api/ingest/upload/sales-csv', { method: 'POST', body: formData });
-                pollForUploadStatus();
-            } catch (error) {
-                setStatus(false);
-                alert(`Error en la subida: ${error.message}`);
-            }
-        }
-
-        async function handleForecast() {
-            setStatus(true, 'Generando predicción...');
-            DOMElements.forecastImage.style.display = 'none';
-            DOMElements.forecastPlaceholder.style.display = 'block';
-            DOMElements.forecastPlaceholder.textContent = 'El gráfico de la predicción aparecerá aquí.';
-            try {
-                await apiFetch('/api/forecast/run', { method: 'POST' });
-                pollForForecastResults();
-            } catch (error) {
-                setStatus(false);
-                alert(`Error al iniciar la predicción: ${error.message}`);
-            }
-        }
-
-        function pollForUploadStatus() {
-            const intervalId = setInterval(async () => {
-                try {
-                    const { status } = await apiFetch('/api/ingest/upload/status');
-                    if (status === 'complete') {
-                        clearInterval(intervalId);
-                        setStatus(false);
-                        alert('¡Archivo procesado con éxito! El dashboard se actualizará.');
-                        loadDashboardData();
-                        DOMElements.runForecastBtn.disabled = false;
-                    } else if (status.startsWith('failed')) {
-                        clearInterval(intervalId);
-                        setStatus(false);
-                        alert(`Error en el servidor al procesar el archivo: ${status}`);
-                    }
-                } catch (error) {
-                    clearInterval(intervalId);
-                    setStatus(false);
-                    alert(`Error al consultar el estado de la subida: ${error.message}`);
-                }
-            }, 3000);
-        }
-
-        function pollForForecastResults() {
-            const intervalId = setInterval(async () => {
-                try {
-                    const result = await apiFetch('/api/forecast/results');
-                    if (result.status === 'complete') {
-                        clearInterval(intervalId);
-                        setStatus(false);
-                        DOMElements.forecastPlaceholder.style.display = 'none';
-                        DOMElements.forecastImage.src = result.image;
-                        DOMElements.forecastImage.style.display = 'block';
-                        DOMElements.runForecastBtn.disabled = false;
-                    } else if (result.status === 'error') {
-                        clearInterval(intervalId);
-                        setStatus(false);
-                        alert(`Error al generar la predicción: ${result.message}`);
-                        DOMElements.forecastPlaceholder.textContent = `Error: ${result.message}`;
-                    }
-                } catch (error) {
-                    clearInterval(intervalId);
-                    setStatus(false);
-                    alert(`Error al obtener resultados: ${error.message}`);
-                }
-            }, 3000);
-        }
-
-        function setStatus(isLoading, message = '') {
-            if (isLoading) {
-                DOMElements.statusContainer.style.display = 'flex';
-                DOMElements.statusText.textContent = message;
-                DOMElements.uploadBtn.disabled = true;
-                DOMElements.runForecastBtn.disabled = true;
-            } else {
-                DOMElements.statusContainer.style.display = 'none';
-                DOMElements.uploadBtn.disabled = false;
-            }
+            return contentType?.includes("application/json") ? response.json() : response.text();
         }
 
         function showDashboard() {
             DOMElements.loginContainer.style.display = 'none';
             DOMElements.dashboardContainer.style.display = 'block';
-            loadDashboardData();
+            tabs[0].click(); 
         }
 
-        async function loadDashboardData() {
+        async function loadPerformanceData() {
             try {
                 const [kpis, products, sales] = await Promise.all([apiFetch('/api/data/kpis'), apiFetch('/api/data/products'), apiFetch('/api/data/sales')]);
                 DOMElements.kpiSales.textContent = `€${parseFloat(kpis.total_sales).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -261,68 +277,117 @@
                 renderList(DOMElements.productList, products, item => `<span class="font-bold text-[#5C1A33]">${item.sku}:</span> ${item.name || 'N/A'}`);
                 renderSalesBySkuChart(sales);
                 renderSalesByChannelChart(sales);
-                if(sales && sales.length > 0) {
-                    DOMElements.runForecastBtn.disabled = false;
-                }
+                if(sales && sales.length > 0) DOMElements.runForecastBtn.disabled = false;
             } catch (error) {
-                console.error('Error al cargar datos del dashboard:', error);
-                alert('No se pudieron cargar los datos del dashboard. ' + error.message);
+                console.error('Error al cargar datos de rendimiento:', error);
+                alert('No se pudieron cargar los datos de rendimiento. ' + error.message);
             }
-        }
-
-        function renderList(listElement, data, formatter) {
-            listElement.innerHTML = data && data.length > 0 ? data.map(item => `<li class="p-3 text-sm border-b border-stone-100 last:border-b-0">${formatter(item)}</li>`).join('') : '<li class="p-3 text-sm text-stone-500">No hay datos disponibles.</li>';
-        }
-
-        function renderChart(chartId, existingChart, type, data, options) {
-            const ctx = document.getElementById(chartId).getContext('2d');
-            if (existingChart) existingChart.destroy();
-            return new Chart(ctx, { type, data, options });
-        }
-
-        function renderSalesBySkuChart(sales) {
-            const salesBySku = sales.reduce((acc, sale) => { acc[sale.sku] = (acc[sale.sku] || 0) + sale.sales_value; return acc; }, {});
-            const top10Skus = Object.entries(salesBySku).sort((a, b) => b[1] - a[1]).slice(0, 10);
-            charts.sku = renderChart('salesBySkuChart', charts.sku, 'bar', { 
-                labels: top10Skus.map(item => item[0]), 
-                datasets: [{ 
-                    label: 'Top 10 Ventas por SKU (€)', 
-                    data: top10Skus.map(item => item[1]), 
-                    backgroundColor: 'rgba(92, 26, 51, 0.7)',
-                    borderColor: 'rgba(92, 26, 51, 1)',
-                    borderWidth: 1,
-                    borderRadius: 8
-                }] 
-            }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } });
-        }
-
-        function renderSalesByChannelChart(sales) {
-            const salesByChannel = sales.reduce((acc, sale) => { const channel = sale.channel || 'Desconocido'; acc[channel] = (acc[channel] || 0) + sale.sales_value; return acc; }, {});
-            charts.channel = renderChart('salesByChannelChart', charts.channel, 'doughnut', { 
-                labels: Object.keys(salesByChannel), 
-                datasets: [{ 
-                    data: Object.values(salesByChannel), 
-                    backgroundColor: ['rgba(92, 26, 51, 0.8)', 'rgba(140, 43, 79, 0.8)', 'rgba(180, 80, 110, 0.8)'],
-                    borderColor: '#FFFFFF',
-                    borderWidth: 4
-                }] 
-            }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { font: { weight: 'bold' } } } } });
         }
         
-        function init() {
-            if (localStorage.getItem('grapeiq_token')) {
-                showDashboard();
-            } else {
-                DOMElements.loginContainer.style.display = 'flex';
-            }
+        async function loadProducts(page = 1) {
+            currentPage = page;
+            const offset = (page - 1) * pageSize;
+            const sku = DOMElements.catalog.filterInput.value;
+            const { catalog } = DOMElements;
+            try {
+                const products = await apiFetch(`/api/products/?limit=${pageSize}&offset=${offset}&sku=${encodeURIComponent(sku)}`);
+                const tableBody = catalog.tableBody;
+                tableBody.innerHTML = '';
+                if (products.length > 0) {
+                    catalog.placeholder.style.display = 'none';
+                    products.forEach(p => {
+                        const row = `<tr class="border-b border-stone-100">
+                            <td class="p-4 font-semibold">${p.name}</td><td class="p-4 text-stone-500">${p.sku}</td>
+                            <td class="p-4">${p.price_per_unit ? `€${p.price_per_unit.toFixed(2)}` : '-'}</td>
+                            <td class="p-4">${p.cost_per_unit ? `€${p.cost_per_unit.toFixed(2)}` : '-'}</td>
+                            <td class="p-4">${p.stock_quantity != null ? p.stock_quantity : '-'}</td>
+                        </tr>`;
+                        tableBody.innerHTML += row;
+                    });
+                } else { if (page === 1) catalog.placeholder.style.display = 'block'; }
+                renderPaginationControls(page, products.length === pageSize);
+            } catch (error) { alert(`Error al cargar los productos: ${error.message}`); }
+        }
+
+        function initEventListeners() {
             DOMElements.loginBtn.addEventListener('click', handleLogin);
             DOMElements.logoutBtn.addEventListener('click', logout);
+            tabs.forEach(tab => tab.addEventListener('click', handleTabClick));
             DOMElements.salesCsvInput.addEventListener('change', handleFileSelect);
             DOMElements.uploadBtn.addEventListener('click', handleUpload);
             DOMElements.runForecastBtn.addEventListener('click', handleForecast);
+            DOMElements.locationSelect.addEventListener('change', fetchAndDisplayWeather);
+            
+            const { catalog } = DOMElements;
+            catalog.addProductBtn.addEventListener('click', () => catalog.modal.container.classList.remove('hidden'));
+            catalog.modal.cancelBtn.addEventListener('click', () => catalog.modal.container.classList.add('hidden'));
+            Object.values(catalog.modal.inputs).forEach(input => input.addEventListener('input', updateMetrics));
+            catalog.modal.clearMetricsBtn.addEventListener('click', () => { catalog.modal.form.reset(); updateMetrics(); });
+            catalog.modal.form.addEventListener('submit', handleSaveProduct);
+            catalog.filterInput.addEventListener('input', () => {
+                clearTimeout(skuFilterTimeout);
+                skuFilterTimeout = setTimeout(() => loadProducts(1), 500); // Debounce
+            });
         }
         
-        init();
+        function handleTabClick(event) {
+            const tab = event.currentTarget;
+            const tabName = tab.dataset.tab;
+            tabs.forEach(t => t.classList.remove('tab-active'));
+            tab.classList.add('tab-active');
+            DOMElements.headerTitle.textContent = tab.dataset.title;
+            Object.values(contentDivs).forEach(div => div.style.display = 'none');
+            contentDivs[tabName].style.display = 'block';
+
+            if (tabName === 'weather' && !map) { initMap(); fetchAndDisplayWeather(); }
+            if (tabName === 'catalog') { loadProducts(); }
+            if (tabName === 'performance') { loadPerformanceData(); }
+        }
+        
+        // ... (resto de funciones como initMap, fetchAndDisplayWeather, etc.)
+        function initMap() { map = L.map('map').setView([40.41, -3.70], 6); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map); const today = new Date().toISOString().split('T')[0]; L.tileLayer(`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${today}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`, { attribution: 'NASA GIBS', opacity: 0.6, maxNativeZoom: 9 }).addTo(map); setTimeout(() => map.invalidateSize(), 0); }
+        async function fetchAndDisplayWeather() { const selectedOption = DOMElements.locationSelect.options[DOMElements.locationSelect.selectedIndex]; const { lat, lon, name } = selectedOption.dataset; if (map) map.setView([lat, lon], 10); DOMElements.weatherContainer.innerHTML = '<div class="flex justify-center"><div class="loader"></div></div>'; try { const weatherData = await apiFetch(`/api/weather/prediction/${lat}/${lon}`); const todayPrediction = weatherData.prediccion.dia[0]; let html = `<h4 class="text-2xl font-bold text-center">${name}</h4><p class="text-center text-stone-500 mb-4">${new Date(todayPrediction.fecha).toLocaleDateString('es-ES', {weekday: 'long', day: 'numeric', month: 'long'})}</p><div class="text-center bg-stone-100 p-4 rounded-2xl"><p class="text-5xl font-bold">${todayPrediction.temperatura.maxima}°</p><p class="text-stone-600">Temperatura Máxima</p></div><div class="grid grid-cols-1 gap-4 mt-4"><div class="bg-stone-50 p-3 rounded-lg text-center"><p class="font-bold text-lg">${todayPrediction.probPrecipitacion[0].value}%</p><p class="text-sm text-stone-500">Prob. Lluvia (Hoy)</p></div></div>`; DOMElements.weatherContainer.innerHTML = html; } catch (error) { DOMElements.weatherContainer.innerHTML = `<p class="text-red-500 text-center">No se pudieron cargar los datos del tiempo. ${error.message}</p>`; } }
+        function renderPaginationControls(page, hasNext) { const { pagination } = DOMElements.catalog; pagination.innerHTML = `<button id="prev-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${page === 1 ? 'disabled' : ''}>Anterior</button><span class="font-bold">Página ${page}</span><button id="next-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${!hasNext ? 'disabled' : ''}>Siguiente</button>`; document.getElementById('prev-page-btn').onclick = () => { if (page > 1) loadProducts(page - 1); }; document.getElementById('next-page-btn').onclick = () => { if (hasNext) loadProducts(page + 1); }; }
+        function updateMetrics() { const { inputs, metrics } = DOMElements.catalog.modal; const price = parseFloat(inputs.price.value) || 0; const cost = parseFloat(inputs.cost.value) || 0; const quantity = parseInt(inputs.quantity.value) || 0; metrics.price.textContent = price > 0 ? `€${price.toFixed(2)}` : '-'; metrics.cost.textContent = cost > 0 ? `€${cost.toFixed(2)}` : '-'; if (price > 0 && cost > 0 && price >= cost) { const marginAbs = price - cost; metrics.marginAbs.textContent = `€${marginAbs.toFixed(2)}`; metrics.marginPerc.textContent = `${((marginAbs / price) * 100).toFixed(1)}%`; } else { metrics.marginAbs.textContent = '-'; metrics.marginPerc.textContent = '-'; } metrics.totalRevenue.textContent = (price > 0 && quantity > 0) ? `€${(price * quantity).toFixed(2)}` : '-'; }
+        async function handleSaveProduct(e) {
+    e.preventDefault();
+    const { inputs, container, form } = DOMElements.catalog.modal;
+    const productData = {
+        name: inputs.name.value,
+        sku: inputs.sku.value,
+        price_per_unit: parseFloat(inputs.price.value),
+        product_type: inputs.type.value,
+        cost_per_unit: inputs.cost.value ? parseFloat(inputs.cost.value) : null,
+        stock_quantity: inputs.quantity.value ? parseInt(inputs.quantity.value) : null
+    };
+    apiFetch('/api/products/', { method: 'POST', body: JSON.stringify(productData) })
+        .then(() => {
+            container.classList.add('hidden');
+            form.reset();
+            updateMetrics();
+            loadProducts(currentPage);
+        })
+        .catch(error => {
+            alert(`Error al guardar el producto: ${error.message}`);
+        });
+}
+        async function handleLogin() { DOMElements.loginError.textContent = ''; const formData = new FormData(); formData.append('username', DOMElements.usernameInput.value); formData.append('password', DOMElements.passwordInput.value); try { const response = await fetch(`${API_BASE_URL}/api/auth/token`, { method: 'POST', body: formData }); const data = await response.json(); if (!response.ok) { throw new Error(data.detail || 'Usuario o contraseña incorrectos.'); } localStorage.setItem('grapeiq_token', data.access_token); showDashboard(); } catch (error) { DOMElements.loginError.textContent = error.message; } }
+        function logout() { localStorage.removeItem('grapeiq_token'); DOMElements.loginContainer.style.display = 'flex'; DOMElements.dashboardContainer.style.display = 'none'; }
+        function handleFileSelect() { DOMElements.uploadBtn.disabled = !DOMElements.salesCsvInput.files.length; DOMElements.runForecastBtn.disabled = true; }
+        async function handleUpload() { const file = DOMElements.salesCsvInput.files[0]; if (!file) return; setStatus(true, 'Subiendo y procesando archivo...'); try { const formData = new FormData(); formData.append('file', file); await apiFetch('/api/ingest/upload/sales-csv', { method: 'POST', body: formData }); pollForUploadStatus(); } catch (error) { setStatus(false); alert(`Error en la subida: ${error.message}`); } }
+        async function handleForecast() { setStatus(true, 'Generando predicción...'); DOMElements.forecastImage.style.display = 'none'; DOMElements.forecastPlaceholder.style.display = 'block'; DOMElements.forecastPlaceholder.textContent = 'El gráfico de la predicción aparecerá aquí.'; try { await apiFetch('/api/forecast/run', { method: 'POST' }); pollForForecastResults(); } catch (error) { setStatus(false); alert(`Error al iniciar la predicción: ${error.message}`); } }
+        function pollForUploadStatus() { const intervalId = setInterval(async () => { try { const { status } = await apiFetch('/api/ingest/upload/status'); if (status === 'complete') { clearInterval(intervalId); setStatus(false); alert('¡Archivo procesado con éxito! El dashboard se actualizará.'); loadPerformanceData(); DOMElements.runForecastBtn.disabled = false; } else if (status.startsWith('failed')) { clearInterval(intervalId); setStatus(false); alert(`Error en el servidor al procesar el archivo: ${status}`); } } catch (error) { clearInterval(intervalId); setStatus(false); alert(`Error al consultar el estado de la subida: ${error.message}`); } }, 3000); }
+        function pollForForecastResults() { const intervalId = setInterval(async () => { try { const result = await apiFetch('/api/forecast/results'); if (result.status === 'complete') { clearInterval(intervalId); setStatus(false); DOMElements.forecastPlaceholder.style.display = 'none'; DOMElements.forecastImage.src = result.image; DOMElements.forecastImage.style.display = 'block'; DOMElements.runForecastBtn.disabled = false; } else if (result.status === 'error') { clearInterval(intervalId); setStatus(false); alert(`Error al generar la predicción: ${result.message}`); DOMElements.forecastPlaceholder.textContent = `Error: ${result.message}`; } } catch (error) { clearInterval(intervalId); setStatus(false); alert(`Error al obtener resultados: ${error.message}`); } }, 3000); }
+        function setStatus(isLoading, message = '') { if (isLoading) { DOMElements.statusContainer.style.display = 'flex'; DOMElements.statusText.textContent = message; DOMElements.uploadBtn.disabled = true; DOMElements.runForecastBtn.disabled = true; } else { DOMElements.statusContainer.style.display = 'none'; DOMElements.uploadBtn.disabled = false; } }
+        function renderList(listElement, data, formatter) { listElement.innerHTML = data && data.length > 0 ? data.map(item => `<li class="p-3 text-sm border-b border-stone-100 last:border-b-0">${formatter(item)}</li>`).join('') : '<li class="p-3 text-sm text-stone-500">No hay datos disponibles.</li>'; }
+        function renderChart(chartId, existingChart, type, data, options) { const ctx = document.getElementById(chartId).getContext('2d'); if (existingChart) existingChart.destroy(); return new Chart(ctx, { type, data, options }); }
+        function renderSalesBySkuChart(sales) { const salesBySku = sales.reduce((acc, sale) => { acc[sale.sku] = (acc[sale.sku] || 0) + sale.sales_value; return acc; }, {}); const top10Skus = Object.entries(salesBySku).sort((a, b) => b[1] - a[1]).slice(0, 10); charts.sku = renderChart('salesBySkuChart', charts.sku, 'bar', { labels: top10Skus.map(item => item[0]), datasets: [{ label: 'Top 10 Ventas por SKU (€)', data: top10Skus.map(item => item[1]), backgroundColor: 'rgba(92, 26, 51, 0.7)', borderColor: 'rgba(92, 26, 51, 1)', borderWidth: 1, borderRadius: 8 }] }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }); }
+        function renderSalesByChannelChart(sales) { const salesByChannel = sales.reduce((acc, sale) => { const channel = sale.channel || 'Desconocido'; acc[channel] = (acc[channel] || 0) + sale.sales_value; return acc; }, {}); charts.channel = renderChart('salesByChannelChart', charts.channel, 'doughnut', { labels: Object.keys(salesByChannel), datasets: [{ data: Object.values(salesByChannel), backgroundColor: ['rgba(92, 26, 51, 0.8)', 'rgba(140, 43, 79, 0.8)', 'rgba(180, 80, 110, 0.8)'], borderColor: '#FFFFFF', borderWidth: 4 }] }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { font: { weight: 'bold' } } } } }); }
+        
+        // Initial call
+        if (localStorage.getItem('grapeiq_token')) { showDashboard(); }
+        initEventListeners();
+
     });
 </script>
 

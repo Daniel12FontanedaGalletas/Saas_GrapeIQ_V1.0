@@ -3,14 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # IMPORTA LAS FUNCIONES DE DATABASE Y LOS ROUTERS
 from .database import connect_to_db, close_db_connection
-from .routers import auth, ingest, data, forecast
+# Se añade el nuevo router 'products'
+from .routers import auth, ingest, data, forecast, weather, products
 
 app = FastAPI(
     title="GrapeIQ API",
     description="API para el análisis de ventas y predicción de demanda.",
     version="1.0.0"
 )
-
 # AÑADE LOS EVENTOS DE STARTUP Y SHUTDOWN
 @app.on_event("startup")
 def startup_event():
@@ -47,3 +47,4 @@ app.include_router(auth.router)
 app.include_router(ingest.router)
 app.include_router(data.router)
 app.include_router(forecast.router)
+app.include_router(products.router)
