@@ -2,26 +2,77 @@ import os
 import psycopg2
 from dotenv import load_dotenv
 from passlib.context import CryptContext
-import re
-from urllib.parse import urlparse, urlunparse
 
-# Cargamos las variables de entorno para obtener la URL de la BD
+# Carga las variables de entorno
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Usamos el mismo contexto de hasheo que en la app
+# Contexto de hasheo de contraseñas
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(password):
     return pwd_context.hash(password)
 
+def create_database_schema(cur):
+    """Crea las tablas de la base de datos si no existen."""
+    print("Creando el esquema de la base de datos (si es necesario)...")
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS tenants (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            name VARCHAR(255) NOT NULL,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        );
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+            username VARCHAR(255) UNIQUE NOT NULL,
+            hashed_password VARCHAR(255) NOT NULL,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        );
+    """)
+    # --- CORRECCIÓN CLAVE: Se usa 'product_type' consistentemente ---
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS products (
+            id SERIAL PRIMARY KEY,
+            tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+            sku VARCHAR(255) NOT NULL,
+            name VARCHAR(255),
+            product_type VARCHAR(100),
+            supplier VARCHAR(255),
+            price_per_unit NUMERIC(10, 2),
+            cost_per_unit NUMERIC(10, 2),
+            stock_quantity INTEGER,
+            UNIQUE(tenant_id, sku)
+        );
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS sales (
+            id SERIAL PRIMARY KEY,
+            tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+            sale_date DATE NOT NULL,
+            sku VARCHAR(255) NOT NULL,
+            channel VARCHAR(50),
+            sales_value NUMERIC(10, 2)
+        );
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS inventory_transfers (
+            id SERIAL PRIMARY KEY,
+            tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+            transfer_date DATE NOT NULL,
+            sku VARCHAR(255) NOT NULL,
+            quantity INTEGER
+        );
+    """)
+    print("Esquema de base de datos verificado/creado con éxito.")
+
 def create_initial_data():
-    """Crea un tenant y un usuario administrador para ese tenant."""
-    
-    # --- DATOS A CREAR (puedes cambiar estos valores) ---
+    """Crea un tenant y un usuario administrador inicial."""
     tenant_name = "Mi Primera Empresa"
     admin_username = "admin"
-    admin_password = "password123" # ¡Cámbiala en producción!
+    admin_password = "password123"
     
     hashed_password = get_password_hash(admin_password)
     
@@ -31,31 +82,27 @@ def create_initial_data():
             print("ERROR: La variable DATABASE_URL no se encontró en el archivo .env")
             return
         
-        # Ocultamos la contraseña de forma segura para no mostrarla en la terminal
-        try:
-            parsed_url = urlparse(DATABASE_URL)
-            safe_netloc = f"{parsed_url.username}:<password>@{parsed_url.hostname}:{parsed_url.port}"
-            safe_url = urlunparse(parsed_url._replace(netloc=safe_netloc))
-            print(f"Intentando conectar a: {safe_url}")
-        except Exception:
-            print("No se pudo parsear la DATABASE_URL para mostrarla de forma segura.")
-
-
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
+        print("¡Conexión a la base de datos exitosa!")
 
-        print("¡Conexión exitosa!")
+        # Crear tablas
+        create_database_schema(cur)
+
+        # Verificar si el usuario ya existe
+        cur.execute("SELECT id FROM users WHERE username = %s", (admin_username,))
+        if cur.fetchone():
+            print(f"El usuario '{admin_username}' ya existe. No se creará de nuevo.")
+            conn.commit()
+            return
 
         # 1. Crear el Tenant
         print(f"Creando tenant: '{tenant_name}'...")
-        cur.execute(
-            "INSERT INTO tenants (name) VALUES (%s) RETURNING id;",
-            (tenant_name,)
-        )
+        cur.execute("INSERT INTO tenants (name) VALUES (%s) RETURNING id;", (tenant_name,))
         tenant_id = cur.fetchone()[0]
         print(f"Tenant creado con ID: {tenant_id}")
 
-        # 2. Crear el Usuario asociado a ese Tenant
+        # 2. Crear el Usuario
         print(f"Creando usuario: '{admin_username}'...")
         cur.execute(
             "INSERT INTO users (tenant_id, username, hashed_password) VALUES (%s, %s, %s);",
@@ -63,7 +110,6 @@ def create_initial_data():
         )
         print("Usuario creado con éxito.")
 
-        # Guardar los cambios en la base de datos
         conn.commit()
         
         print("\n¡Configuración inicial completada!")
@@ -71,11 +117,7 @@ def create_initial_data():
         print(f"  -> Contraseña: {admin_password}")
 
     except Exception as e:
-        print("\n----------------- ERROR DETALLADO -----------------")
-        print(f"TIPO DE ERROR: {type(e).__name__}")
-        print(f"MENSAJE: {e}")
-        print("---------------------------------------------------")
-        print("\nPOSIBLE SOLUCIÓN: Verifica que la contraseña en tu archivo .env sea la misma que estableciste en el panel de Supabase.")
+        print(f"\n--- ERROR ---: {e}")
         if conn:
             conn.rollback() 
     finally:
