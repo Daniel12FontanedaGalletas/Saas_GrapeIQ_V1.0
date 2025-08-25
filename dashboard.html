@@ -72,25 +72,26 @@
             </div>
 
             <div id="content-forecast" class="hidden">
-                <div class="space-y-4">
-                    <div class="bg-white rounded-2xl shadow-lg">
-                        <div class="p-6 flex justify-between items-center">
-                            <h3 class="text-xl font-bold text-stone-800">Predicción de Ventas por Producto (SKU)</h3>
-                            <button class="toggle-details-btn text-2xl font-semibold text-stone-400 hover:text-stone-800 transition-colors">+</button>
+                <div class="space-y-6">
+                    
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-stone-800">Predicción de Ventas por Producto (SKU)</h3>
+                        <p class="text-sm text-stone-600 mb-4">Introduce el SKU de un producto para generar una predicción de ventas para los próximos 90 días.</p>
+                        
+                        <div class="flex items-center gap-4 mb-4">
+                            <input type="text" id="sku-forecast-input" placeholder="Ej: 100009" class="w-full max-w-xs px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
+                            <button id="run-sku-forecast-btn" class="wine-grad text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 flex items-center gap-2">
+                                Predecir
+                                <div id="forecast-loader" class="loader hidden" style="width: 16px; height: 16px; border-width: 2px;"></div>
+                            </button>
                         </div>
-                        <div class="details-content px-6 pb-6">
-                             <p class="text-sm text-stone-600 mb-4">Estima la demanda futura para cada vino, permitiendo optimizar el inventario y las compras.</p>
-                             <div class="bg-stone-50 p-4 rounded-lg border">
-                                 <h4 class="font-bold mb-2">Variables utilizadas:</h4>
-                                 <div class="flex flex-wrap gap-2 text-sm">
-                                     <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Historial de Ventas (CSV)</span>
-                                     <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Ventas Diarias (Formulario)</span>
-                                     <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full">Tendencias Temporales</span>
-                                 </div>
-                             </div>
+                        <p id="sku-forecast-error" class="text-red-600 text-sm font-semibold"></p>
+
+                        <div class="mt-4 h-96 bg-stone-50 rounded-xl p-4">
+                            <canvas id="skuForecastChart"></canvas>
                         </div>
                     </div>
-
+                    
                     <div class="bg-white rounded-2xl shadow-lg">
                         <div class="p-6 flex justify-between items-center">
                             <h3 class="text-xl font-bold text-stone-800">Predicción de Días de Alta Demanda</h3>
@@ -417,13 +418,6 @@
             passwordInput: document.getElementById('password'),
             logoutBtn: document.getElementById('logout-btn'),
             headerTitle: document.getElementById('header-title'),
-            salesCsvInput: document.getElementById('sales-csv-input'),
-            uploadBtn: document.getElementById('upload-btn'),
-            runForecastBtn: document.getElementById('run-forecast-btn'),
-            statusContainer: document.getElementById('status-container'),
-            statusText: document.getElementById('status-text'),
-            forecastImage: document.getElementById('forecast-image'),
-            forecastPlaceholder: document.getElementById('forecast-placeholder'),
             kpiSales: document.getElementById('kpi-total-sales'),
             kpiTransfers: document.getElementById('kpi-inventory-transfers'),
             productList: document.getElementById('product-list'),
@@ -459,6 +453,65 @@
             catalog: document.getElementById('content-catalog'), 'daily-log': document.getElementById('content-daily-log'),
             weather: document.getElementById('content-weather'), settings: document.getElementById('content-settings'),
         };
+        
+        const runSkuForecastBtn = document.getElementById('run-sku-forecast-btn');
+        const skuInput = document.getElementById('sku-forecast-input');
+        const forecastErrorEl = document.getElementById('sku-forecast-error');
+        const forecastLoader = document.getElementById('forecast-loader');
+
+        charts.skuForecast = renderChart('skuForecastChart', null, 'line', {}, {
+             responsive: true,
+             maintainAspectRatio: false,
+             plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Predicción de Ventas Diarias (Unidades)', font: { size: 16, weight: 'bold' } }
+             },
+             scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Unidades Vendidas' } },
+                x: { title: { display: true, text: 'Fecha' } }
+             }
+        });
+
+        const handleSkuForecast = async () => {
+            const sku = skuInput.value.trim();
+            if (!sku) {
+                forecastErrorEl.textContent = 'Por favor, introduce un SKU.';
+                return;
+            }
+
+            forecastErrorEl.textContent = '';
+            runSkuForecastBtn.disabled = true;
+            forecastLoader.classList.remove('hidden');
+
+            try {
+                const forecastData = await apiFetch(`/api/forecast/sku/${sku}`);
+                updateSkuForecastChart(forecastData);
+            } catch (error) {
+                forecastErrorEl.textContent = `Error: ${error.message}`;
+                updateSkuForecastChart({ dates: [], sales: [] });
+            } finally {
+                runSkuForecastBtn.disabled = false;
+                forecastLoader.classList.add('hidden');
+            }
+        };
+
+        const updateSkuForecastChart = (data) => {
+            const chart = charts.skuForecast;
+            chart.data = {
+                labels: data.dates,
+                datasets: [{
+                    label: 'Ventas Predichas',
+                    data: data.sales,
+                    borderColor: '#5C1A33',
+                    backgroundColor: 'rgba(92, 26, 51, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            };
+            chart.update();
+        };
+
+        runSkuForecastBtn.addEventListener('click', handleSkuForecast);
 
         async function apiFetch(endpoint, options = {}) {
             const headers = { 'Content-Type': 'application/json' };
@@ -503,9 +556,6 @@
             DOMElements.loginBtn.addEventListener('click', handleLogin);
             DOMElements.logoutBtn.addEventListener('click', logout);
             tabs.forEach(tab => tab.addEventListener('click', handleTabClick));
-            DOMElements.salesCsvInput.addEventListener('change', handleFileSelect);
-            DOMElements.uploadBtn.addEventListener('click', handleUpload);
-            DOMElements.runForecastBtn.addEventListener('click', handleForecast);
             DOMElements.dailyLogForm.addEventListener('submit', handleDailyLogSubmit);
             DOMElements.initialStockForm.addEventListener('submit', handleInitialStockSubmit);
             DOMElements.resetStockBtn.addEventListener('click', handleResetStock);
@@ -540,11 +590,76 @@
             }
         }
         
-        async function handleLogin() { DOMElements.loginError.textContent = ''; const formData = new FormData(); formData.append('username', DOMElements.usernameInput.value); formData.append('password', DOMElements.passwordInput.value); try { const response = await fetch(`${API_BASE_URL}/api/auth/token`, { method: 'POST', body: formData }); const data = await response.json(); if (!response.ok) { throw new Error(data.detail || 'Usuario o contraseña incorrectos.'); } localStorage.setItem('grapeiq_token', data.access_token); showDashboard(); } catch (error) { DOMElements.loginError.textContent = error.message; } }
-        function logout() { localStorage.removeItem('grapeiq_token'); DOMElements.loginContainer.style.display = 'flex'; DOMElements.dashboardContainer.style.display = 'none'; }
-        async function loadPerformanceData() { try { const [kpis, products, sales] = await Promise.all([apiFetch('/api/data/kpis'), apiFetch('/api/data/products'), apiFetch('/api/data/sales')]); DOMElements.kpiSales.textContent = `€${parseFloat(kpis.total_sales).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; DOMElements.kpiTransfers.textContent = parseFloat(kpis.total_inventory_transfers).toLocaleString('es-ES'); renderList(DOMElements.productList, products, item => `<span class="font-bold text-[#5C1A33]">${item.sku}:</span> ${item.name || 'N/A'}`); renderSalesBySkuChart(sales); renderSalesByChannelChart(sales); if(sales && sales.length > 0) { DOMElements.runForecastBtn.disabled = false; } } catch (error) { console.error('Error al cargar datos de rendimiento:', error); alert('No se pudieron cargar los datos de rendimiento. ' + error.message); } }
-        async function loadProducts(page = 1) { currentPage = page; const offset = (page - 1) * pageSize; const sku = DOMElements.catalog.filterInput.value; const { catalog } = DOMElements; try { const products = await apiFetch(`/api/products/?limit=${pageSize}&offset=${offset}&sku=${encodeURIComponent(sku)}`); const tableBody = catalog.tableBody; tableBody.innerHTML = ''; if (products.length > 0) { catalog.placeholder.style.display = 'none'; products.forEach(p => { const row = `<tr class="border-b border-stone-100"><td class="p-4 font-semibold">${p.name}</td><td class="p-4 text-stone-500">${p.sku}</td><td class="p-4">${p.price_per_unit ? `€${p.price_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.cost_per_unit ? `€${p.cost_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.stock_quantity != null ? p.stock_quantity : '-'}</td></tr>`; tableBody.innerHTML += row; }); } else { if (page === 1) catalog.placeholder.style.display = 'block'; } renderPaginationControls(page, products.length === pageSize); } catch (error) { alert(`Error al cargar los productos: ${error.message}`); } }
-        function initMap() { if(map) return; map = L.map('map').setView([40.41, -3.70], 5); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map); setTimeout(() => map.invalidateSize(), 0); }
+        async function handleLogin() { 
+            DOMElements.loginError.textContent = ''; 
+            const formData = new FormData(); 
+            formData.append('username', DOMElements.usernameInput.value); 
+            formData.append('password', DOMElements.passwordInput.value); 
+            try { 
+                const response = await fetch(`${API_BASE_URL}/api/auth/token`, { method: 'POST', body: formData }); 
+                const data = await response.json(); 
+                if (!response.ok) { throw new Error(data.detail || 'Usuario o contraseña incorrectos.'); } 
+                localStorage.setItem('grapeiq_token', data.access_token); 
+                showDashboard(); 
+            } catch (error) { 
+                DOMElements.loginError.textContent = error.message; 
+            } 
+        }
+
+        function logout() { 
+            localStorage.removeItem('grapeiq_token'); 
+            DOMElements.loginContainer.style.display = 'flex'; 
+            DOMElements.dashboardContainer.style.display = 'none'; 
+        }
+        
+        async function loadPerformanceData() { 
+            try { 
+                const [kpis, products, sales] = await Promise.all([
+                    apiFetch('/api/data/kpis'), 
+                    apiFetch('/api/data/products'), 
+                    apiFetch('/api/data/sales')
+                ]); 
+                DOMElements.kpiSales.textContent = `€${parseFloat(kpis.total_sales).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; 
+                DOMElements.kpiTransfers.textContent = parseFloat(kpis.total_inventory_transfers).toLocaleString('es-ES'); 
+                renderList(DOMElements.productList, products, item => `<span class="font-bold text-[#5C1A33]">${item.sku}:</span> ${item.name || 'N/A'}`); 
+                renderSalesBySkuChart(sales); 
+                renderSalesByChannelChart(sales); 
+            } catch (error) { 
+                console.error('Error al cargar datos de rendimiento:', error); 
+                alert('No se pudieron cargar los datos de rendimiento. ' + error.message); 
+            } 
+        }
+
+        async function loadProducts(page = 1) { 
+            currentPage = page; 
+            const offset = (page - 1) * pageSize; 
+            const sku = DOMElements.catalog.filterInput.value; 
+            const { catalog } = DOMElements; 
+            try { 
+                const products = await apiFetch(`/api/products/?limit=${pageSize}&offset=${offset}&sku=${encodeURIComponent(sku)}`); 
+                const tableBody = catalog.tableBody; 
+                tableBody.innerHTML = ''; 
+                if (products.length > 0) { 
+                    catalog.placeholder.style.display = 'none'; 
+                    products.forEach(p => { 
+                        const row = `<tr class="border-b border-stone-100"><td class="p-4 font-semibold">${p.name}</td><td class="p-4 text-stone-500">${p.sku}</td><td class="p-4">${p.price_per_unit ? `€${p.price_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.cost_per_unit ? `€${p.cost_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.stock_quantity != null ? p.stock_quantity : '-'}</td></tr>`; 
+                        tableBody.innerHTML += row; 
+                    }); 
+                } else { 
+                    if (page === 1) catalog.placeholder.style.display = 'block'; 
+                } 
+                renderPaginationControls(page, products.length === pageSize); 
+            } catch (error) { 
+                alert(`Error al cargar los productos: ${error.message}`); 
+            } 
+        }
+        
+        function initMap() { 
+            if(map) return; 
+            map = L.map('map').setView([40.41, -3.70], 5); 
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map); 
+            setTimeout(() => map.invalidateSize(), 0); 
+        }
         
         function renderPredefinedCities() {
             const list = DOMElements.weather.locationsList;
@@ -609,12 +724,6 @@
         function renderPaginationControls(page, hasNext) { const { pagination } = DOMElements.catalog; pagination.innerHTML = `<button id="prev-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${page === 1 ? 'disabled' : ''}>Anterior</button><span class="font-bold">Página ${page}</span><button id="next-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${!hasNext ? 'disabled' : ''}>Siguiente</button>`; document.getElementById('prev-page-btn').onclick = () => { if (page > 1) loadProducts(page - 1); }; document.getElementById('next-page-btn').onclick = () => { if (hasNext) loadProducts(page + 1); }; }
         function updateMetrics() { const { inputs, metrics } = DOMElements.catalog.modal; const price = parseFloat(inputs.price.value) || 0; const cost = parseFloat(inputs.cost.value) || 0; const quantity = parseInt(inputs.quantity.value) || 0; metrics.price.textContent = price > 0 ? `€${price.toFixed(2)}` : '-'; metrics.cost.textContent = cost > 0 ? `€${cost.toFixed(2)}` : '-'; if (price > 0 && cost > 0 && price >= cost) { const marginAbs = price - cost; metrics.marginAbs.textContent = `€${marginAbs.toFixed(2)}`; metrics.marginPerc.textContent = `${((marginAbs / price) * 100).toFixed(1)}%`; } else { metrics.marginAbs.textContent = '-'; metrics.marginPerc.textContent = '-'; } metrics.totalRevenue.textContent = (price > 0 && quantity > 0) ? `€${(price * quantity).toFixed(2)}` : '-'; }
         async function handleSaveProduct(e) { e.preventDefault(); const { modal } = DOMElements.catalog; const productData = { name: modal.inputs.name.value, sku: modal.inputs.sku.value, price_per_unit: parseFloat(modal.inputs.price.value), product_type: modal.inputs.type.value, cost_per_unit: modal.inputs.cost.value ? parseFloat(modal.inputs.cost.value) : null, stock_quantity: modal.inputs.quantity.value ? parseInt(modal.inputs.quantity.value) : null }; try { await apiFetch('/api/products/', { method: 'POST', body: JSON.stringify(productData) }); modal.container.classList.add('hidden'); modal.form.reset(); updateMetrics(); loadProducts(currentPage); } catch (error) { alert(`Error al guardar el producto: ${error.message}`); } }
-        function handleFileSelect() { DOMElements.uploadBtn.disabled = !DOMElements.salesCsvInput.files.length; DOMElements.runForecastBtn.disabled = true; }
-        async function handleUpload() { const file = DOMElements.salesCsvInput.files[0]; if (!file) return; setStatus(true, 'Subiendo y procesando archivo...'); try { const formData = new FormData(); formData.append('file', file); await apiFetch('/api/ingest/upload/sales-csv', { method: 'POST', body: formData }); pollForUploadStatus(); } catch (error) { setStatus(false); alert(`Error en la subida: ${error.message}`); } }
-        async function handleForecast() { setStatus(true, 'Generando predicción...'); DOMElements.forecastImage.style.display = 'none'; DOMElements.forecastPlaceholder.style.display = 'block'; DOMElements.forecastPlaceholder.textContent = 'El gráfico de la predicción aparecerá aquí.'; try { await apiFetch('/api/forecast/run', { method: 'POST' }); pollForForecastResults(); } catch (error) { setStatus(false); alert(`Error al iniciar la predicción: ${error.message}`); } }
-        function pollForUploadStatus() { const intervalId = setInterval(async () => { try { const { status } = await apiFetch('/api/ingest/upload/status'); if (status === 'complete') { clearInterval(intervalId); setStatus(false); alert('¡Archivo procesado con éxito! El dashboard se actualizará.'); loadPerformanceData(); DOMElements.runForecastBtn.disabled = false; } else if (status.startsWith('failed')) { clearInterval(intervalId); setStatus(false); alert(`Error en el servidor al procesar el archivo: ${status}`); } } catch (error) { clearInterval(intervalId); setStatus(false); alert(`Error al consultar el estado de la subida: ${error.message}`); } }, 3000); }
-        function pollForForecastResults() { const intervalId = setInterval(async () => { try { const result = await apiFetch('/api/forecast/results'); if (result.status === 'complete') { clearInterval(intervalId); setStatus(false); DOMElements.forecastPlaceholder.style.display = 'none'; DOMElements.forecastImage.src = result.image; DOMElements.forecastImage.style.display = 'block'; DOMElements.runForecastBtn.disabled = false; } else if (result.status === 'error') { clearInterval(intervalId); setStatus(false); alert(`Error al generar la predicción: ${result.message}`); DOMElements.forecastPlaceholder.textContent = `Error: ${result.message}`; } } catch (error) { clearInterval(intervalId); setStatus(false); alert(`Error al obtener resultados: ${error.message}`); } }, 3000); }
-        function setStatus(isLoading, message = '') { if (isLoading) { DOMElements.statusContainer.style.display = 'flex'; DOMElements.statusText.textContent = message; DOMElements.uploadBtn.disabled = true; DOMElements.runForecastBtn.disabled = true; } else { DOMElements.statusContainer.style.display = 'none'; DOMElements.uploadBtn.disabled = false; } }
         function renderList(listElement, data, formatter) { listElement.innerHTML = data && data.length > 0 ? data.map(item => `<li class="p-3 text-sm border-b border-stone-100 last:border-b-0">${formatter(item)}</li>`).join('') : '<li class="p-3 text-sm text-stone-500">No hay datos disponibles.</li>'; }
         function renderChart(chartId, existingChart, type, data, options) { const ctx = document.getElementById(chartId).getContext('2d'); if (existingChart) existingChart.destroy(); return new Chart(ctx, { type, data, options }); }
         function renderSalesBySkuChart(sales) { const salesBySku = sales.reduce((acc, sale) => { acc[sale.sku] = (acc[sale.sku] || 0) + sale.sales_value; return acc; }, {}); const top10Skus = Object.entries(salesBySku).sort((a, b) => b[1] - a[1]).slice(0, 10); charts.sku = renderChart('salesBySkuChart', charts.sku, 'bar', { labels: top10Skus.map(item => item[0]), datasets: [{ label: 'Top 10 Ventas por SKU (€)', data: top10Skus.map(item => item[1]), backgroundColor: 'rgba(92, 26, 51, 0.7)', borderColor: 'rgba(92, 26, 51, 1)', borderWidth: 1, borderRadius: 8 }] }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Top 10 Ventas por SKU (€)', font: { weight: 'bold' } } }, scales: { y: { beginAtZero: true } } }); }
@@ -629,7 +738,6 @@
                 localStorage.setItem(input.id, input.value);
             });
             alert('Stock inicial guardado con éxito.');
-            console.log('Stock inicial guardado:', stockData);
         }
 
         function handleResetStock() {
