@@ -19,6 +19,7 @@
         #map { height: 500px; border-radius: 1rem; z-index: 0; }
         .tab { cursor: pointer; }
         .tab-active { border-color: #5C1A33; color: #5C1A33; font-weight: 700; }
+        .details-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
     </style>
 </head>
 <body class="text-stone-800">
@@ -48,8 +49,8 @@
         <div class="mb-6 border-b border-stone-200">
             <nav class="flex space-x-8" aria-label="Tabs">
                 <button data-tab="performance" data-title="Análisis de Rendimiento" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent tab-active">Análisis de Rendimiento</button>
-                <button data-tab="forecast" data-title="Previsiones y Demanda" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Previsiones y Demanda</button>
-                <button data-tab="catalog" data-title="Catálogo" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Catálogo</button>
+                <button data-tab="forecast" data-title="Predicciones" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Predicciones</button>
+                <button data-tab="catalog" data-title="Catálogo y Stock" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Catálogo y Stock</button>
                 <button data-tab="daily-log" data-title="Registro Diario" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</button>
                 <button data-tab="weather" data-title="Clima" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Clima</button>
                 <button data-tab="settings" data-title="Configuración" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Configuración</button>
@@ -71,22 +72,139 @@
             </div>
 
             <div id="content-forecast" class="hidden">
-                 <div class="bg-white p-6 rounded-2xl shadow-lg">
-                    <h3 class="text-xl font-bold mb-4 text-stone-800">Generar Predicción Global de Ventas (basado en CSV)</h3>
-                    <div class="space-y-4 max-w-xl mx-auto">
-                        <div><label for="sales-csv-input" class="block mb-2 font-semibold">1. Selecciona tu archivo de ventas (.csv)</label><input type="file" id="sales-csv-input" accept=".csv" class="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-stone-100 file:text-[#5C1A33] hover:file:bg-stone-200 transition-colors"/></div>
-                        <button id="upload-btn" type="button" class="w-full bg-stone-700 text-white py-3 rounded-full font-bold hover:bg-stone-800 disabled:bg-stone-300 transition-colors" disabled>2. Subir y Procesar Archivo</button>
-                        <button id="run-forecast-btn" type="button" class="w-full wine-grad text-white py-3 rounded-full font-bold hover:opacity-90 disabled:bg-stone-300 disabled:bg-image-none transition-opacity" disabled>3. Generar Predicción</button>
-                        <div id="status-container" class="hidden flex justify-center items-center gap-3 p-3 bg-stone-100 rounded-full"><div id="loader" class="loader"></div><span id="status-text" class="text-stone-600 font-semibold">Procesando...</span></div>
+                <div class="space-y-4">
+                    <div class="bg-white rounded-2xl shadow-lg">
+                        <div class="p-6 flex justify-between items-center">
+                            <h3 class="text-xl font-bold text-stone-800">Predicción de Ventas por Producto (SKU)</h3>
+                            <button class="toggle-details-btn text-2xl font-semibold text-stone-400 hover:text-stone-800 transition-colors">+</button>
+                        </div>
+                        <div class="details-content px-6 pb-6">
+                             <p class="text-sm text-stone-600 mb-4">Estima la demanda futura para cada vino, permitiendo optimizar el inventario y las compras.</p>
+                             <div class="bg-stone-50 p-4 rounded-lg border">
+                                 <h4 class="font-bold mb-2">Variables utilizadas:</h4>
+                                 <div class="flex flex-wrap gap-2 text-sm">
+                                     <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Historial de Ventas (CSV)</span>
+                                     <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Ventas Diarias (Formulario)</span>
+                                     <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full">Tendencias Temporales</span>
+                                 </div>
+                             </div>
+                        </div>
                     </div>
-                    <div class="mt-6">
-                        <h4 class="font-semibold text-stone-800">Gráfico de Predicción:</h4>
-                        <div id="forecast-result-container" class="bg-stone-50 p-3 rounded-2xl mt-2 border flex justify-center items-center h-96"><p id="forecast-placeholder" class="text-stone-500">El gráfico de la predicción aparecerá aquí.</p><img id="forecast-image" class="hidden w-full h-full object-contain"/></div>
+
+                    <div class="bg-white rounded-2xl shadow-lg">
+                        <div class="p-6 flex justify-between items-center">
+                            <h3 class="text-xl font-bold text-stone-800">Predicción de Días de Alta Demanda</h3>
+                            <button class="toggle-details-btn text-2xl font-semibold text-stone-400 hover:text-stone-800 transition-colors">+</button>
+                        </div>
+                        <div class="details-content px-6 pb-6">
+                             <p class="text-sm text-stone-600 mb-4">Identifica qué días de la semana o fechas especiales son propensos a tener picos de ventas.</p>
+                             <div class="bg-stone-50 p-4 rounded-lg border">
+                                 <h4 class="font-bold mb-2">Variables utilizadas:</h4>
+                                 <div class="flex flex-wrap gap-2 text-sm">
+                                     <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Ventas Diarias (Formulario)</span>
+                                     <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Eventos Especiales (Formulario)</span>
+                                     <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full">Festivos Nacionales (Automático)</span>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-lg">
+                        <div class="p-6 flex justify-between items-center">
+                            <h3 class="text-xl font-bold text-stone-800">Predicción del Impacto de Marketing</h3>
+                            <button class="toggle-details-btn text-2xl font-semibold text-stone-400 hover:text-stone-800 transition-colors">+</button>
+                        </div>
+                        <div class="details-content px-6 pb-6">
+                             <p class="text-sm text-stone-600 mb-4">Estima el retorno de la inversión (ROI) de tus campañas para optimizar el gasto publicitario.</p>
+                             <div class="bg-stone-50 p-4 rounded-lg border">
+                                 <h4 class="font-bold mb-2">Variables utilizadas:</h4>
+                                 <div class="flex flex-wrap gap-2 text-sm">
+                                     <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Inversión y Canales (Formulario)</span>
+                                     <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Ventas en días de campaña</span>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-lg">
+                        <div class="p-6 flex justify-between items-center">
+                            <h3 class="text-xl font-bold text-stone-800">Predicción de Ventas según el Clima</h3>
+                            <button class="toggle-details-btn text-2xl font-semibold text-stone-400 hover:text-stone-800 transition-colors">+</button>
+                        </div>
+                        <div class="details-content px-6 pb-6">
+                             <p class="text-sm text-stone-600 mb-4">Anticipa cómo afectará el tiempo a la demanda de ciertos tipos de vino (ej. más vino blanco en días calurosos).</p>
+                             <div class="bg-stone-50 p-4 rounded-lg border">
+                                 <h4 class="font-bold mb-2">Variables utilizadas:</h4>
+                                 <div class="flex flex-wrap gap-2 text-sm">
+                                     <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full">Datos Meteorológicos (API)</span>
+                                     <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Ventas por Tipo de Producto</span>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-2xl shadow-lg opacity-60">
+                        <div class="p-6 flex justify-between items-center">
+                            <div>
+                                <h3 class="text-xl font-bold text-stone-800">Predicción de Rotura de Stock</h3>
+                                <p class="text-sm font-semibold text-amber-600">Próximamente</p>
+                            </div>
+                            <button class="toggle-details-btn text-2xl font-semibold text-stone-400 hover:text-stone-800 transition-colors">+</button>
+                        </div>
+                        <div class="details-content px-6 pb-6">
+                             <p class="text-sm text-stone-600 mb-4">Anticipa cuándo un producto se agotará para evitar pérdidas de ventas. Se activará tras acumular datos.</p>
+                             <div class="bg-stone-50 p-4 rounded-lg border">
+                                 <h4 class="font-bold mb-2">Variables utilizadas:</h4>
+                                 <div class="flex flex-wrap gap-2 text-sm">
+                                     <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full">Stock Inicial (Catálogo)</span>
+                                     <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Ritmo de Ventas Diario</span>
+                                     <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full">Tiempos de Entrega (Proveedores)</span>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-2xl shadow-lg opacity-60">
+                        <div class="p-6 flex justify-between items-center">
+                             <div>
+                                <h3 class="text-xl font-bold text-stone-800">Predicción de Tiempos de Entrega</h3>
+                                <p class="text-sm font-semibold text-amber-600">Próximamente</p>
+                            </div>
+                            <button class="toggle-details-btn text-2xl font-semibold text-stone-400 hover:text-stone-800 transition-colors">+</button>
+                        </div>
+                        <div class="details-content px-6 pb-6">
+                             <p class="text-sm text-stone-600 mb-4">Estima posibles retrasos de tus proveedores para ajustar tus planes de compra. Se activará tras acumular datos.</p>
+                             <div class="bg-stone-50 p-4 rounded-lg border">
+                                 <h4 class="font-bold mb-2">Variables utilizadas:</h4>
+                                 <div class="flex flex-wrap gap-2 text-sm">
+                                     <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full">Fecha Prometida (Formulario)</span>
+                                     <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full">Fecha de Entrega Real (Formulario)</span>
+                                     <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full">Histórico de Proveedores</span>
+                                 </div>
+                             </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div id="content-catalog" class="hidden">
+                <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">Gestión de Stock Inicial</h3>
+                    <p class="text-stone-500 mb-4 text-sm">Establece el inventario inicial para tus productos. El sistema restará las ventas diarias a partir de estos valores.</p>
+                    <form id="initial-stock-form" class="space-y-4">
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                            <div><label for="stock_100009" class="block text-sm font-semibold mb-1">BOOTLEG RED</label><input type="number" id="stock_100009" placeholder="Uds." class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></div>
+                            <div><label for="stock_100024" class="block text-sm font-semibold mb-1">MOMENT DE PLAISIR</label><input type="number" id="stock_100024" placeholder="Uds." class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></div>
+                            <div><label for="stock_1001" class="block text-sm font-semibold mb-1">S SMITH CIDER</label><input type="number" id="stock_1001" placeholder="Uds." class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></div>
+                            <div><label for="stock_100145" class="block text-sm font-semibold mb-1">SCHLINK HAUS</label><input type="number" id="stock_100145" placeholder="Uds." class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></div>
+                            <div><label for="stock_100293" class="block text-sm font-semibold mb-1">SANTORINI GAVALA</label><input type="number" id="stock_100293" placeholder="Uds." class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></div>
+                        </div>
+                        <div class="flex gap-4 pt-2">
+                            <button type="submit" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Guardar Stock</button>
+                            <button type="button" id="reset-stock-btn" class="bg-stone-200 text-stone-700 px-6 py-2 rounded-full font-semibold hover:bg-stone-300">Resetear</button>
+                        </div>
+                    </form>
+                </div>
                 <div class="flex justify-between items-center mb-6">
                     <div class="relative">
                         <input type="text" id="sku-filter-input" placeholder="Buscar por SKU..." class="w-full max-w-xs pl-10 pr-4 py-2 border border-stone-300 rounded-full">
@@ -117,31 +235,112 @@
                 </div>
             </div>
             
-            <div id="content-daily-log" class="hidden text-center p-16 bg-white rounded-2xl shadow-lg"><h2 class="text-2xl font-bold">Registro Diario</h2><p class="text-stone-500">Próximamente: El formulario para registrar tu actividad diaria.</p></div>
-            
+            <div id="content-daily-log" class="hidden">
+                 <form id="daily-log-form" class="space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="text-xl font-bold text-stone-800 mb-4">Ventas y Costes</h3>
+                        <p class="text-stone-500 mb-4 text-sm">Introduce las unidades vendidas hoy por canal y el coste actualizado de los productos.</p>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="border-b border-stone-200">
+                                    <tr>
+                                        <th class="p-4 font-bold text-sm">Producto</th>
+                                        <th class="p-4 font-bold text-sm">Ventas Online (Uds.)</th>
+                                        <th class="p-4 font-bold text-sm">Ventas Físicas (Uds.)</th>
+                                        <th class="p-4 font-bold text-sm">Coste por Unidad (€)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-stone-100">
+                                        <td class="p-4 font-semibold text-sm">BOOTLEG RED - 750ML</td>
+                                        <td class="p-2"><input type="number" name="sold_online_100009" placeholder="Ej: 3" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
+                                        <td class="p-2"><input type="number" name="sold_physical_100009" placeholder="Ej: 9" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
+                                        <td class="p-2"><input type="number" step="0.01" name="cost_100009" placeholder="Ej: 4.50" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
+                                    </tr>
+                                    <tr class="border-b border-stone-100">
+                                        <td class="p-4 font-semibold text-sm">MOMENT DE PLAISIR - 750ML</td>
+                                        <td class="p-2"><input type="number" name="sold_online_100024" placeholder="Ej: 2" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
+                                        <td class="p-2"><input type="number" name="sold_physical_100024" placeholder="Ej: 6" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
+                                        <td class="p-2"><input type="number" step="0.01" name="cost_100024" placeholder="Ej: 5.20" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
+                                    </tr>
+                                     <tr class="border-b border-stone-100">
+                                        <td class="p-4 font-semibold text-sm">S SMITH ORGANIC PEAR CIDER - 18.7OZ</td>
+                                        <td class="p-2"><input type="number" name="sold_online_1001" placeholder="Ej: 10" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
+                                        <td class="p-2"><input type="number" name="sold_physical_1001" placeholder="Ej: 14" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
+                                        <td class="p-2"><input type="number" step="0.01" name="cost_1001" placeholder="Ej: 1.80" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
+                                    </tr>
+                                    <tr class="border-b border-stone-100">
+                                        <td class="p-4 font-semibold text-sm">SCHLINK HAUS KABINETT - 750ML</td>
+                                        <td class="p-2"><input type="number" name="sold_online_100145" placeholder="Ej: 1" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
+                                        <td class="p-2"><input type="number" name="sold_physical_100145" placeholder="Ej: 4" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
+                                        <td class="p-2"><input type="number" step="0.01" name="cost_100145" placeholder="Ej: 6.00" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-4 font-semibold text-sm">SANTORINI GAVALA WHITE - 750ML</td>
+                                        <td class="p-2"><input type="number" name="sold_online_100293" placeholder="Ej: 3" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
+                                        <td class="p-2"><input type="number" name="sold_physical_100293" placeholder="Ej: 4" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
+                                        <td class="p-2"><input type="number" step="0.01" name="cost_100293" placeholder="Ej: 7.50" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-lg space-y-4">
+                             <h3 class="text-xl font-bold text-stone-800">Marketing</h3>
+                             <p class="text-stone-500 -mt-2 text-xs italic">Dejar en blanco salvo los días que haya campañas activas.</p>
+                            <div><label for="marketing-investment" class="block mb-1 text-sm font-semibold">Inversión en Marketing (€)</label><input type="number" step="0.01" id="marketing-investment" placeholder="Ej: 50.00" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
+                            <div>
+                                <label class="block mb-2 text-sm font-semibold">Canales de Marketing Activos</label>
+                                <div class="flex gap-4 items-center">
+                                    <label class="flex items-center gap-2"><input type="checkbox" id="channel-social" value="social_media" class="h-4 w-4 rounded border-stone-300 text-[#5C1A33] focus:ring-[#5C1A33]"> Redes Sociales</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" id="channel-email" value="email" class="h-4 w-4 rounded border-stone-300 text-[#5C1A33] focus:ring-[#5C1A33]"> Email</label>
+                                </div>
+                            </div>
+                            <div><label for="active-promotions" class="block mb-1 text-sm font-semibold">Promociones Activas</label><textarea id="active-promotions" rows="2" placeholder="Ej: 2x1 en vinos de la D.O. Ribera del Duero" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></textarea></div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-lg space-y-4">
+                            <h3 class="text-xl font-bold text-stone-800">Eventos y Proveedores</h3>
+                            <p class="text-stone-500 -mt-2 text-xs italic">Dejar en blanco salvo eventos especiales o nuevos pedidos.</p>
+                            <div><label for="special-events" class="block mb-1 text-sm font-semibold">Eventos Especiales</label><textarea id="special-events" rows="2" placeholder="Ej: Fiesta patronal, partido de fútbol..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></textarea></div>
+                            <div class="border-t border-stone-200 pt-4">
+                                <h4 class="font-semibold text-stone-700 mb-2">Nuevo Pedido a Proveedor</h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label for="supplier-name" class="block mb-1 text-sm">Nombre Proveedor</label><input type="text" id="supplier-name" placeholder="Ej: Vinos S.L." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
+                                    <div><label for="promised-delivery" class="block mb-1 text-sm">Fecha Prometida</label><input type="date" id="promised-delivery" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
+                                </div>
+                                <h4 class="font-semibold text-stone-700 mt-4 mb-2">Pedidos Pendientes de Recibir</h4>
+                                <div id="pending-orders-list" class="space-y-2 text-sm">
+                                    <p class="text-stone-500 text-center py-2">No hay pedidos pendientes.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="w-full wine-grad text-white py-4 rounded-full font-bold text-lg hover:opacity-90 transition-opacity">Guardar Registro Diario</button>
+                 </form>
+            </div>
+
             <div id="content-weather" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="text-xl font-bold mb-4 text-stone-800">Previsión Meteorológica</h3>
-                        
-                        <div class="mb-6">
-                            <label for="location-search-input" class="block mb-2 font-semibold">Buscar ciudad en España</label>
-                            <input type="text" id="location-search-input" placeholder="Ej: Madrid, Barcelona, Sevilla..." class="w-full px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
-                            <div id="search-results-container" class="mt-2 max-h-48 overflow-y-auto"></div>
-                        </div>
-
-                        <div class="mb-6">
-                            <h4 class="font-semibold mb-2">Mis Ubicaciones</h4>
-                            <ul id="favorite-locations-list" class="space-y-2"></ul>
-                        </div>
-                        
-                        <div id="weather-data-container" class="mt-6 space-y-4">
-                            <p class="text-center text-stone-500">Busca o selecciona una ubicación para ver la predicción.</p>
-                        </div>
+                        <h3 class="text-xl font-bold mb-4 text-stone-800">Ubicaciones Disponibles</h3>
+                        <p class="text-sm text-stone-500 mb-4">Selecciona una ciudad para ver la previsión detallada.</p>
+                        <div id="predefined-locations-list" class="space-y-2"></div>
                     </div>
-                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="text-xl font-bold mb-4 text-stone-800">Mapa de Nubosidad (NASA)</h3>
-                        <div id="map"></div>
+                    <div class="lg:col-span-2">
+                        <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
+                            <h3 class="text-xl font-bold mb-4 text-stone-800">Tiempo Actual</h3>
+                            <div id="weather-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-lg">
+                            <h3 class="text-xl font-bold mb-4 text-stone-800">Previsión Detallada</h3>
+                            <div id="weather-data-container" class="mt-6 space-y-4 flex items-center justify-center h-full min-h-[200px]">
+                                <p class="text-center text-stone-500">Selecciona una ubicación para ver los detalles.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -199,9 +398,16 @@
         let currentPage = 1;
         const pageSize = 10;
         let skuFilterTimeout;
-        let spanishCities = []; // Will be populated with city data
+        let pendingOrders = []; 
 
-        // --- All DOM Element selectors are grouped here ---
+        const PREDEFINED_CITIES = [
+            { name: "León", lat: 42.5987, lon: -5.5671 },
+            { name: "Madrid", lat: 40.4168, lon: -3.7038 },
+            { name: "Barcelona", lat: 41.3851, lon: 2.1734 },
+            { name: "Sevilla", lat: 37.3891, lon: -5.9845 },
+            { name: "Valencia", lat: 39.4699, lon: -0.3763 }
+        ];
+
         const DOMElements = {
             loginContainer: document.getElementById('login-container'),
             dashboardContainer: document.getElementById('dashboard-container'),
@@ -221,11 +427,14 @@
             kpiSales: document.getElementById('kpi-total-sales'),
             kpiTransfers: document.getElementById('kpi-inventory-transfers'),
             productList: document.getElementById('product-list'),
+            dailyLogForm: document.getElementById('daily-log-form'),
+            initialStockForm: document.getElementById('initial-stock-form'),
+            resetStockBtn: document.getElementById('reset-stock-btn'),
+            pendingOrdersList: document.getElementById('pending-orders-list'),
             weather: {
-                searchInput: document.getElementById('location-search-input'),
-                searchResultsContainer: document.getElementById('search-results-container'),
-                favoritesList: document.getElementById('favorite-locations-list'),
+                locationsList: document.getElementById('predefined-locations-list'),
                 dataContainer: document.getElementById('weather-data-container'),
+                cardsContainer: document.getElementById('weather-cards-container'),
             },
             catalog: {
                 addProductBtn: document.getElementById('add-product-btn'),
@@ -238,16 +447,8 @@
                     form: document.getElementById('add-product-form'),
                     cancelBtn: document.getElementById('cancel-product-btn'),
                     clearMetricsBtn: document.getElementById('clear-metrics-btn'),
-                    inputs: {
-                        name: document.getElementById('product-name'), sku: document.getElementById('product-sku'),
-                        price: document.getElementById('product-price'), type: document.getElementById('product-type'),
-                        cost: document.getElementById('product-cost'), quantity: document.getElementById('product-quantity'),
-                    },
-                    metrics: {
-                        price: document.getElementById('metric-price'), cost: document.getElementById('metric-cost'),
-                        marginAbs: document.getElementById('metric-margin-abs'), marginPerc: document.getElementById('metric-margin-perc'),
-                        totalRevenue: document.getElementById('metric-total-revenue'),
-                    }
+                    inputs: { name: document.getElementById('product-name'), sku: document.getElementById('product-sku'), price: document.getElementById('product-price'), type: document.getElementById('product-type'), cost: document.getElementById('product-cost'), quantity: document.getElementById('product-quantity') },
+                    metrics: { price: document.getElementById('metric-price'), cost: document.getElementById('metric-cost'), marginAbs: document.getElementById('metric-margin-abs'), marginPerc: document.getElementById('metric-margin-perc'), totalRevenue: document.getElementById('metric-total-revenue') }
                 }
             }
         };
@@ -259,15 +460,17 @@
             weather: document.getElementById('content-weather'), settings: document.getElementById('content-settings'),
         };
 
-        // --- Core Functions ---
         async function apiFetch(endpoint, options = {}) {
             const headers = { 'Content-Type': 'application/json' };
             const token = localStorage.getItem('grapeiq_token');
             if (token) { headers['Authorization'] = `Bearer ${token}`; }
             if (options.body && options.body instanceof FormData) { delete headers['Content-Type']; }
+            
             const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-            if (response.status === 401) { logout(); throw new Error("Sesión expirada."); }
+
+            if (response.status === 401) { logout(); throw new Error("Sesión expirada o no autorizada."); }
             if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.detail || 'Ocurrió un error en la API'); }
+            
             const contentType = response.headers.get("content-type");
             return contentType?.includes("application/json") ? response.json() : response.text();
         }
@@ -278,7 +481,6 @@
             tabs[0].click(); 
         }
 
-        // --- Tab Navigation ---
         function handleTabClick(event) {
             const tab = event.currentTarget;
             const tabName = tab.dataset.tab;
@@ -290,27 +492,38 @@
 
             if (tabName === 'weather') {
                 if (!map) initMap();
-                if (spanishCities.length === 0) loadSpanishCities();
-                renderFavorites();
+                renderPredefinedCities();
+                loadPredefinedCitiesWeather();
             }
             if (tabName === 'catalog') { loadProducts(); }
             if (tabName === 'performance') { loadPerformanceData(); }
         }
         
-        // --- Init & Event Listeners ---
         function init() {
-            if (localStorage.getItem('grapeiq_token')) {
-                showDashboard();
-            }
-            
             DOMElements.loginBtn.addEventListener('click', handleLogin);
             DOMElements.logoutBtn.addEventListener('click', logout);
             tabs.forEach(tab => tab.addEventListener('click', handleTabClick));
             DOMElements.salesCsvInput.addEventListener('change', handleFileSelect);
             DOMElements.uploadBtn.addEventListener('click', handleUpload);
             DOMElements.runForecastBtn.addEventListener('click', handleForecast);
-            DOMElements.weather.searchInput.addEventListener('input', handleCitySearch);
-            
+            DOMElements.dailyLogForm.addEventListener('submit', handleDailyLogSubmit);
+            DOMElements.initialStockForm.addEventListener('submit', handleInitialStockSubmit);
+            DOMElements.resetStockBtn.addEventListener('click', handleResetStock);
+            DOMElements.pendingOrdersList.addEventListener('click', handlePendingOrdersClick);
+
+            document.querySelectorAll('.toggle-details-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const content = this.parentElement.nextElementSibling;
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        this.textContent = '+';
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        this.textContent = '−';
+                    }
+                });
+            });
+
             const { catalog } = DOMElements;
             catalog.addProductBtn.addEventListener('click', () => catalog.modal.container.classList.remove('hidden'));
             catalog.modal.cancelBtn.addEventListener('click', () => catalog.modal.container.classList.add('hidden'));
@@ -321,45 +534,78 @@
                 clearTimeout(skuFilterTimeout);
                 skuFilterTimeout = setTimeout(() => loadProducts(1), 500);
             });
-        }
-        
-        // --- All Function Definitions ---
-        async function handleLogin() { DOMElements.loginError.textContent = ''; const formData = new FormData(); formData.append('username', DOMElements.usernameInput.value); formData.append('password', DOMElements.passwordInput.value); try { const response = await fetch(`${API_BASE_URL}/api/auth/token`, { method: 'POST', body: formData }); const data = await response.json(); if (!response.ok) { throw new Error(data.detail || 'Usuario o contraseña incorrectos.'); } localStorage.setItem('grapeiq_token', data.access_token); showDashboard(); } catch (error) { DOMElements.loginError.textContent = error.message; } }
-        function logout() { localStorage.removeItem('grapeiq_token'); DOMElements.loginContainer.style.display = 'flex'; DOMElements.dashboardContainer.style.display = 'none'; }
-        async function loadPerformanceData() {
-            try {
-                const [kpis, products, sales] = await Promise.all([
-                    apiFetch('/api/data/kpis'),
-                    apiFetch('/api/data/products'),
-                    apiFetch('/api/data/sales')
-                ]);
-                DOMElements.kpiSales.textContent = `€${parseFloat(kpis.total_sales).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                DOMElements.kpiTransfers.textContent = parseFloat(kpis.total_inventory_transfers).toLocaleString('es-ES');
-                renderList(DOMElements.productList, products, item =>
-                    `<span class="font-bold text-[#5C1A33]">${item.sku}:</span> ${item.name || 'N/A'}<br>
-                    <span class="text-stone-500 text-xs">Ventas: €${item.total_sales?.toLocaleString('es-ES', {minimumFractionDigits:2}) ?? '0.00'} | Transferencias: ${item.total_transfers ?? 0}</span>`
-                );
-                renderSalesBySkuChart(sales);
-                renderSalesByChannelChart(sales);
-                if(sales && sales.length > 0) { DOMElements.runForecastBtn.disabled = false; }
-            } catch (error) {
-                console.error('Error al cargar datos de rendimiento:', error);
-                alert('No se pudieron cargar los datos de rendimiento. ' + error.message);
+
+            if (localStorage.getItem('grapeiq_token')) {
+                showDashboard();
             }
         }
-        async function loadProducts(page = 1) { currentPage = page; const offset = (page - 1) * pageSize; const sku = DOMElements.catalog.filterInput.value; const { catalog } = DOMElements; try { const products = await apiFetch(`/api/products/?limit=${pageSize}&offset=${offset}&sku=${encodeURIComponent(sku)}`); const tableBody = catalog.tableBody; tableBody.innerHTML = ''; if (products.length > 0) { catalog.placeholder.style.display = 'none'; products.forEach(p => { const row = `<tr class="border-b border-stone-100"><td class="p-4 font-semibold">${p.name}</td><td class="p-4 text-stone-500">${p.sku}</td><td class="p-4">${p.price_per_unit ? `€${p.price_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.cost_per_unit ? `€${p.cost_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.stock_quantity != null ? p.stock_quantity : '-'}</td></tr>`; tableBody.innerHTML += row; }); } else { if (page === 1) catalog.placeholder.style.display = 'block'; } renderPaginationControls(page, products.length === pageSize); } catch (error) { alert(`Error al cargar los productos: ${error.message}`); } }
-        function initMap() { map = L.map('map').setView([40.41, -3.70], 6); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map); const today = new Date().toISOString().split('T')[0]; L.tileLayer(`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${today}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`, { attribution: 'NASA GIBS', opacity: 0.6, maxNativeZoom: 9 }).addTo(map); setTimeout(() => map.invalidateSize(), 0); }
         
-        // --- NEW/MODIFIED Weather Functions ---
-        async function loadSpanishCities() { try { const response = await fetch('https://raw.githubusercontent.com/IagoLast/pselect/master/data/municipios.json'); spanishCities = await response.json(); } catch (error) { console.error("Could not load Spanish city data.", error); DOMElements.weather.searchInput.disabled = true; DOMElements.weather.searchInput.placeholder = "Error al cargar ciudades."; } }
-        function handleCitySearch(event) { const query = event.target.value.toLowerCase(); DOMElements.weather.searchResultsContainer.innerHTML = ''; if (query.length < 3) return; const results = spanishCities.filter(city => city.nm.toLowerCase().includes(query)).slice(0, 50); results.forEach(city => { const resultDiv = document.createElement('div'); resultDiv.className = 'p-2 border-b hover:bg-stone-100 cursor-pointer flex justify-between items-center'; resultDiv.textContent = city.nm; resultDiv.onclick = () => { fetchAndDisplayWeather(city.lat, city.lon, city.nm); DOMElements.weather.searchInput.value = ''; DOMElements.weather.searchResultsContainer.innerHTML = ''; }; const addButton = document.createElement('button'); addButton.textContent = 'Añadir'; addButton.className = 'text-sm bg-[#5C1A33] text-white px-2 py-1 rounded-full hover:opacity-80'; addButton.onclick = (e) => { e.stopPropagation(); addFavorite(city); }; resultDiv.appendChild(addButton); DOMElements.weather.searchResultsContainer.appendChild(resultDiv); }); }
-        function getFavorites() { return JSON.parse(localStorage.getItem('grapeiq_fav_locations') || '[]'); }
-        function addFavorite(city) { let favorites = getFavorites(); if (!favorites.some(fav => fav.id === city.id)) { favorites.push(city); localStorage.setItem('grapeiq_fav_locations', JSON.stringify(favorites)); renderFavorites(); } }
-        function removeFavorite(cityId) { let favorites = getFavorites(); favorites = favorites.filter(fav => fav.id !== cityId); localStorage.setItem('grapeiq_fav_locations', JSON.stringify(favorites)); renderFavorites(); }
-        function renderFavorites() { const favorites = getFavorites(); const list = DOMElements.weather.favoritesList; list.innerHTML = ''; if (favorites.length === 0) { list.innerHTML = '<p class="text-sm text-stone-500">No tienes ubicaciones guardadas.</p>'; return; } favorites.forEach(city => { const favItem = document.createElement('li'); favItem.className = 'p-2 bg-stone-100 rounded-lg flex justify-between items-center'; const nameSpan = document.createElement('span'); nameSpan.textContent = city.nm; nameSpan.className = 'cursor-pointer font-semibold'; nameSpan.onclick = () => fetchAndDisplayWeather(city.lat, city.lon, city.nm); const removeBtn = document.createElement('button'); removeBtn.textContent = 'Quitar'; removeBtn.className = 'text-sm text-red-600 hover:text-red-800 font-semibold'; removeBtn.onclick = () => removeFavorite(city.id); favItem.appendChild(nameSpan); favItem.appendChild(removeBtn); list.appendChild(favItem); }); }
-        async function fetchAndDisplayWeather(lat, lon, name) { if (map) map.setView([lat, lon], 10); const { dataContainer } = DOMElements.weather; dataContainer.innerHTML = '<div class="flex justify-center"><div class="loader"></div></div>'; try { const weatherData = await apiFetch(`/api/weather/prediction/${lat}/${lon}`); const todayPrediction = weatherData.prediccion.dia[0]; let html = `<h4 class="text-2xl font-bold text-center">${name}</h4><p class="text-center text-stone-500 mb-4">${new Date(todayPrediction.fecha).toLocaleDateString('es-ES', {weekday: 'long', day: 'numeric', month: 'long'})}</p><div class="text-center bg-stone-100 p-4 rounded-2xl"><p class="text-5xl font-bold">${todayPrediction.temperatura.maxima}°</p><p class="text-stone-600">Temperatura Máxima</p></div><div class="grid grid-cols-1 gap-4 mt-4"><div class="bg-stone-50 p-3 rounded-lg text-center"><p class="font-bold text-lg">${todayPrediction.probPrecipitacion[0].value}%</p><p class="text-sm text-stone-500">Prob. Lluvia (Hoy)</p></div></div>`; dataContainer.innerHTML = html; } catch (error) { dataContainer.innerHTML = `<p class="text-red-500 text-center">No se pudieron cargar los datos del tiempo. ${error.message}</p>`; } }
+        async function handleLogin() { DOMElements.loginError.textContent = ''; const formData = new FormData(); formData.append('username', DOMElements.usernameInput.value); formData.append('password', DOMElements.passwordInput.value); try { const response = await fetch(`${API_BASE_URL}/api/auth/token`, { method: 'POST', body: formData }); const data = await response.json(); if (!response.ok) { throw new Error(data.detail || 'Usuario o contraseña incorrectos.'); } localStorage.setItem('grapeiq_token', data.access_token); showDashboard(); } catch (error) { DOMElements.loginError.textContent = error.message; } }
+        function logout() { localStorage.removeItem('grapeiq_token'); DOMElements.loginContainer.style.display = 'flex'; DOMElements.dashboardContainer.style.display = 'none'; }
+        async function loadPerformanceData() { try { const [kpis, products, sales] = await Promise.all([apiFetch('/api/data/kpis'), apiFetch('/api/data/products'), apiFetch('/api/data/sales')]); DOMElements.kpiSales.textContent = `€${parseFloat(kpis.total_sales).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; DOMElements.kpiTransfers.textContent = parseFloat(kpis.total_inventory_transfers).toLocaleString('es-ES'); renderList(DOMElements.productList, products, item => `<span class="font-bold text-[#5C1A33]">${item.sku}:</span> ${item.name || 'N/A'}`); renderSalesBySkuChart(sales); renderSalesByChannelChart(sales); if(sales && sales.length > 0) { DOMElements.runForecastBtn.disabled = false; } } catch (error) { console.error('Error al cargar datos de rendimiento:', error); alert('No se pudieron cargar los datos de rendimiento. ' + error.message); } }
+        async function loadProducts(page = 1) { currentPage = page; const offset = (page - 1) * pageSize; const sku = DOMElements.catalog.filterInput.value; const { catalog } = DOMElements; try { const products = await apiFetch(`/api/products/?limit=${pageSize}&offset=${offset}&sku=${encodeURIComponent(sku)}`); const tableBody = catalog.tableBody; tableBody.innerHTML = ''; if (products.length > 0) { catalog.placeholder.style.display = 'none'; products.forEach(p => { const row = `<tr class="border-b border-stone-100"><td class="p-4 font-semibold">${p.name}</td><td class="p-4 text-stone-500">${p.sku}</td><td class="p-4">${p.price_per_unit ? `€${p.price_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.cost_per_unit ? `€${p.cost_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.stock_quantity != null ? p.stock_quantity : '-'}</td></tr>`; tableBody.innerHTML += row; }); } else { if (page === 1) catalog.placeholder.style.display = 'block'; } renderPaginationControls(page, products.length === pageSize); } catch (error) { alert(`Error al cargar los productos: ${error.message}`); } }
+        function initMap() { if(map) return; map = L.map('map').setView([40.41, -3.70], 5); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map); setTimeout(() => map.invalidateSize(), 0); }
+        
+        function renderPredefinedCities() {
+            const list = DOMElements.weather.locationsList;
+            list.innerHTML = '';
+            PREDEFINED_CITIES.forEach(city => {
+                const cityItem = document.createElement('div');
+                cityItem.className = 'p-3 bg-stone-100 rounded-lg font-semibold text-[#5C1A33] hover:bg-stone-200 cursor-pointer';
+                cityItem.textContent = city.name;
+                cityItem.onclick = () => fetchAndDisplayWeather(city.lat, city.lon, city.name, true);
+                list.appendChild(cityItem);
+            });
+        }
 
-        // --- Other functions ---
+        async function fetchAndDisplayWeather(lat, lon, name, centerMap = false) { 
+            if (map && centerMap) map.setView([lat, lon], 9); 
+            const { dataContainer } = DOMElements.weather; 
+            dataContainer.innerHTML = '<div class="flex justify-center"><div class="loader"></div></div>'; 
+            try { 
+                const weatherData = await apiFetch(`/api/weather/prediction/${lat}/${lon}`); 
+                const today = weatherData.prediccion.dia[0]; 
+                let html = `<div class="text-center">
+                    <h4 class="text-2xl font-bold">${name}</h4>
+                    <p class="text-stone-500 mb-4">${new Date(today.fecha).toLocaleDateString('es-ES', {weekday: 'long', day: 'numeric', month: 'long'})}</p>
+                    <div class="bg-stone-100 p-4 rounded-2xl">
+                        <p class="text-5xl font-bold">${today.temperatura.maxima}°</p>
+                        <p class="text-stone-600">Temperatura Máxima Prevista</p>
+                    </div>
+                    <div class="bg-blue-50 p-3 rounded-lg text-center mt-4">
+                        <p class="font-bold text-lg">${today.probPrecipitacion[0].value}%</p>
+                        <p class="text-sm text-stone-500">Probabilidad de Lluvia</p>
+                    </div>
+                </div>`; 
+                dataContainer.innerHTML = html; 
+            } catch (error) { 
+                dataContainer.innerHTML = `<p class="text-red-500 text-center">No se pudo cargar la predicción. ${error.message}</p>`; 
+            } 
+        }
+
+        async function loadPredefinedCitiesWeather() {
+            const { cardsContainer } = DOMElements.weather;
+            cardsContainer.innerHTML = '<div class="loader col-span-full mx-auto"></div>';
+            try {
+                const weatherPromises = PREDEFINED_CITIES.map(city => 
+                    apiFetch(`/api/weather/current/${city.lat}/${city.lon}`).then(data => ({ ...data, name: city.name }))
+                );
+                const weatherResults = await Promise.all(weatherPromises);
+                cardsContainer.innerHTML = '';
+                weatherResults.forEach(weather => {
+                    const cardHTML = `<div class="bg-stone-50 border border-stone-200 p-4 rounded-xl flex flex-col items-center justify-center text-center">
+                            <h4 class="font-bold text-lg text-[#5C1A33]">${weather.name}</h4>
+                            <img src="https://openweathermap.org/img/wn/${weather.icon}@2x.png" alt="${weather.description}" class="w-16 h-16">
+                            <p class="text-3xl font-bold text-stone-800">${weather.temp}°C</p>
+                            <p class="text-sm text-stone-500">${weather.description}</p>
+                        </div>`;
+                    cardsContainer.innerHTML += cardHTML;
+                });
+            } catch (error) {
+                cardsContainer.innerHTML = `<p class="text-red-500 col-span-full text-center">Error al cargar el tiempo actual: ${error.message}</p>`;
+            }
+        }
+
         function renderPaginationControls(page, hasNext) { const { pagination } = DOMElements.catalog; pagination.innerHTML = `<button id="prev-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${page === 1 ? 'disabled' : ''}>Anterior</button><span class="font-bold">Página ${page}</span><button id="next-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${!hasNext ? 'disabled' : ''}>Siguiente</button>`; document.getElementById('prev-page-btn').onclick = () => { if (page > 1) loadProducts(page - 1); }; document.getElementById('next-page-btn').onclick = () => { if (hasNext) loadProducts(page + 1); }; }
         function updateMetrics() { const { inputs, metrics } = DOMElements.catalog.modal; const price = parseFloat(inputs.price.value) || 0; const cost = parseFloat(inputs.cost.value) || 0; const quantity = parseInt(inputs.quantity.value) || 0; metrics.price.textContent = price > 0 ? `€${price.toFixed(2)}` : '-'; metrics.cost.textContent = cost > 0 ? `€${cost.toFixed(2)}` : '-'; if (price > 0 && cost > 0 && price >= cost) { const marginAbs = price - cost; metrics.marginAbs.textContent = `€${marginAbs.toFixed(2)}`; metrics.marginPerc.textContent = `${((marginAbs / price) * 100).toFixed(1)}%`; } else { metrics.marginAbs.textContent = '-'; metrics.marginPerc.textContent = '-'; } metrics.totalRevenue.textContent = (price > 0 && quantity > 0) ? `€${(price * quantity).toFixed(2)}` : '-'; }
         async function handleSaveProduct(e) { e.preventDefault(); const { modal } = DOMElements.catalog; const productData = { name: modal.inputs.name.value, sku: modal.inputs.sku.value, price_per_unit: parseFloat(modal.inputs.price.value), product_type: modal.inputs.type.value, cost_per_unit: modal.inputs.cost.value ? parseFloat(modal.inputs.cost.value) : null, stock_quantity: modal.inputs.quantity.value ? parseInt(modal.inputs.quantity.value) : null }; try { await apiFetch('/api/products/', { method: 'POST', body: JSON.stringify(productData) }); modal.container.classList.add('hidden'); modal.form.reset(); updateMetrics(); loadProducts(currentPage); } catch (error) { alert(`Error al guardar el producto: ${error.message}`); } }
@@ -374,6 +620,115 @@
         function renderSalesBySkuChart(sales) { const salesBySku = sales.reduce((acc, sale) => { acc[sale.sku] = (acc[sale.sku] || 0) + sale.sales_value; return acc; }, {}); const top10Skus = Object.entries(salesBySku).sort((a, b) => b[1] - a[1]).slice(0, 10); charts.sku = renderChart('salesBySkuChart', charts.sku, 'bar', { labels: top10Skus.map(item => item[0]), datasets: [{ label: 'Top 10 Ventas por SKU (€)', data: top10Skus.map(item => item[1]), backgroundColor: 'rgba(92, 26, 51, 0.7)', borderColor: 'rgba(92, 26, 51, 1)', borderWidth: 1, borderRadius: 8 }] }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Top 10 Ventas por SKU (€)', font: { weight: 'bold' } } }, scales: { y: { beginAtZero: true } } }); }
         function renderSalesByChannelChart(sales) { const salesByChannel = sales.reduce((acc, sale) => { const channel = sale.channel || 'Desconocido'; acc[channel] = (acc[channel] || 0) + sale.sales_value; return acc; }, {}); charts.channel = renderChart('salesByChannelChart', charts.channel, 'doughnut', { labels: Object.keys(salesByChannel), datasets: [{ data: Object.values(salesByChannel), backgroundColor: ['rgba(92, 26, 51, 0.8)', 'rgba(140, 43, 79, 0.8)', 'rgba(180, 80, 110, 0.8)'], borderColor: '#FFFFFF', borderWidth: 4 }] }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { font: { weight: 'bold' } } }, title: { display: true, text: 'Ventas por Canal', font: { weight: 'bold' } } } }); }
         
+        function handleInitialStockSubmit(event) {
+            event.preventDefault();
+            const stockData = {};
+            const inputs = DOMElements.initialStockForm.querySelectorAll('input[type="number"]');
+            inputs.forEach(input => {
+                stockData[input.id] = input.value;
+                localStorage.setItem(input.id, input.value);
+            });
+            alert('Stock inicial guardado con éxito.');
+            console.log('Stock inicial guardado:', stockData);
+        }
+
+        function handleResetStock() {
+            if (confirm('¿Estás seguro de que quieres resetear el stock inicial? Se borrarán los valores guardados.')) {
+                DOMElements.initialStockForm.reset();
+                const inputs = DOMElements.initialStockForm.querySelectorAll('input[type="number"]');
+                inputs.forEach(input => localStorage.removeItem(input.id));
+                alert('Stock inicial reseteado.');
+            }
+        }
+        
+        function handleDailyLogSubmit(event) {
+            event.preventDefault();
+            
+            const salesData = [];
+            const productRows = DOMElements.dailyLogForm.querySelectorAll('tbody tr');
+            productRows.forEach(row => {
+                const productName = row.cells[0].innerText;
+                const onlineSold = row.querySelector('input[name^="sold_online"]').value;
+                const physicalSold = row.querySelector('input[name^="sold_physical"]').value;
+                const cost = row.querySelector('input[name^="cost"]').value;
+                salesData.push({
+                    productName,
+                    unitsSold: {
+                        online: onlineSold ? parseInt(onlineSold, 10) : 0,
+                        physical: physicalSold ? parseInt(physicalSold, 10) : 0,
+                    },
+                    cost: cost ? parseFloat(cost) : null
+                });
+            });
+
+            const supplierName = document.getElementById('supplier-name').value.trim();
+            const promisedDeliveryDate = document.getElementById('promised-delivery').value;
+            let supplierOrderData = null;
+            if (supplierName && promisedDeliveryDate) {
+                supplierOrderData = { supplierName, promisedDeliveryDate };
+                const newOrder = {
+                    id: Date.now(),
+                    name: supplierName,
+                    date: promisedDeliveryDate
+                };
+                pendingOrders.push(newOrder);
+                renderPendingOrders();
+            }
+            
+            const dailyData = {
+                date: new Date().toISOString().split('T')[0],
+                sales: salesData,
+                marketing: {
+                    investment: parseFloat(document.getElementById('marketing-investment').value) || 0,
+                    channels: Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value),
+                    promotions: document.getElementById('active-promotions').value.trim()
+                },
+                events: { specialEvents: document.getElementById('special-events').value.trim() },
+                newSupplierOrder: supplierOrderData
+            };
+
+            console.log('Datos del Registro Diario:', JSON.stringify(dailyData, null, 2));
+            alert('Datos registrados con éxito. Revisa la consola para ver el JSON.');
+            DOMElements.dailyLogForm.reset();
+        }
+        
+        function renderPendingOrders() {
+            const list = DOMElements.pendingOrdersList;
+            if (pendingOrders.length === 0) {
+                list.innerHTML = '<p class="text-stone-500 text-center py-2">No hay pedidos pendientes.</p>';
+                return;
+            }
+            list.innerHTML = '';
+            pendingOrders.forEach(order => {
+                const item = document.createElement('div');
+                item.className = 'flex justify-between items-center bg-stone-100 p-2 rounded-lg';
+                item.innerHTML = `
+                    <div>
+                        <span class="font-semibold">${order.name}</span>
+                        <span class="text-stone-500 ml-2"> (Prometido: ${order.date})</span>
+                    </div>
+                    <button data-order-id="${order.id}" class="mark-received-btn text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full font-semibold hover:bg-green-300">Marcar como Recibido</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function handlePendingOrdersClick(event) {
+            if (event.target.classList.contains('mark-received-btn')) {
+                const orderId = parseInt(event.target.dataset.orderId, 10);
+                const order = pendingOrders.find(o => o.id === orderId);
+                const deliveryData = {
+                    ...order,
+                    receivedDate: new Date().toISOString().split('T')[0]
+                };
+                console.log('Pedido Recibido:', deliveryData);
+                alert(`Pedido de ${order.name} marcado como recibido.`);
+                
+                pendingOrders = pendingOrders.filter(o => o.id !== orderId);
+                renderPendingOrders();
+            }
+        }
+
         init();
     });
 </script>
