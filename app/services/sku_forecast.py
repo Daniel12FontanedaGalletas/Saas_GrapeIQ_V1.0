@@ -1,77 +1,104 @@
+# Saas_GrapeIQ_V1.0/app/services/sku_forecast.py
+
 import pandas as pd
 from statsmodels.tsa.api import ExponentialSmoothing
 import numpy as np
+from pathlib import Path
 
-def generate_sku_forecast(csv_path: str, sku: str, forecast_periods: int = 30):
-    """
-    Genera una predicción de ventas para un SKU específico usando Exponential Smoothing.
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+CSV_PATH = BASE_DIR / "Warehouse_and_Retail_Sales.csv"
 
-    Args:
-        csv_path (str): Ruta al archivo CSV de ventas.
-        sku (str): El SKU del producto a predecir.
-        forecast_periods (int): Número de períodos (días) a predecir.
+def generate_sku_forecast(sku: str, forecast_periods: int = 90):
+    if not CSV_PATH.exists():
+        raise FileNotFoundError(f"El archivo de ventas no se encuentra en la ruta esperada: {CSV_PATH}")
 
-    Returns:
-        dict: Un diccionario con las fechas y las ventas predichas.
-    """
     try:
-        # Cargar los datos
-        df = pd.read_csv(csv_path, sep=';', decimal=',')
+        # Usamos el separador de coma y manejamos líneas con errores.
+        df = pd.read_csv(CSV_PATH, sep=',', on_bad_lines='warn')
     except Exception as e:
-        raise FileNotFoundError(f"No se pudo cargar o procesar el archivo CSV: {e}")
+        raise ConnectionError(f"No se pudo cargar o procesar el archivo CSV. Error: {e}")
 
-    # Limpieza y preparación de datos
-    df['ITEM CODE'] = df['ITEM CODE'].astype(str)
+    df.columns = df.columns.str.strip()
     
-    # Filtrar por el SKU solicitado
+    if 'ITEM CODE' not in df.columns:
+        raise KeyError(f"La columna 'ITEM CODE' no se encuentra en el archivo. Columnas disponibles: {df.columns.tolist()}")
+        
+    df['ITEM CODE'] = df['ITEM CODE'].astype(str).str.strip()
+    
     df_sku = df[df['ITEM CODE'] == sku].copy()
 
     if df_sku.empty:
-        raise ValueError(f"No se encontraron datos para el SKU: {sku}")
+        raise ValueError(f"No se encontraron datos de ventas para el SKU: {sku}")
 
-    # Crear una columna de fecha (asumimos el día 1 de cada mes para el histórico)
-    df_sku['DATE'] = pd.to_datetime(df_sku['YEAR'].astype(str) + '-' + df_sku['MONTH'].astype(str) + '-01')
-    
-    # Sumar todas las ventas (retail, warehouse, transfers) para tener una demanda total
-    df_sku['TOTAL_SALES'] = df_sku['RETAIL SALES'] + df_sku['WAREHOUSE SALES'] + df_sku['RETAIL TRANSFERS']
-    
-    # Agrupar por mes para crear la serie temporal
-    ts = df_sku.groupby('DATE')['TOTAL_SALES'].sum()
-    
-    # Re-muestrear a frecuencia mensual para asegurar que no haya huecos
-    ts = ts.asfreq('MS', fill_value=0)
-    
-    # Asegurarnos de que tenemos suficientes datos para el modelo
-    if len(ts) < 12: # Mínimo un año de datos para que el modelo sea algo fiable
-        raise ValueError("No hay suficientes datos históricos (mínimo 12 meses) para este producto.")
+    df_sku['DATE'] = pd.to_datetime(df_sku['YEAR'].astype(str) + '-' + df_sku['MONTH'].astype(str) + '-01', errors='coerce')
+    df_sku.dropna(subset=['DATE'], inplace=True)
 
-    # Entrenar el modelo de Holt-Winters (Exponential Smoothing)
-    # Este modelo es bueno para datos con tendencia y estacionalidad.
-    model = ExponentialSmoothing(
-        ts,
-        seasonal_periods=12, # Estacionalidad anual
-        trend='add', 
-        seasonal='add',
-        initialization_method="estimated"
-    ).fit()
+    sales_columns = ['RETAIL SALES', 'WAREHOUSE SALES', 'RETAIL TRANSFERS']
+    
+    for col in sales_columns:
+        if col in df_sku.columns:
+            df_sku[col] = pd.to_numeric(
+                df_sku[col].astype(str).str.replace(',', '.'), 
+                errors='coerce'
+            ).fillna(0)
+        else:
+            df_sku[col] = 0
+        
+    df_sku['TOTAL_SALES'] = df_sku[sales_columns].sum(axis=1)
+    
+    ts = df_sku.groupby('DATE')['TOTAL_SALES'].sum().asfreq('MS', fill_value=0)
+    
+    # Requisito mínimo: al menos 12 meses para cualquier predicción.
+    if len(ts) < 12:
+        raise ValueError(f"No hay suficientes datos históricos para este SKU (se necesitan al menos 12 meses).")
 
-    # Generar la predicción
-    forecast = model.forecast(steps=1) # Predecimos el siguiente mes
+    # ===== LÓGICA DEL MODELO ADAPTATIVO =====
+    try:
+        # Si tenemos más de 24 meses, usamos el modelo completo (tendencia + estacionalidad)
+        if len(ts) >= 24:
+            print(f"SKU {sku}: Usando modelo estacional (datos >= 24 meses).")
+            model = ExponentialSmoothing(
+                ts,
+                seasonal_periods=12,
+                trend='add', 
+                seasonal='add',
+                initialization_method="estimated"
+            ).fit()
+        # Si tenemos entre 12 y 23 meses, usamos un modelo más simple (solo tendencia)
+        else:
+            print(f"SKU {sku}: Usando modelo simple de tendencia (datos < 24 meses).")
+            model = ExponentialSmoothing(
+                ts,
+                trend='add',
+                initialization_method="estimated"
+            ).fit()
+
+    except Exception as e:
+        raise ValueError(f"Error del modelo estadístico: {e}")
+    # ===== FIN DE LA LÓGICA ADAPTATIVA =====
+
+    months_to_forecast = int(np.ceil(forecast_periods / 30))
+    forecast = model.forecast(steps=months_to_forecast) 
     
-    # Como el modelo predice por mes, dividimos la predicción mensual entre los días del mes
-    # para obtener una estimación diaria. Es una simplificación pero funcional.
-    last_date = ts.index.max()
-    future_dates = pd.to_datetime(pd.date_range(start=last_date, periods=forecast_periods + 1, freq='D')[1:])
+    last_hist_date = ts.index.max()
+    future_dates = pd.date_range(start=last_hist_date + pd.DateOffset(days=1), periods=forecast_periods, freq='D')
     
-    # Usamos la predicción del próximo mes y la distribuimos
-    next_month_forecast = forecast.iloc[0]
-    daily_forecast_value = next_month_forecast / len(future_dates)
-    
-    # Aplicamos una pequeña variabilidad aleatoria para que no sea una línea plana
-    noise = np.random.normal(0, daily_forecast_value * 0.2, len(future_dates))
-    daily_forecast = np.maximum(0, daily_forecast_value + noise) # Aseguramos que no haya ventas negativas
+    daily_forecast = []
+    for date in future_dates:
+        monthly_forecast_val = forecast[forecast.index.to_period('M') == date.to_period('M')]
+        if not monthly_forecast_val.empty:
+            days_in_month = date.days_in_month
+            daily_value = monthly_forecast_val.iloc[0] / days_in_month
+            daily_forecast.append(daily_value)
+        else:
+            daily_forecast.append(0)
+
+    # Aseguramos que la predicción nunca sea negativa
+    daily_forecast = np.maximum(0, daily_forecast)
+    noise = np.random.normal(0, np.mean(daily_forecast) * 0.15, len(daily_forecast))
+    final_daily_forecast = np.maximum(0, np.array(daily_forecast) + noise)
     
     return {
         "dates": [d.strftime('%Y-%m-%d') for d in future_dates],
-        "sales": list(daily_forecast)
+        "sales": list(final_daily_forecast)
     }

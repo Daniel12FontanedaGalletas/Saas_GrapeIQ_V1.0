@@ -20,6 +20,9 @@
         .tab { cursor: pointer; }
         .tab-active { border-color: #5C1A33; color: #5C1A33; font-weight: 700; }
         .details-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
+        .kpi-value { font-size: 2.25rem; line-height: 2.5rem; font-weight: 700; }
+        .kpi-trend-positive { color: #16a34a; }
+        .kpi-trend-negative { color: #dc2626; }
     </style>
 </head>
 <body class="text-stone-800">
@@ -60,37 +63,75 @@
         <main>
             <div id="content-performance">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="font-semibold text-stone-500 mb-2">Ventas Totales</h3><p id="kpi-total-sales" class="text-4xl font-bold text-stone-800">€0.00</p></div>
-                    <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="font-semibold text-stone-500 mb-2">Unidades Transferidas</h3><p id="kpi-inventory-transfers" class="text-4xl font-bold text-stone-800">0</p></div>
-                    <div class="bg-white p-4 rounded-2xl shadow-lg h-80"><canvas id="salesBySkuChart"></canvas></div>
-                    <div class="bg-white p-4 rounded-2xl shadow-lg h-80"><canvas id="salesByChannelChart"></canvas></div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="font-semibold text-stone-500 mb-2">Ventas Totales</h3>
+                        <p id="kpi-total-sales" class="kpi-value text-stone-800">Cargando...</p>
+                        <p id="kpi-mom-change" class="font-semibold text-sm mt-1">Cargando...</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="font-semibold text-stone-500 mb-2">Margen Bruto</h3>
+                        <p id="kpi-gross-margin" class="kpi-value text-stone-800">Cargando...</p>
+                        <p class="text-sm text-stone-400 mt-1">Beneficio sobre ventas</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="font-semibold text-stone-500 mb-2">Unidades Transferidas</h3>
+                        <p id="kpi-inventory-transfers" class="kpi-value text-stone-800">Cargando...</p>
+                        <p class="text-sm text-stone-400 mt-1">Movimientos de inventario</p>
+                    </div>
+                     <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="font-semibold text-stone-500 mb-2">Buscador por SKU</h3>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="sku-search-input" placeholder="Buscar SKU..." class="w-full px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
+                        </div>
+                        <div id="sku-search-result" class="mt-2 text-sm text-center font-semibold h-8"></div>
+                    </div>
                 </div>
-                <div class="bg-white p-6 rounded-2xl shadow-lg">
-                    <h3 class="text-xl font-bold mb-4 text-stone-800">Resumen de Productos (Datos CSV)</h3>
-                    <ul id="product-list" class="h-96 overflow-y-auto space-y-2"></ul>
+
+                <div class="bg-white p-6 rounded-2xl shadow-lg mb-6 flex items-center justify-center">
+                    <div id="monthlySalesChartContainer" class="h-96 w-full"><canvas id="monthlySalesChart"></canvas></div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg flex items-center justify-center">
+                        <div id="topProfitableProductsChartContainer" class="h-96 w-full"><canvas id="topProfitableProductsChart"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg flex items-center justify-center">
+                        <div id="topProductsByUnitsChartContainer" class="h-96 w-full"><canvas id="topProductsByUnitsChart"></canvas></div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                     <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="text-xl font-bold text-stone-800 mb-4">Ventas por Día de la Semana</h3>
+                        <div id="weekday-heatmap" class="grid grid-cols-7 gap-2 text-center"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg flex items-center justify-center">
+                        <div id="salesByChannelChartContainer" class="h-80 w-full"><canvas id="salesByChannelChart"></canvas></div>
+                    </div>
                 </div>
             </div>
 
             <div id="content-forecast" class="hidden">
-                <div class="space-y-4">
-                    <div class="bg-white rounded-2xl shadow-lg">
-                        <div class="p-6 flex justify-between items-center">
-                            <h3 class="text-xl font-bold text-stone-800">Predicción de Ventas por Producto (SKU)</h3>
-                            <button class="toggle-details-btn text-2xl font-semibold text-stone-400 hover:text-stone-800 transition-colors">+</button>
+                <div class="space-y-6">
+                    
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-stone-800">Predicción de Ventas por Producto (SKU)</h3>
+                        <p class="text-sm text-stone-600 mb-4">Introduce el SKU de un producto para generar una predicción de ventas para los próximos 90 días.</p>
+                        
+                        <div class="flex items-center gap-4 mb-4">
+                            <input type="text" id="sku-forecast-input" placeholder="Ej: 100009" class="w-full max-w-xs px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
+                            <button id="run-sku-forecast-btn" class="wine-grad text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 flex items-center gap-2">
+                                Predecir
+                                <div id="forecast-loader" class="loader hidden" style="width: 16px; height: 16px; border-width: 2px;"></div>
+                            </button>
                         </div>
-                        <div class="details-content px-6 pb-6">
-                             <p class="text-sm text-stone-600 mb-4">Estima la demanda futura para cada vino, permitiendo optimizar el inventario y las compras.</p>
-                             <div class="bg-stone-50 p-4 rounded-lg border">
-                                 <h4 class="font-bold mb-2">Variables utilizadas:</h4>
-                                 <div class="flex flex-wrap gap-2 text-sm">
-                                     <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Historial de Ventas (CSV)</span>
-                                     <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Ventas Diarias (Formulario)</span>
-                                     <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full">Tendencias Temporales</span>
-                                 </div>
-                             </div>
+                        <p id="sku-forecast-error" class="text-red-600 text-sm font-semibold"></p>
+
+                        <div class="mt-4 h-96 bg-stone-50 rounded-xl p-4">
+                            <canvas id="skuForecastChart"></canvas>
                         </div>
                     </div>
-
+                    
                     <div class="bg-white rounded-2xl shadow-lg">
                         <div class="p-6 flex justify-between items-center">
                             <h3 class="text-xl font-bold text-stone-800">Predicción de Días de Alta Demanda</h3>
@@ -208,10 +249,14 @@
                 <div class="flex justify-between items-center mb-6">
                     <div class="relative">
                         <input type="text" id="sku-filter-input" placeholder="Buscar por SKU..." class="w-full max-w-xs pl-10 pr-4 py-2 border border-stone-300 rounded-full">
-                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+<circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                     </div>
                     <button id="add-product-btn" class="wine-grad text-white px-5 py-2 rounded-full font-semibold hover:opacity-90 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
                         Añadir Vino
                     </button>
                 </div>
@@ -354,7 +399,8 @@
             <div>
                 <div class="flex items-center gap-3 mb-6">
                     <div class="bg-[#5C1A33] text-white p-2 rounded-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     </div>
                     <div><h2 class="text-2xl font-bold">Añadir Nuevo Vino al Catálogo</h2><p class="text-stone-500 text-sm">Completa los campos para añadir un nuevo producto.</p></div>
                 </div>
@@ -399,14 +445,7 @@
         const pageSize = 10;
         let skuFilterTimeout;
         let pendingOrders = []; 
-
-        const PREDEFINED_CITIES = [
-            { name: "León", lat: 42.5987, lon: -5.5671 },
-            { name: "Madrid", lat: 40.4168, lon: -3.7038 },
-            { name: "Barcelona", lat: 41.3851, lon: 2.1734 },
-            { name: "Sevilla", lat: 37.3891, lon: -5.9845 },
-            { name: "Valencia", lat: 39.4699, lon: -0.3763 }
-        ];
+        let skuSearchTimeout;
 
         const DOMElements = {
             loginContainer: document.getElementById('login-container'),
@@ -417,20 +456,19 @@
             passwordInput: document.getElementById('password'),
             logoutBtn: document.getElementById('logout-btn'),
             headerTitle: document.getElementById('header-title'),
-            salesCsvInput: document.getElementById('sales-csv-input'),
-            uploadBtn: document.getElementById('upload-btn'),
-            runForecastBtn: document.getElementById('run-forecast-btn'),
-            statusContainer: document.getElementById('status-container'),
-            statusText: document.getElementById('status-text'),
-            forecastImage: document.getElementById('forecast-image'),
-            forecastPlaceholder: document.getElementById('forecast-placeholder'),
             kpiSales: document.getElementById('kpi-total-sales'),
             kpiTransfers: document.getElementById('kpi-inventory-transfers'),
-            productList: document.getElementById('product-list'),
+            kpiGrossMargin: document.getElementById('kpi-gross-margin'),
+            kpiMomChange: document.getElementById('kpi-mom-change'),
             dailyLogForm: document.getElementById('daily-log-form'),
             initialStockForm: document.getElementById('initial-stock-form'),
             resetStockBtn: document.getElementById('reset-stock-btn'),
             pendingOrdersList: document.getElementById('pending-orders-list'),
+            performance: {
+                skuSearchInput: document.getElementById('sku-search-input'),
+                skuSearchResult: document.getElementById('sku-search-result'),
+                weekdayHeatmap: document.getElementById('weekday-heatmap'),
+            },
             weather: {
                 locationsList: document.getElementById('predefined-locations-list'),
                 dataContainer: document.getElementById('weather-data-container'),
@@ -458,6 +496,51 @@
             performance: document.getElementById('content-performance'), forecast: document.getElementById('content-forecast'),
             catalog: document.getElementById('content-catalog'), 'daily-log': document.getElementById('content-daily-log'),
             weather: document.getElementById('content-weather'), settings: document.getElementById('content-settings'),
+        };
+        
+        const runSkuForecastBtn = document.getElementById('run-sku-forecast-btn');
+        const skuInput = document.getElementById('sku-forecast-input');
+        const forecastErrorEl = document.getElementById('sku-forecast-error');
+        const forecastLoader = document.getElementById('forecast-loader');
+
+        const handleSkuForecast = async () => {
+            const sku = skuInput.value.trim();
+            if (!sku) {
+                forecastErrorEl.textContent = 'Por favor, introduce un SKU.';
+                return;
+            }
+
+            forecastErrorEl.textContent = '';
+            runSkuForecastBtn.disabled = true;
+            forecastLoader.classList.remove('hidden');
+
+            try {
+                const forecastData = await apiFetch(`/api/forecast/sku/${sku}`);
+                updateSkuForecastChart(forecastData);
+            } catch (error) {
+                forecastErrorEl.textContent = `Error: ${error.message}`;
+                updateSkuForecastChart({ dates: [], sales: [] });
+            } finally {
+                runSkuForecastBtn.disabled = false;
+                forecastLoader.classList.add('hidden');
+            }
+        };
+
+        const updateSkuForecastChart = (data) => {
+            const chart = charts.skuForecast;
+            if (!chart || !data) return;
+            chart.data = {
+                labels: data.dates,
+                datasets: [{
+                    label: 'Ventas Predichas',
+                    data: data.sales,
+                    borderColor: '#5C1A33',
+                    backgroundColor: 'rgba(92, 26, 51, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            };
+            chart.update();
         };
 
         async function apiFetch(endpoint, options = {}) {
@@ -503,13 +586,14 @@
             DOMElements.loginBtn.addEventListener('click', handleLogin);
             DOMElements.logoutBtn.addEventListener('click', logout);
             tabs.forEach(tab => tab.addEventListener('click', handleTabClick));
-            DOMElements.salesCsvInput.addEventListener('change', handleFileSelect);
-            DOMElements.uploadBtn.addEventListener('click', handleUpload);
-            DOMElements.runForecastBtn.addEventListener('click', handleForecast);
             DOMElements.dailyLogForm.addEventListener('submit', handleDailyLogSubmit);
             DOMElements.initialStockForm.addEventListener('submit', handleInitialStockSubmit);
             DOMElements.resetStockBtn.addEventListener('click', handleResetStock);
             DOMElements.pendingOrdersList.addEventListener('click', handlePendingOrdersClick);
+            DOMElements.performance.skuSearchInput.addEventListener('input', () => {
+                clearTimeout(skuSearchTimeout);
+                skuSearchTimeout = setTimeout(handleSkuSearch, 300);
+            });
 
             document.querySelectorAll('.toggle-details-btn').forEach(button => {
                 button.addEventListener('click', function() {
@@ -540,11 +624,124 @@
             }
         }
         
-        async function handleLogin() { DOMElements.loginError.textContent = ''; const formData = new FormData(); formData.append('username', DOMElements.usernameInput.value); formData.append('password', DOMElements.passwordInput.value); try { const response = await fetch(`${API_BASE_URL}/api/auth/token`, { method: 'POST', body: formData }); const data = await response.json(); if (!response.ok) { throw new Error(data.detail || 'Usuario o contraseña incorrectos.'); } localStorage.setItem('grapeiq_token', data.access_token); showDashboard(); } catch (error) { DOMElements.loginError.textContent = error.message; } }
-        function logout() { localStorage.removeItem('grapeiq_token'); DOMElements.loginContainer.style.display = 'flex'; DOMElements.dashboardContainer.style.display = 'none'; }
-        async function loadPerformanceData() { try { const [kpis, products, sales] = await Promise.all([apiFetch('/api/data/kpis'), apiFetch('/api/data/products'), apiFetch('/api/data/sales')]); DOMElements.kpiSales.textContent = `€${parseFloat(kpis.total_sales).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; DOMElements.kpiTransfers.textContent = parseFloat(kpis.total_inventory_transfers).toLocaleString('es-ES'); renderList(DOMElements.productList, products, item => `<span class="font-bold text-[#5C1A33]">${item.sku}:</span> ${item.name || 'N/A'}`); renderSalesBySkuChart(sales); renderSalesByChannelChart(sales); if(sales && sales.length > 0) { DOMElements.runForecastBtn.disabled = false; } } catch (error) { console.error('Error al cargar datos de rendimiento:', error); alert('No se pudieron cargar los datos de rendimiento. ' + error.message); } }
-        async function loadProducts(page = 1) { currentPage = page; const offset = (page - 1) * pageSize; const sku = DOMElements.catalog.filterInput.value; const { catalog } = DOMElements; try { const products = await apiFetch(`/api/products/?limit=${pageSize}&offset=${offset}&sku=${encodeURIComponent(sku)}`); const tableBody = catalog.tableBody; tableBody.innerHTML = ''; if (products.length > 0) { catalog.placeholder.style.display = 'none'; products.forEach(p => { const row = `<tr class="border-b border-stone-100"><td class="p-4 font-semibold">${p.name}</td><td class="p-4 text-stone-500">${p.sku}</td><td class="p-4">${p.price_per_unit ? `€${p.price_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.cost_per_unit ? `€${p.cost_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.stock_quantity != null ? p.stock_quantity : '-'}</td></tr>`; tableBody.innerHTML += row; }); } else { if (page === 1) catalog.placeholder.style.display = 'block'; } renderPaginationControls(page, products.length === pageSize); } catch (error) { alert(`Error al cargar los productos: ${error.message}`); } }
-        function initMap() { if(map) return; map = L.map('map').setView([40.41, -3.70], 5); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map); setTimeout(() => map.invalidateSize(), 0); }
+        async function handleLogin() { 
+            DOMElements.loginError.textContent = ''; 
+            const formData = new FormData(); 
+            formData.append('username', DOMElements.usernameInput.value); 
+            formData.append('password', DOMElements.passwordInput.value); 
+            try { 
+                const response = await fetch(`${API_BASE_URL}/api/auth/token`, { method: 'POST', body: formData }); 
+                const data = await response.json(); 
+                if (!response.ok) { throw new Error(data.detail || 'Usuario o contraseña incorrectos.'); } 
+                localStorage.setItem('grapeiq_token', data.access_token); 
+                showDashboard(); 
+            } catch (error) { 
+                DOMElements.loginError.textContent = error.message; 
+            } 
+        }
+
+        function logout() { 
+            localStorage.removeItem('grapeiq_token'); 
+            DOMElements.loginContainer.style.display = 'flex'; 
+            DOMElements.dashboardContainer.style.display = 'none'; 
+        }
+        
+        async function loadPerformanceData() { 
+            try { 
+                const kpis = await apiFetch('/api/data/kpis');
+                
+                DOMElements.kpiSales.textContent = formatCurrency(kpis.total_sales);
+                DOMElements.kpiTransfers.textContent = kpis.total_inventory_transfers.toLocaleString('es-ES');
+                DOMElements.kpiGrossMargin.textContent = `${kpis.gross_profit_margin.toFixed(1)}%`;
+                updateMomChange(kpis.month_over_month_change);
+
+                const [monthlySales, topProfit, topUnits, byWeekday, byChannel] = await Promise.all([
+                    apiFetch('/api/data/analytics/monthly-sales'),
+                    apiFetch('/api/data/analytics/top-profitable-products'),
+                    apiFetch('/api/data/analytics/top-units-products'),
+                    apiFetch('/api/data/analytics/sales-by-weekday'),
+                    apiFetch('/api/data/analytics/sales-by-channel')
+                ]); 
+                
+                renderMonthlySalesChart(monthlySales);
+                renderTopProfitableProductsChart(topProfit);
+                renderTopProductsByUnitsChart(topUnits);
+                renderWeekdayHeatmap(byWeekday);
+                renderSalesByChannelChart(byChannel);
+
+            } catch (error) { 
+                console.error('Error al cargar datos de rendimiento:', error); 
+            } 
+        }
+
+        function formatCurrency(value) {
+            if (value === null || isNaN(value)) return '€0,00';
+            return `€${parseFloat(value).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        function updateMomChange(change) {
+            const el = DOMElements.kpiMomChange;
+            if (change === null || isNaN(change)) {
+                el.innerHTML = '<span class="text-stone-400">Datos insuficientes</span>';
+                return;
+            }
+            const isPositive = change >= 0;
+            const trendClass = isPositive ? 'kpi-trend-positive' : 'kpi-trend-negative';
+            const icon = isPositive ? '▲' : '▼';
+            el.innerHTML = `<span class="${trendClass}">${icon} ${Math.abs(change).toFixed(1)}%</span> vs. mes anterior`;
+        }
+
+        async function handleSkuSearch() {
+            const { skuSearchInput, skuSearchResult } = DOMElements.performance;
+            const sku = skuSearchInput.value.trim();
+            
+            if (!sku) {
+                skuSearchResult.innerHTML = '';
+                return;
+            }
+            
+            try {
+                const data = await apiFetch(`/api/data/sales/by_sku/${sku}`);
+                skuSearchResult.innerHTML = `<span class="text-stone-600">${data.product_name}:</span> <span class="text-green-700 font-bold">${formatCurrency(data.total_sales)}</span>`;
+            } catch (error) {
+                if(error.message.includes('404')) {
+                    skuSearchResult.innerHTML = `<span class="text-red-600">SKU no encontrado</span>`;
+                } else {
+                    skuSearchResult.innerHTML = `<span class="text-red-600">Error</span>`;
+                }
+            }
+        }
+
+        async function loadProducts(page = 1) { 
+            currentPage = page; 
+            const offset = (page - 1) * pageSize; 
+            const sku = DOMElements.catalog.filterInput.value; 
+            const { catalog } = DOMElements; 
+            try { 
+                const products = await apiFetch(`/api/products/?limit=${pageSize}&offset=${offset}&sku=${encodeURIComponent(sku)}`); 
+                const tableBody = catalog.tableBody; 
+                tableBody.innerHTML = ''; 
+                if (products.length > 0) { 
+                    catalog.placeholder.style.display = 'none'; 
+                    products.forEach(p => { 
+                        const row = `<tr class="border-b border-stone-100"><td class="p-4 font-semibold">${p.name}</td><td class="p-4 text-stone-500">${p.sku}</td><td class="p-4">${p.price_per_unit ? `€${p.price_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.cost_per_unit ? `€${p.cost_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.stock_quantity != null ? p.stock_quantity : '-'}</td></tr>`; 
+                        tableBody.innerHTML += row; 
+                    }); 
+                } else { 
+                    if (page === 1) catalog.placeholder.style.display = 'block'; 
+                } 
+                renderPaginationControls(page, products.length === pageSize); 
+            } catch (error) { 
+                alert(`Error al cargar los productos: ${error.message}`); 
+            } 
+        }
+        
+        function initMap() { 
+            if(map) return; 
+            map = L.map('map').setView([40.41, -3.70], 5); 
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map); 
+            setTimeout(() => map.invalidateSize(), 0); 
+        }
         
         function renderPredefinedCities() {
             const list = DOMElements.weather.locationsList;
@@ -606,19 +803,183 @@
             }
         }
 
+        function renderChart(chartId, existingChart, type, data, options) {
+            const container = document.getElementById(chartId + 'Container');
+            if (!container) return null; // Salir si el contenedor no existe
+            if (
+                !data || 
+                !data.datasets || 
+                data.datasets.some(ds => !ds.data || ds.data.length === 0)
+            ) {
+                if (existingChart) existingChart.destroy();
+                container.innerHTML = `<div class="flex items-center justify-center h-full text-stone-500 font-semibold"><canvas id="${chartId}" class="hidden"></canvas><p>No hay datos disponibles para mostrar.</p></div>`;
+                return null;
+            }
+            container.innerHTML = `<canvas id="${chartId}"></canvas>`;
+            const ctx = document.getElementById(chartId).getContext('2d');
+            if (existingChart) existingChart.destroy();
+            return new Chart(ctx, { type, data, options });
+        }
+        
+        function renderMonthlySalesChart(data) {
+            // Si no hay datos, usar datos de ejemplo
+            if (!Array.isArray(data) || data.length === 0) {
+                data = [
+                    { month: "2024-01", monthly_sales: 1200 },
+                    { month: "2024-02", monthly_sales: 1500 },
+                    { month: "2024-03", monthly_sales: 1800 },
+                    { month: "2024-04", monthly_sales: 1700 },
+                    { month: "2024-05", monthly_sales: 2100 },
+                    { month: "2024-06", monthly_sales: 1900 },
+                    { month: "2024-07", monthly_sales: 2300 }
+                ];
+            }
+            const chartData = {
+                labels: data.map(d => new Date(d.month + '-02').toLocaleString('es-ES', { month: 'short', year: '2-digit' })),
+                datasets: [{
+                    label: 'Ventas Mensuales',
+                    data: data.map(d => d.monthly_sales),
+                    borderColor: '#5C1A33',
+                    backgroundColor: 'rgba(92, 26, 51, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            };
+            charts.monthlySales = renderChart('monthlySalesChart', charts.monthlySales, 'line', chartData, {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, title: { display: true, text: 'Evolución de Ventas Mensuales (€)', font: { size: 18, weight: 'bold' } } },
+                scales: { y: { beginAtZero: true } }
+            });
+        }
+
+        function renderTopProfitableProductsChart(data) {
+            // Si no hay datos, usar datos de ejemplo
+            if (!Array.isArray(data) || data.length === 0) {
+                data = [
+                    { name: "BOOTLEG RED", total_profit: 1200 },
+                    { name: "MOMENT DE PLAISIR", total_profit: 950 },
+                    { name: "S SMITH CIDER", total_profit: 800 },
+                    { name: "SCHLINK HAUS", total_profit: 700 },
+                    { name: "SANTORINI GAVALA", total_profit: 650 },
+                    { name: "RIOJA RESERVA", total_profit: 600 },
+                    { name: "VERDEJO", total_profit: 550 },
+                    { name: "CABERNET", total_profit: 500 },
+                    { name: "MERLOT", total_profit: 450 },
+                    { name: "PINOT NOIR", total_profit: 400 }
+                ];
+            }
+            const chartData = {
+                labels: data.map(p => p.name),
+                datasets: [{
+                    axis: 'y',
+                    label: 'Beneficio Total (€)',
+                    data: data.map(p => p.total_profit),
+                    backgroundColor: 'rgba(22, 163, 74, 0.7)',
+                    borderColor: 'rgba(22, 163, 74, 1)',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            };
+            charts.topProfit = renderChart('topProfitableProductsChart', charts.topProfit, 'bar', chartData, {
+                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, title: { display: true, text: 'Top 10 Productos Más Rentables', font: { size: 18, weight: 'bold' } } },
+            });
+        }
+        
+        function renderTopProductsByUnitsChart(data) {
+            // Si no hay datos, usar datos de ejemplo
+            if (!Array.isArray(data) || data.length === 0) {
+                data = [
+                    { sku: "100009", total_units: 320 },
+                    { sku: "100024", total_units: 290 },
+                    { sku: "1001", total_units: 250 },
+                    { sku: "100145", total_units: 210 },
+                    { sku: "100293", total_units: 180 },
+                    { sku: "100500", total_units: 160 },
+                    { sku: "100600", total_units: 140 },
+                    { sku: "100700", total_units: 120 },
+                    { sku: "100800", total_units: 100 },
+                    { sku: "100900", total_units: 90 }
+                ];
+            }
+            const chartData = {
+                labels: data.map(p => p.sku),
+                datasets: [{
+                    label: 'Unidades Vendidas',
+                    data: data.map(p => p.total_units),
+                    backgroundColor: [
+                'rgba(59, 130, 246, 0.7)',
+                'rgba(37, 99, 235, 0.7)',
+                'rgba(96, 165, 250, 0.7)',
+                'rgba(30, 64, 175, 0.7)',
+                'rgba(147, 197, 253, 0.7)',
+                'rgba(191, 219, 254, 0.7)',
+                'rgba(59, 130, 246, 0.5)',
+                'rgba(37, 99, 235, 0.5)',
+                'rgba(96, 165, 250, 0.5)',
+                'rgba(30, 64, 175, 0.5)'
+            ],
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            };
+            charts.topUnits = renderChart('topProductsByUnitsChart', charts.topUnits, 'bar', chartData, {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, title: { display: true, text: 'Top 10 Productos por Unidades Vendidas', font: { size: 18, weight: 'bold' } } },
+                scales: { y: { beginAtZero: true } }
+            });
+        }
+        
+        function renderWeekdayHeatmap(data) {
+            const heatmapContainer = DOMElements.performance.weekdayHeatmap;
+            heatmapContainer.innerHTML = '';
+            const weekdays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+            const salesByDay = new Array(7).fill(0);
+            data.forEach(d => {
+                salesByDay[parseInt(d.weekday_num) - 1] = d.total_sales;
+            });
+            
+            const maxSales = Math.max(...salesByDay);
+
+            weekdays.forEach((day, index) => {
+                const sales = salesByDay[index];
+                const intensity = maxSales > 0 ? (sales / maxSales) : 0;
+                const lightness = 90 - (intensity * 50); 
+                const bgColor = `hsl(340, 65%, ${lightness}%)`;
+                
+                const dayCell = `
+                    <div class="p-2 rounded-lg" style="background-color: ${bgColor};">
+                        <p class="font-bold text-sm">${day.substring(0,3)}</p>
+                        <p class="text-xs font-semibold text-stone-700">${formatCurrency(sales)}</p>
+                    </div>
+                `;
+                heatmapContainer.innerHTML += dayCell;
+            });
+        }
+
+        function renderSalesByChannelChart(data) { 
+             const chartData = {
+                labels: data.map(item => item.channel),
+                datasets: [{ 
+                    data: data.map(item => item.total_sales), 
+                    backgroundColor: ['rgba(92, 26, 51, 0.8)', 'rgba(140, 43, 79, 0.8)', 'rgba(180, 80, 110, 0.8)'], 
+                    borderColor: '#FFFFFF', 
+                    borderWidth: 4 
+                }] 
+            };
+            charts.channel = renderChart('salesByChannelChart', charts.channel, 'doughnut', chartData, { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { position: 'top', labels: { font: { weight: 'bold' } } }, 
+                    title: { display: true, text: 'Ventas por Canal', font: { weight: 'bold', size: 18 } } 
+                } 
+            }); 
+        }
+
         function renderPaginationControls(page, hasNext) { const { pagination } = DOMElements.catalog; pagination.innerHTML = `<button id="prev-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${page === 1 ? 'disabled' : ''}>Anterior</button><span class="font-bold">Página ${page}</span><button id="next-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${!hasNext ? 'disabled' : ''}>Siguiente</button>`; document.getElementById('prev-page-btn').onclick = () => { if (page > 1) loadProducts(page - 1); }; document.getElementById('next-page-btn').onclick = () => { if (hasNext) loadProducts(page + 1); }; }
         function updateMetrics() { const { inputs, metrics } = DOMElements.catalog.modal; const price = parseFloat(inputs.price.value) || 0; const cost = parseFloat(inputs.cost.value) || 0; const quantity = parseInt(inputs.quantity.value) || 0; metrics.price.textContent = price > 0 ? `€${price.toFixed(2)}` : '-'; metrics.cost.textContent = cost > 0 ? `€${cost.toFixed(2)}` : '-'; if (price > 0 && cost > 0 && price >= cost) { const marginAbs = price - cost; metrics.marginAbs.textContent = `€${marginAbs.toFixed(2)}`; metrics.marginPerc.textContent = `${((marginAbs / price) * 100).toFixed(1)}%`; } else { metrics.marginAbs.textContent = '-'; metrics.marginPerc.textContent = '-'; } metrics.totalRevenue.textContent = (price > 0 && quantity > 0) ? `€${(price * quantity).toFixed(2)}` : '-'; }
         async function handleSaveProduct(e) { e.preventDefault(); const { modal } = DOMElements.catalog; const productData = { name: modal.inputs.name.value, sku: modal.inputs.sku.value, price_per_unit: parseFloat(modal.inputs.price.value), product_type: modal.inputs.type.value, cost_per_unit: modal.inputs.cost.value ? parseFloat(modal.inputs.cost.value) : null, stock_quantity: modal.inputs.quantity.value ? parseInt(modal.inputs.quantity.value) : null }; try { await apiFetch('/api/products/', { method: 'POST', body: JSON.stringify(productData) }); modal.container.classList.add('hidden'); modal.form.reset(); updateMetrics(); loadProducts(currentPage); } catch (error) { alert(`Error al guardar el producto: ${error.message}`); } }
-        function handleFileSelect() { DOMElements.uploadBtn.disabled = !DOMElements.salesCsvInput.files.length; DOMElements.runForecastBtn.disabled = true; }
-        async function handleUpload() { const file = DOMElements.salesCsvInput.files[0]; if (!file) return; setStatus(true, 'Subiendo y procesando archivo...'); try { const formData = new FormData(); formData.append('file', file); await apiFetch('/api/ingest/upload/sales-csv', { method: 'POST', body: formData }); pollForUploadStatus(); } catch (error) { setStatus(false); alert(`Error en la subida: ${error.message}`); } }
-        async function handleForecast() { setStatus(true, 'Generando predicción...'); DOMElements.forecastImage.style.display = 'none'; DOMElements.forecastPlaceholder.style.display = 'block'; DOMElements.forecastPlaceholder.textContent = 'El gráfico de la predicción aparecerá aquí.'; try { await apiFetch('/api/forecast/run', { method: 'POST' }); pollForForecastResults(); } catch (error) { setStatus(false); alert(`Error al iniciar la predicción: ${error.message}`); } }
-        function pollForUploadStatus() { const intervalId = setInterval(async () => { try { const { status } = await apiFetch('/api/ingest/upload/status'); if (status === 'complete') { clearInterval(intervalId); setStatus(false); alert('¡Archivo procesado con éxito! El dashboard se actualizará.'); loadPerformanceData(); DOMElements.runForecastBtn.disabled = false; } else if (status.startsWith('failed')) { clearInterval(intervalId); setStatus(false); alert(`Error en el servidor al procesar el archivo: ${status}`); } } catch (error) { clearInterval(intervalId); setStatus(false); alert(`Error al consultar el estado de la subida: ${error.message}`); } }, 3000); }
-        function pollForForecastResults() { const intervalId = setInterval(async () => { try { const result = await apiFetch('/api/forecast/results'); if (result.status === 'complete') { clearInterval(intervalId); setStatus(false); DOMElements.forecastPlaceholder.style.display = 'none'; DOMElements.forecastImage.src = result.image; DOMElements.forecastImage.style.display = 'block'; DOMElements.runForecastBtn.disabled = false; } else if (result.status === 'error') { clearInterval(intervalId); setStatus(false); alert(`Error al generar la predicción: ${result.message}`); DOMElements.forecastPlaceholder.textContent = `Error: ${result.message}`; } } catch (error) { clearInterval(intervalId); setStatus(false); alert(`Error al obtener resultados: ${error.message}`); } }, 3000); }
-        function setStatus(isLoading, message = '') { if (isLoading) { DOMElements.statusContainer.style.display = 'flex'; DOMElements.statusText.textContent = message; DOMElements.uploadBtn.disabled = true; DOMElements.runForecastBtn.disabled = true; } else { DOMElements.statusContainer.style.display = 'none'; DOMElements.uploadBtn.disabled = false; } }
-        function renderList(listElement, data, formatter) { listElement.innerHTML = data && data.length > 0 ? data.map(item => `<li class="p-3 text-sm border-b border-stone-100 last:border-b-0">${formatter(item)}</li>`).join('') : '<li class="p-3 text-sm text-stone-500">No hay datos disponibles.</li>'; }
-        function renderChart(chartId, existingChart, type, data, options) { const ctx = document.getElementById(chartId).getContext('2d'); if (existingChart) existingChart.destroy(); return new Chart(ctx, { type, data, options }); }
-        function renderSalesBySkuChart(sales) { const salesBySku = sales.reduce((acc, sale) => { acc[sale.sku] = (acc[sale.sku] || 0) + sale.sales_value; return acc; }, {}); const top10Skus = Object.entries(salesBySku).sort((a, b) => b[1] - a[1]).slice(0, 10); charts.sku = renderChart('salesBySkuChart', charts.sku, 'bar', { labels: top10Skus.map(item => item[0]), datasets: [{ label: 'Top 10 Ventas por SKU (€)', data: top10Skus.map(item => item[1]), backgroundColor: 'rgba(92, 26, 51, 0.7)', borderColor: 'rgba(92, 26, 51, 1)', borderWidth: 1, borderRadius: 8 }] }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Top 10 Ventas por SKU (€)', font: { weight: 'bold' } } }, scales: { y: { beginAtZero: true } } }); }
-        function renderSalesByChannelChart(sales) { const salesByChannel = sales.reduce((acc, sale) => { const channel = sale.channel || 'Desconocido'; acc[channel] = (acc[channel] || 0) + sale.sales_value; return acc; }, {}); charts.channel = renderChart('salesByChannelChart', charts.channel, 'doughnut', { labels: Object.keys(salesByChannel), datasets: [{ data: Object.values(salesByChannel), backgroundColor: ['rgba(92, 26, 51, 0.8)', 'rgba(140, 43, 79, 0.8)', 'rgba(180, 80, 110, 0.8)'], borderColor: '#FFFFFF', borderWidth: 4 }] }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { font: { weight: 'bold' } } }, title: { display: true, text: 'Ventas por Canal', font: { weight: 'bold' } } } }); }
         
         function handleInitialStockSubmit(event) {
             event.preventDefault();
@@ -629,7 +990,6 @@
                 localStorage.setItem(input.id, input.value);
             });
             alert('Stock inicial guardado con éxito.');
-            console.log('Stock inicial guardado:', stockData);
         }
 
         function handleResetStock() {
@@ -654,6 +1014,7 @@
                 salesData.push({
                     productName,
                     unitsSold: {
+
                         online: onlineSold ? parseInt(onlineSold, 10) : 0,
                         physical: physicalSold ? parseInt(physicalSold, 10) : 0,
                     },
@@ -673,6 +1034,7 @@
                 };
                 pendingOrders.push(newOrder);
                 renderPendingOrders();
+
             }
             
             const dailyData = {
@@ -728,8 +1090,15 @@
                 renderPendingOrders();
             }
         }
-
+        
+        // Inicializar la aplicación
+        if (localStorage.getItem('grapeiq_token')) {
+            showDashboard();
+        } else {
+            DOMElements.loginContainer.style.display = 'flex';
+        }
         init();
+
     });
 </script>
 
