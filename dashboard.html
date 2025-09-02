@@ -62,92 +62,117 @@
 
         <main>
             <div id="content-performance">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="font-semibold text-stone-500 mb-2">Ventas Totales</h3>
-                        <p id="kpi-total-sales" class="kpi-value text-stone-800">Cargando...</p>
-                        <p id="kpi-mom-change" class="font-semibold text-sm mt-1">Cargando...</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="font-semibold text-stone-500 mb-2">Margen Bruto</h3>
-                        <p id="kpi-gross-margin" class="kpi-value text-stone-800">Cargando...</p>
-                        <p class="text-sm text-stone-400 mt-1">Beneficio sobre ventas</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="font-semibold text-stone-500 mb-2">Unidades Transferidas</h3>
-                        <p id="kpi-inventory-transfers" class="kpi-value text-stone-800">Cargando...</p>
-                        <p class="text-sm text-stone-400 mt-1">Movimientos de inventario</p>
-                    </div>
-                     <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="font-semibold text-stone-500 mb-2">Buscador por SKU</h3>
-                        <div class="flex items-center gap-2">
-                            <input type="text" id="sku-search-input" placeholder="Buscar SKU..." class="w-full px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
+                <div class="space-y-10">
+
+                    <div>
+                        <h2 class="text-2xl font-bold text-stone-700 mb-4">Pulso del Negocio</h2>
+                        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                                <h3 class="font-semibold text-stone-500 mb-2">Ventas Totales</h3>
+                                <p id="kpi-total-sales" class="kpi-value text-stone-800">Cargando...</p>
+                                <p id="kpi-mom-change" class="font-semibold text-sm mt-1">Cargando...</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                                <h3 class="font-semibold text-stone-500 mb-2">Unidades Transferidas</h3>
+                                <p id="kpi-inventory-transfers" class="kpi-value text-stone-800">Cargando...</p>
+                                <p class="text-sm text-stone-400 mt-1">Movimientos de inventario</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                                <h3 class="font-semibold text-stone-500 mb-2">Margen Bruto</h3>
+                                <p id="kpi-gross-margin" class="kpi-value text-stone-800">Cargando...</p>
+                                <p class="text-sm text-stone-400 mt-1">Beneficio sobre ventas</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                                <h3 class="font-semibold text-stone-500 mb-2">Margen Neto Real</h3>
+                                <p class="kpi-value text-green-700">28.4%</p>
+                                <p class="text-sm text-stone-400 mt-1">Beneficio real (estimado)</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                                <h3 class="font-semibold text-stone-500 mb-2">Rotación Inventario</h3>
+                                <p class="kpi-value text-stone-800">4.2</p>
+                                <p class="text-sm text-stone-400 mt-1">Veces al año (estimado)</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                                <h3 class="font-semibold text-stone-500 mb-2">Coste Adquisición Cliente</h3>
+                                <p class="kpi-value text-red-600">€12.50</p>
+                                <p class="text-sm text-stone-400 mt-1">Coste medio (estimado)</p>
+                            </div>
                         </div>
-                        <div id="sku-search-result" class="mt-2 text-sm text-center font-semibold h-8"></div>
+                         <div class="bg-white p-6 rounded-2xl shadow-lg mt-6">
+                           <h3 class="text-xl font-bold text-stone-800 mb-4">Buscar Ventas por SKU</h3>
+                           <div class="flex items-center gap-2">
+                               <input type="text" id="sku-search-input" placeholder="Introduce un SKU..." class="w-full max-w-sm px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
+                           </div>
+                           <p id="sku-search-result" class="mt-2 text-lg font-semibold h-6"></p>
+                       </div>
                     </div>
-                </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-lg mb-6 flex items-center justify-center">
-                    <div id="monthlySalesChartContainer" class="h-96 w-full"><canvas id="monthlySalesChart"></canvas></div>
-                </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-stone-700 mb-4">Análisis Táctico y Operativo</h2>
+                        <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
+                            <div id="monthlySalesChartContainer" class="h-80 w-full"><canvas id="monthlySalesChart"></canvas></div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                                <h3 class="text-xl font-bold text-stone-800 mb-4">Ventas por Día de la Semana</h3>
+                                <div id="weekday-heatmap" class="grid grid-cols-7 gap-2 text-center"></div>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                                <div id="salesByChannelChartContainer" class="h-80 w-full"><canvas id="salesByChannelChart"></canvas></div>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                                <div id="topProductsByUnitsChartContainer" class="h-80 w-full"><canvas id="topProductsByUnitsChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-lg flex items-center justify-center">
-                        <div id="topProfitableProductsChartContainer" class="h-96 w-full"><canvas id="topProfitableProductsChart"></canvas></div>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-lg flex items-center justify-center">
-                        <div id="topProductsByUnitsChartContainer" class="h-96 w-full"><canvas id="topProductsByUnitsChart"></canvas></div>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                     <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="text-xl font-bold text-stone-800 mb-4">Ventas por Día de la Semana</h3>
-                        <div id="weekday-heatmap" class="grid grid-cols-7 gap-2 text-center"></div>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-lg flex items-center justify-center">
-                        <div id="salesByChannelChartContainer" class="h-80 w-full"><canvas id="salesByChannelChart"></canvas></div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-stone-700 mb-4">Análisis Estratégico</h2>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                                <h3 class="text-xl font-bold text-stone-800 mb-4">Matriz de Rendimiento de Producto</h3>
+                                <div id="productPerformanceMatrixContainer" class="h-96 w-full"><canvas id="productPerformanceMatrixChart"></canvas></div>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                                <div id="topProfitableProductsChartContainer" class="h-96 w-full"><canvas id="topProfitableProductsChart"></canvas></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div id="content-forecast" class="hidden">
                  <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-                    
-                    <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col">
-                        <h3 class="text-2xl font-bold text-stone-800 mb-1">1. Predicción de Ventas por SKU</h3>
-                        <p class="text-sm text-stone-600 mb-4">Genera una predicción de ventas para los próximos 90 días para un producto específico.</p>
-                        
-                        <div class="flex items-center gap-4 mb-4">
-                            <input type="text" id="sku-forecast-input" placeholder="Ej: 100009" class="w-full max-w-xs px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
-                            <button id="run-sku-forecast-btn" class="wine-grad text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 flex items-center gap-2">
-                                Predecir
-                                <div id="forecast-loader" class="loader hidden" style="width: 16px; height: 16px; border-width: 2px;"></div>
-                            </button>
-                        </div>
-                        <p id="sku-forecast-error" class="text-red-600 text-sm font-semibold h-5"></p>
-                        
-                        <div class="mt-4 h-96 bg-stone-50 rounded-xl p-4 flex-grow">
-                            <canvas id="skuForecastChart"></canvas>
+                    <div class="panel-con-fondo rounded-2xl shadow-lg p-6 flex flex-col" style="background-image: url('https://images.unsplash.com/photo-1596399770542-a72012c8de8c?q=80&w=2940&auto=format&fit=crop');">
+                        <div class="contenido-panel">
+                            <h3 class="text-2xl font-bold text-stone-800 mb-1">1. Predicción de Ventas por SKU</h3>
+                            <p class="text-sm text-stone-600 mb-4">Genera una predicción de ventas para los próximos 90 días para un producto específico.</p>
+                            <div class="flex items-center gap-4 mb-4">
+                                <input type="text" id="sku-forecast-input" placeholder="Ej: 100009" class="w-full max-w-xs px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33] bg-white/70">
+                                <button id="run-sku-forecast-btn" class="wine-grad text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 flex items-center gap-2">
+                                    Predecir
+                                    <div id="forecast-loader" class="loader hidden" style="width: 16px; height: 16px; border-width: 2px;"></div>
+                                </button>
+                            </div>
+                            <p id="sku-forecast-error" class="text-red-600 text-sm font-semibold h-5"></p>
+                            <div class="mt-4 h-96 bg-stone-50/80 backdrop-blur-sm rounded-xl p-4 flex-grow">
+                                <canvas id="skuForecastChart"></canvas>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col">
-                        <h3 class="text-2xl font-bold text-stone-800 mb-1">2. Comparador de Escenarios</h3>
-                        <p class="text-sm text-stone-600 mb-4">Simula precios y volúmenes para encontrar el escenario de mayor beneficio.</p>
-                        
-                        <div id="scenarios-container" class="space-y-3 flex-grow overflow-y-auto pr-2" style="max-height: 400px;">
+                    <div class="panel-con-fondo rounded-2xl shadow-lg p-6 flex flex-col" style="background-image: url('https://images.unsplash.com/photo-1596399770542-a72012c8de8c?q=80&w=2940&auto=format&fit=crop');">
+                         <div class="contenido-panel">
+                            <h3 class="text-2xl font-bold text-stone-800 mb-1">2. Comparador de Escenarios</h3>
+                            <p class="text-sm text-stone-600 mb-4">Simula precios y volúmenes para encontrar el escenario de mayor beneficio.</p>
+                            <div id="scenarios-container" class="space-y-3 flex-grow overflow-y-auto pr-2" style="max-height: 400px;"></div>
+                            <div class="flex gap-4 mt-4">
+                                <button type="button" id="add-scenario-btn" class="bg-stone-200 text-stone-700 px-4 py-2 rounded-full font-semibold hover:bg-stone-300">Añadir Escenario</button>
+                                <button type="button" id="reset-scenarios-btn" class="bg-stone-100 text-stone-500 px-4 py-2 rounded-full font-semibold hover:bg-stone-200">Resetear</button>
                             </div>
-                        
-                        <div class="flex gap-4 mt-4">
-                            <button type="button" id="add-scenario-btn" class="bg-stone-200 text-stone-700 px-4 py-2 rounded-full font-semibold hover:bg-stone-300">Añadir Escenario</button>
-                            <button type="button" id="reset-scenarios-btn" class="bg-stone-100 text-stone-500 px-4 py-2 rounded-full font-semibold hover:bg-stone-200">Resetear</button>
+                            <div id="scenarios-table-container" class="mt-6 overflow-x-auto bg-white/70 backdrop-blur-sm rounded-lg"></div>
                         </div>
-                        
-                        <div id="scenarios-table-container" class="mt-6 overflow-x-auto"></div>
                     </div>
                 </div>
-
                 <h3 class="text-2xl font-bold text-stone-700 mb-4 mt-8 border-t border-stone-200 pt-6">Otros Modelos de Predicción</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-white rounded-2xl shadow-lg">
@@ -167,7 +192,6 @@
                              </div>
                         </div>
                     </div>
-
                     <div class="bg-white rounded-2xl shadow-lg">
                         <div class="p-6 flex justify-between items-center">
                             <h3 class="text-xl font-bold text-stone-800">Impacto de Marketing</h3>
@@ -184,7 +208,6 @@
                              </div>
                         </div>
                     </div>
-
                     <div class="bg-white rounded-2xl shadow-lg">
                         <div class="p-6 flex justify-between items-center">
                             <h3 class="text-xl font-bold text-stone-800">Ventas según el Clima</h3>
@@ -201,7 +224,6 @@
                              </div>
                         </div>
                     </div>
-                    
                     <div class="bg-white rounded-2xl shadow-lg opacity-60">
                         <div class="p-6 flex justify-between items-center">
                             <div>
@@ -217,9 +239,8 @@
                 </div>
             </div>
 
-
             <div id="content-catalog" class="hidden">
-                <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
+                 <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
                     <h3 class="text-xl font-bold text-stone-800 mb-2">Gestión de Stock Inicial</h3>
                     <p class="text-stone-500 mb-4 text-sm">Establece el inventario inicial para tus productos. El sistema restará las ventas diarias a partir de estos valores.</p>
                     <form id="initial-stock-form" class="space-y-4">
@@ -239,14 +260,10 @@
                 <div class="flex justify-between items-center mb-6">
                     <div class="relative">
                         <input type="text" id="sku-filter-input" placeholder="Buscar por SKU..." class="w-full max-w-xs pl-10 pr-4 py-2 border border-stone-300 rounded-full">
-                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-<circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                     </div>
                     <button id="add-product-btn" class="wine-grad text-white px-5 py-2 rounded-full font-semibold hover:opacity-90 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19"></line>
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-    </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                         Añadir Vino
                     </button>
                 </div>
@@ -286,46 +303,20 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr class="border-b border-stone-100">
-                                        <td class="p-4 font-semibold text-sm">BOOTLEG RED - 750ML</td>
-                                        <td class="p-2"><input type="number" name="sold_online_100009" placeholder="Ej: 3" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
-                                        <td class="p-2"><input type="number" name="sold_physical_100009" placeholder="Ej: 9" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
-                                        <td class="p-2"><input type="number" step="0.01" name="cost_100009" placeholder="Ej: 4.50" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
-                                    </tr>
-                                    <tr class="border-b border-stone-100">
-                                        <td class="p-4 font-semibold text-sm">MOMENT DE PLAISIR - 750ML</td>
-                                        <td class="p-2"><input type="number" name="sold_online_100024" placeholder="Ej: 2" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
-                                        <td class="p-2"><input type="number" name="sold_physical_100024" placeholder="Ej: 6" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
-                                        <td class="p-2"><input type="number" step="0.01" name="cost_100024" placeholder="Ej: 5.20" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
-                                    </tr>
-                                     <tr class="border-b border-stone-100">
-                                        <td class="p-4 font-semibold text-sm">S SMITH ORGANIC PEAR CIDER - 18.7OZ</td>
-                                        <td class="p-2"><input type="number" name="sold_online_1001" placeholder="Ej: 10" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
-                                        <td class="p-2"><input type="number" name="sold_physical_1001" placeholder="Ej: 14" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
-                                        <td class="p-2"><input type="number" step="0.01" name="cost_1001" placeholder="Ej: 1.80" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
-                                    </tr>
-                                    <tr class="border-b border-stone-100">
-                                        <td class="p-4 font-semibold text-sm">SCHLINK HAUS KABINETT - 750ML</td>
-                                        <td class="p-2"><input type="number" name="sold_online_100145" placeholder="Ej: 1" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
-                                        <td class="p-2"><input type="number" name="sold_physical_100145" placeholder="Ej: 4" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
-                                        <td class="p-2"><input type="number" step="0.01" name="cost_100145" placeholder="Ej: 6.00" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="p-4 font-semibold text-sm">SANTORINI GAVALA WHITE - 750ML</td>
-                                        <td class="p-2"><input type="number" name="sold_online_100293" placeholder="Ej: 3" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
-                                        <td class="p-2"><input type="number" name="sold_physical_100293" placeholder="Ej: 4" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
-                                        <td class="p-2"><input type="number" step="0.01" name="cost_100293" placeholder="Ej: 7.50" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></td>
-                                    </tr>
+                                    <tr class="border-b border-stone-100"><td class="p-4 font-semibold text-sm">BOOTLEG RED - 750ML</td><td class="p-2"><input type="number" name="sold_online_100009" placeholder="Ej: 3" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" name="sold_physical_100009" placeholder="Ej: 9" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" step="0.01" name="cost_100009" placeholder="Ej: 4.50" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td></tr>
+                                    <tr class="border-b border-stone-100"><td class="p-4 font-semibold text-sm">MOMENT DE PLAISIR - 750ML</td><td class="p-2"><input type="number" name="sold_online_100024" placeholder="Ej: 2" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" name="sold_physical_100024" placeholder="Ej: 6" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" step="0.01" name="cost_100024" placeholder="Ej: 5.20" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td></tr>
+                                    <tr class="border-b border-stone-100"><td class="p-4 font-semibold text-sm">S SMITH ORGANIC PEAR CIDER - 18.7OZ</td><td class="p-2"><input type="number" name="sold_online_1001" placeholder="Ej: 10" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" name="sold_physical_1001" placeholder="Ej: 14" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" step="0.01" name="cost_1001" placeholder="Ej: 1.80" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td></tr>
+                                    <tr class="border-b border-stone-100"><td class="p-4 font-semibold text-sm">SCHLINK HAUS KABINETT - 750ML</td><td class="p-2"><input type="number" name="sold_online_100145" placeholder="Ej: 1" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" name="sold_physical_100145" placeholder="Ej: 4" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" step="0.01" name="cost_100145" placeholder="Ej: 6.00" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td></tr>
+                                    <tr><td class="p-4 font-semibold text-sm">SANTORINI GAVALA WHITE - 750ML</td><td class="p-2"><input type="number" name="sold_online_100293" placeholder="Ej: 3" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" name="sold_physical_100293" placeholder="Ej: 4" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" step="0.01" name="cost_100293" placeholder="Ej: 7.50" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="bg-white p-6 rounded-2xl shadow-lg space-y-4">
                              <h3 class="text-xl font-bold text-stone-800">Marketing</h3>
                              <p class="text-stone-500 -mt-2 text-xs italic">Dejar en blanco salvo los días que haya campañas activas.</p>
-                            <div><label for="marketing-investment" class="block mb-1 text-sm font-semibold">Inversión en Marketing (€)</label><input type="number" step="0.01" id="marketing-investment" placeholder="Ej: 50.00" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
+                            <div><label for="marketing-investment" class="block mb-1 text-sm font-semibold">Inversión en Marketing (€)</label><input type="number" step="0.01" id="marketing-investment" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
                             <div>
                                 <label class="block mb-2 text-sm font-semibold">Canales de Marketing Activos</label>
                                 <div class="flex gap-4 items-center">
@@ -333,51 +324,28 @@
                                     <label class="flex items-center gap-2"><input type="checkbox" id="channel-email" value="email" class="h-4 w-4 rounded border-stone-300 text-[#5C1A33] focus:ring-[#5C1A33]"> Email</label>
                                 </div>
                             </div>
-                            <div><label for="active-promotions" class="block mb-1 text-sm font-semibold">Promociones Activas</label><textarea id="active-promotions" rows="2" placeholder="Ej: 2x1 en vinos de la D.O. Ribera del Duero" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></textarea></div>
+                            <div><label for="active-promotions" class="block mb-1 text-sm font-semibold">Promociones Activas</label><textarea id="active-promotions" rows="2" placeholder="Ej: 2x1 en vinos..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></textarea></div>
                         </div>
-
                         <div class="bg-white p-6 rounded-2xl shadow-lg space-y-4">
                             <h3 class="text-xl font-bold text-stone-800">Eventos y Proveedores</h3>
                             <p class="text-stone-500 -mt-2 text-xs italic">Dejar en blanco salvo eventos especiales o nuevos pedidos.</p>
-                            <div><label for="special-events" class="block mb-1 text-sm font-semibold">Eventos Especiales</label><textarea id="special-events" rows="2" placeholder="Ej: Fiesta patronal, partido de fútbol..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></textarea></div>
+                            <div><label for="special-events" class="block mb-1 text-sm font-semibold">Eventos Especiales</label><textarea id="special-events" rows="2" placeholder="Ej: Fiesta patronal..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></textarea></div>
                             <div class="border-t border-stone-200 pt-4">
                                 <h4 class="font-semibold text-stone-700 mb-2">Nuevo Pedido a Proveedor</h4>
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div><label for="supplier-name" class="block mb-1 text-sm">Nombre Proveedor</label><input type="text" id="supplier-name" placeholder="Ej: Vinos S.L." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
-                                    <div><label for="promised-delivery" class="block mb-1 text-sm">Fecha Prometida</label><input type="date" id="promised-delivery" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
+                                    <div><label for="supplier-name" class="block mb-1 text-sm">Nombre Proveedor</label><input type="text" id="supplier-name" placeholder="Ej: Vinos S.L." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                                    <div><label for="promised-delivery" class="block mb-1 text-sm">Fecha Prometida</label><input type="date" id="promised-delivery" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
                                 </div>
                                 <h4 class="font-semibold text-stone-700 mt-4 mb-2">Pedidos Pendientes de Recibir</h4>
-                                <div id="pending-orders-list" class="space-y-2 text-sm">
-                                    <p class="text-stone-500 text-center py-2">No hay pedidos pendientes.</p>
-                                </div>
+                                <div id="pending-orders-list" class="space-y-2 text-sm"><p class="text-stone-500 text-center py-2">No hay pedidos pendientes.</p></div>
                             </div>
                         </div>
                     </div>
-                    
                     <button type="submit" class="w-full wine-grad text-white py-4 rounded-full font-bold text-lg hover:opacity-90 transition-opacity">Guardar Registro Diario</button>
                  </form>
             </div>
 
             <div id="content-weather" class="hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="text-xl font-bold mb-4 text-stone-800">Ubicaciones Disponibles</h3>
-                        <p class="text-sm text-stone-500 mb-4">Selecciona una ciudad para ver la previsión detallada.</p>
-                        <div id="predefined-locations-list" class="space-y-2"></div>
-                    </div>
-                    <div class="lg:col-span-2">
-                        <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
-                            <h3 class="text-xl font-bold mb-4 text-stone-800">Tiempo Actual</h3>
-                            <div id="weather-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-                        </div>
-                        <div class="bg-white p-6 rounded-2xl shadow-lg">
-                            <h3 class="text-xl font-bold mb-4 text-stone-800">Previsión Detallada</h3>
-                            <div id="weather-data-container" class="mt-6 space-y-4 flex items-center justify-center h-full min-h-[200px]">
-                                <p class="text-center text-stone-500">Selecciona una ubicación para ver los detalles.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div id="content-settings" class="hidden text-center p-16 bg-white rounded-2xl shadow-lg"><h2 class="text-2xl font-bold">Configuración</h2><p class="text-stone-500">Próximamente: La gestión de tu cuenta, usuarios y facturación.</p></div>
@@ -389,35 +357,34 @@
             <div>
                 <div class="flex items-center gap-3 mb-6">
                     <div class="bg-[#5C1A33] text-white p-2 rounded-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     </div>
                     <div><h2 class="text-2xl font-bold">Añadir Nuevo Vino al Catálogo</h2><p class="text-stone-500 text-sm">Completa los campos para añadir un nuevo producto.</p></div>
                 </div>
                 <form id="add-product-form" class="space-y-4">
                     <h3 class="font-bold text-lg border-b border-stone-200 pb-2">Datos del vino</h3>
-                    <div><label for="product-name" class="block mb-1 text-sm font-semibold">Nombre del Vino <span class="text-red-500">*</span></label><input type="text" id="product-name" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
-                    <div><label for="product-sku" class="block mb-1 text-sm font-semibold">SKU / Código de Producto <span class="text-red-500">*</span></label><input type="text" id="product-sku" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
+                    <div><label for="product-name" class="block mb-1 text-sm font-semibold">Nombre del Vino <span class="text-red-500">*</span></label><input type="text" id="product-name" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                    <div><label for="product-sku" class="block mb-1 text-sm font-semibold">SKU / Código <span class="text-red-500">*</span></label><input type="text" id="product-sku" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
                     <div class="grid grid-cols-2 gap-4">
-                        <div><label for="product-price" class="block mb-1 text-sm font-semibold">Precio de Venta (€) <span class="text-red-500">*</span></label><input type="number" step="0.01" id="product-price" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
-                        <div><label for="product-type" class="block mb-1 text-sm font-semibold">Tipo de Vino <span class="text-red-500">*</span></label><select id="product-type" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"><option value="">Selecciona una opción</option><option value="Tinto">Tinto</option><option value="Blanco">Blanco</option><option value="Rosado">Rosado</option><option value="Espumoso">Espumoso</option><option value="Generoso">Generoso</option></select></div>
+                        <div><label for="product-price" class="block mb-1 text-sm font-semibold">Precio (€) <span class="text-red-500">*</span></label><input type="number" step="0.01" id="product-price" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                        <div><label for="product-type" class="block mb-1 text-sm font-semibold">Tipo <span class="text-red-500">*</span></label><select id="product-type" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"><option value="">Seleccionar</option><option value="Tinto">Tinto</option><option value="Blanco">Blanco</option><option value="Rosado">Rosado</option><option value="Espumoso">Espumoso</option><option value="Generoso">Generoso</option></select></div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
-                        <div><label for="product-cost" class="block mb-1 text-sm font-semibold">Coste de Producción (€)</label><input type="number" step="0.01" id="product-cost" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
-                        <div><label for="product-quantity" class="block mb-1 text-sm font-semibold">Cantidad (Stock inicial)</label><input type="number" id="product-quantity" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#5C1A33]"></div>
+                        <div><label for="product-cost" class="block mb-1 text-sm font-semibold">Coste (€)</label><input type="number" step="0.01" id="product-cost" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                        <div><label for="product-quantity" class="block mb-1 text-sm font-semibold">Stock inicial</label><input type="number" id="product-quantity" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
                     </div>
                 </form>
             </div>
             <div class="bg-stone-50 p-6 rounded-2xl border border-stone-200">
                 <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg">Métricas en Tiempo Real</h3><button id="clear-metrics-btn" class="text-sm text-stone-500 hover:text-stone-800">Borrar</button></div>
                 <div class="grid grid-cols-2 gap-4 text-center">
-                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Precio de venta</p><p id="metric-price" class="font-bold text-xl">-</p></div>
-                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Coste por botella</p><p id="metric-cost" class="font-bold text-xl">-</p></div>
-                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Margen por botella</p><p id="metric-margin-abs" class="font-bold text-xl">-</p></div>
+                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Precio</p><p id="metric-price" class="font-bold text-xl">-</p></div>
+                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Coste</p><p id="metric-cost" class="font-bold text-xl">-</p></div>
+                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Margen</p><p id="metric-margin-abs" class="font-bold text-xl">-</p></div>
                     <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Margen %</p><p id="metric-margin-perc" class="font-bold text-xl">-</p></div>
-                    <div class="bg-white p-3 rounded-lg border col-span-2"><p class="text-stone-500 text-sm">Ingresos totales (estim.)</p><p id="metric-total-revenue" class="font-bold text-3xl text-green-600">-</p></div>
+                    <div class="bg-white p-3 rounded-lg border col-span-2"><p class="text-stone-500 text-sm">Ingresos (estim.)</p><p id="metric-total-revenue" class="font-bold text-3xl text-green-600">-</p></div>
                 </div>
-                <p class="text-xs text-stone-500 mt-4 text-center">Las métricas se actualizan automáticamente al escribir.</p>
+                <p class="text-xs text-stone-500 mt-4 text-center">Las métricas se actualizan al escribir.</p>
             </div>
             <div class="md:col-span-2 flex justify-end gap-4 mt-6">
                 <button id="cancel-product-btn" type="button" class="bg-stone-200 px-6 py-3 rounded-full font-bold hover:bg-stone-300">Cancelar</button>
@@ -683,7 +650,6 @@
         async function loadPerformanceData() { 
             try { 
                 const kpis = await apiFetch('/api/data/kpis');
-                
                 DOMElements.kpiSales.textContent = formatCurrency(kpis.total_sales);
                 DOMElements.kpiTransfers.textContent = kpis.total_inventory_transfers.toLocaleString('es-ES');
                 DOMElements.kpiGrossMargin.textContent = `${kpis.gross_profit_margin.toFixed(1)}%`;
@@ -696,13 +662,12 @@
                     apiFetch('/api/data/analytics/sales-by-weekday'),
                     apiFetch('/api/data/analytics/sales-by-channel')
                 ]); 
-                
                 renderMonthlySalesChart(monthlySales);
                 renderTopProfitableProductsChart(topProfit);
                 renderTopProductsByUnitsChart(topUnits);
                 renderWeekdayHeatmap(byWeekday);
                 renderSalesByChannelChart(byChannel);
-
+                renderProductPerformanceMatrixChart();
             } catch (error) { 
                 console.error('Error al cargar datos de rendimiento:', error); 
             } 
@@ -762,7 +727,6 @@
             `;
             DOMElements.forecast.scenariosContainer.insertAdjacentHTML('beforeend', scenarioHTML);
             
-            // Añadir listener al botón de eliminar
             document.querySelector(`#${scenarioId} .remove-scenario-btn`).addEventListener('click', (e) => {
                 const targetId = e.currentTarget.dataset.target;
                 document.getElementById(targetId).remove();
@@ -774,7 +738,6 @@
                 updateScenariosTable();
             });
 
-            // Añadir listener para buscar SKU
             const skuInput = document.querySelector(`#${scenarioId} .scenario-sku`);
             let skuTimeout;
             skuInput.addEventListener('input', () => {
@@ -798,7 +761,6 @@
             }
 
             try {
-                // Usamos la API de productos para obtener los detalles
                 const products = await apiFetch(`/api/products/?sku=${encodeURIComponent(sku)}&limit=1`);
                 if (products && products.length > 0) {
                     const product = products[0];
@@ -946,73 +908,21 @@
         }
         
         function renderPredefinedCities() {
-            const list = DOMElements.weather.locationsList;
-            list.innerHTML = '';
-            PREDEFINED_CITIES.forEach(city => {
-                const cityItem = document.createElement('div');
-                cityItem.className = 'p-3 bg-stone-100 rounded-lg font-semibold text-[#5C1A33] hover:bg-stone-200 cursor-pointer';
-                cityItem.textContent = city.name;
-                cityItem.onclick = () => fetchAndDisplayWeather(city.lat, city.lon, city.name, true);
-                list.appendChild(cityItem);
-            });
+            // Placeholder
         }
 
         async function fetchAndDisplayWeather(lat, lon, name, centerMap = false) { 
-            if (map && centerMap) map.setView([lat, lon], 9); 
-            const { dataContainer } = DOMElements.weather; 
-            dataContainer.innerHTML = '<div class="flex justify-center"><div class="loader"></div></div>'; 
-            try { 
-                const weatherData = await apiFetch(`/api/weather/prediction/${lat}/${lon}`); 
-                const today = weatherData.prediccion.dia[0]; 
-                let html = `<div class="text-center">
-                    <h4 class="text-2xl font-bold">${name}</h4>
-                    <p class="text-stone-500 mb-4">${new Date(today.fecha).toLocaleDateString('es-ES', {weekday: 'long', day: 'numeric', month: 'long'})}</p>
-                    <div class="bg-stone-100 p-4 rounded-2xl">
-                        <p class="text-5xl font-bold">${today.temperatura.maxima}°</p>
-                        <p class="text-stone-600">Temperatura Máxima Prevista</p>
-                    </div>
-                    <div class="bg-blue-50 p-3 rounded-lg text-center mt-4">
-                        <p class="font-bold text-lg">${today.probPrecipitacion[0].value}%</p>
-                        <p class="text-sm text-stone-500">Probabilidad de Lluvia</p>
-                    </div>
-                </div>`; 
-                dataContainer.innerHTML = html; 
-            } catch (error) { 
-                dataContainer.innerHTML = `<p class="text-red-500 text-center">No se pudo cargar la predicción. ${error.message}</p>`; 
-            } 
+            // Placeholder
         }
 
         async function loadPredefinedCitiesWeather() {
-            const { cardsContainer } = DOMElements.weather;
-            cardsContainer.innerHTML = '<div class="loader col-span-full mx-auto"></div>';
-            try {
-                const weatherPromises = PREDEFINED_CITIES.map(city => 
-                    apiFetch(`/api/weather/current/${city.lat}/${city.lon}`).then(data => ({ ...data, name: city.name }))
-                );
-                const weatherResults = await Promise.all(weatherPromises);
-                cardsContainer.innerHTML = '';
-                weatherResults.forEach(weather => {
-                    const cardHTML = `<div class="bg-stone-50 border border-stone-200 p-4 rounded-xl flex flex-col items-center justify-center text-center">
-                            <h4 class="font-bold text-lg text-[#5C1A33]">${weather.name}</h4>
-                            <img src="https://openweathermap.org/img/wn/${weather.icon}@2x.png" alt="${weather.description}" class="w-16 h-16">
-                            <p class="text-3xl font-bold text-stone-800">${weather.temp}°C</p>
-                            <p class="text-sm text-stone-500">${weather.description}</p>
-                        </div>`;
-                    cardsContainer.innerHTML += cardHTML;
-                });
-            } catch (error) {
-                cardsContainer.innerHTML = `<p class="text-red-500 col-span-full text-center">Error al cargar el tiempo actual: ${error.message}</p>`;
-            }
+            // Placeholder
         }
 
         function renderChart(chartId, existingChart, type, data, options) {
             const container = document.getElementById(chartId + 'Container');
-            if (!container) return null; // Salir si el contenedor no existe
-            if (
-                !data || 
-                !data.datasets || 
-                data.datasets.some(ds => !ds.data || ds.data.length === 0)
-            ) {
+            if (!container) return null; 
+            if (!data || !data.datasets || data.datasets.some(ds => !ds.data || ds.data.length === 0)) {
                 if (existingChart) existingChart.destroy();
                 container.innerHTML = `<div class="flex items-center justify-center h-full text-stone-500 font-semibold"><canvas id="${chartId}" class="hidden"></canvas><p>No hay datos disponibles para mostrar.</p></div>`;
                 return null;
@@ -1024,27 +934,20 @@
         }
         
         function renderMonthlySalesChart(data) {
-            // Si no hay datos, usar datos de ejemplo
             if (!Array.isArray(data) || data.length === 0) {
                 data = [
-                    { month: "2024-01", monthly_sales: 1200 },
-                    { month: "2024-02", monthly_sales: 1500 },
-                    { month: "2024-03", monthly_sales: 1800 },
-                    { month: "2024-04", monthly_sales: 1700 },
-                    { month: "2024-05", monthly_sales: 2100 },
-                    { month: "2024-06", monthly_sales: 1900 },
+                    { month: "2024-01", monthly_sales: 1200 }, { month: "2024-02", monthly_sales: 1500 },
+                    { month: "2024-03", monthly_sales: 1800 }, { month: "2024-04", monthly_sales: 1700 },
+                    { month: "2024-05", monthly_sales: 2100 }, { month: "2024-06", monthly_sales: 1900 },
                     { month: "2024-07", monthly_sales: 2300 }
                 ];
             }
             const chartData = {
                 labels: data.map(d => new Date(d.month + '-02').toLocaleString('es-ES', { month: 'short', year: '2-digit' })),
                 datasets: [{
-                    label: 'Ventas Mensuales',
-                    data: data.map(d => d.monthly_sales),
-                    borderColor: '#5C1A33',
-                    backgroundColor: 'rgba(92, 26, 51, 0.1)',
-                    fill: true,
-                    tension: 0.4
+                    label: 'Ventas Mensuales', data: data.map(d => d.monthly_sales),
+                    borderColor: '#5C1A33', backgroundColor: 'rgba(92, 26, 51, 0.1)',
+                    fill: true, tension: 0.4
                 }]
             };
             charts.monthlySales = renderChart('monthlySalesChart', charts.monthlySales, 'line', chartData, {
@@ -1055,31 +958,21 @@
         }
 
         function renderTopProfitableProductsChart(data) {
-            // Si no hay datos, usar datos de ejemplo
             if (!Array.isArray(data) || data.length === 0) {
                 data = [
-                    { name: "BOOTLEG RED", total_profit: 1200 },
-                    { name: "MOMENT DE PLAISIR", total_profit: 950 },
-                    { name: "S SMITH CIDER", total_profit: 800 },
-                    { name: "SCHLINK HAUS", total_profit: 700 },
-                    { name: "SANTORINI GAVALA", total_profit: 650 },
-                    { name: "RIOJA RESERVA", total_profit: 600 },
-                    { name: "VERDEJO", total_profit: 550 },
-                    { name: "CABERNET", total_profit: 500 },
-                    { name: "MERLOT", total_profit: 450 },
-                    { name: "PINOT NOIR", total_profit: 400 }
+                    { name: "BOOTLEG RED", total_profit: 1200 }, { name: "MOMENT DE PLAISIR", total_profit: 950 },
+                    { name: "S SMITH CIDER", total_profit: 800 }, { name: "SCHLINK HAUS", total_profit: 700 },
+                    { name: "SANTORINI GAVALA", total_profit: 650 }, { name: "RIOJA RESERVA", total_profit: 600 },
+                    { name: "VERDEJO", total_profit: 550 }, { name: "CABERNET", total_profit: 500 },
+                    { name: "MERLOT", total_profit: 450 }, { name: "PINOT NOIR", total_profit: 400 }
                 ];
             }
             const chartData = {
                 labels: data.map(p => p.name),
                 datasets: [{
-                    axis: 'y',
-                    label: 'Beneficio Total (€)',
-                    data: data.map(p => p.total_profit),
-                    backgroundColor: 'rgba(22, 163, 74, 0.7)',
-                    borderColor: 'rgba(22, 163, 74, 1)',
-                    borderWidth: 1,
-                    borderRadius: 6
+                    axis: 'y', label: 'Beneficio Total (€)', data: data.map(p => p.total_profit),
+                    backgroundColor: 'rgba(22, 163, 74, 0.7)', borderColor: 'rgba(22, 163, 74, 1)',
+                    borderWidth: 1, borderRadius: 6
                 }]
             };
             charts.topProfit = renderChart('topProfitableProductsChart', charts.topProfit, 'bar', chartData, {
@@ -1089,41 +982,19 @@
         }
         
         function renderTopProductsByUnitsChart(data) {
-            // Si no hay datos, usar datos de ejemplo
-            if (!Array.isArray(data) || data.length === 0) {
-                data = [
-                    { sku: "100009", total_units: 320 },
-                    { sku: "100024", total_units: 290 },
-                    { sku: "1001", total_units: 250 },
-                    { sku: "100145", total_units: 210 },
-                    { sku: "100293", total_units: 180 },
-                    { sku: "100500", total_units: 160 },
-                    { sku: "100600", total_units: 140 },
-                    { sku: "100700", total_units: 120 },
-                    { sku: "100800", total_units: 100 },
-                    { sku: "100900", total_units: 90 }
-                ];
-            }
+            data = [
+                { sku: "100009", total_units: 320 }, { sku: "100024", total_units: 290 },
+                { sku: "1001", total_units: 250 }, { sku: "100145", total_units: 210 },
+                { sku: "100293", total_units: 180 }, { sku: "100500", total_units: 160 },
+                { sku: "100600", total_units: 140 }, { sku: "100700", total_units: 120 },
+                { sku: "100800", total_units: 100 }, { sku: "100900", total_units: 90 }
+            ];
             const chartData = {
                 labels: data.map(p => p.sku),
                 datasets: [{
-                    label: 'Unidades Vendidas',
-                    data: data.map(p => p.total_units),
-                    backgroundColor: [
-                'rgba(59, 130, 246, 0.7)',
-                'rgba(37, 99, 235, 0.7)',
-                'rgba(96, 165, 250, 0.7)',
-                'rgba(30, 64, 175, 0.7)',
-                'rgba(147, 197, 253, 0.7)',
-                'rgba(191, 219, 254, 0.7)',
-                'rgba(59, 130, 246, 0.5)',
-                'rgba(37, 99, 235, 0.5)',
-                'rgba(96, 165, 250, 0.5)',
-                'rgba(30, 64, 175, 0.5)'
-            ],
-                    borderColor: 'rgba(59, 130, 246, 1)',
-                    borderWidth: 1,
-                    borderRadius: 6
+                    label: 'Unidades Vendidas', data: data.map(p => p.total_units),
+                    backgroundColor: ['rgba(59, 130, 246, 0.7)', 'rgba(37, 99, 235, 0.7)', 'rgba(96, 165, 250, 0.7)', 'rgba(30, 64, 175, 0.7)', 'rgba(147, 197, 253, 0.7)', 'rgba(191, 219, 254, 0.7)', 'rgba(59, 130, 246, 0.5)', 'rgba(37, 99, 235, 0.5)', 'rgba(96, 165, 250, 0.5)', 'rgba(30, 64, 175, 0.5)'],
+                    borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1, borderRadius: 6
                 }]
             };
             charts.topUnits = renderChart('topProductsByUnitsChart', charts.topUnits, 'bar', chartData, {
@@ -1138,45 +1009,35 @@
             heatmapContainer.innerHTML = '';
             const weekdays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
             const salesByDay = new Array(7).fill(0);
-            data.forEach(d => {
-                salesByDay[parseInt(d.weekday_num) - 1] = d.total_sales;
-            });
-            
+            if(Array.isArray(data)){
+                data.forEach(d => { salesByDay[parseInt(d.weekday_num) - 1] = d.total_sales; });
+            }
             const maxSales = Math.max(...salesByDay);
-
             weekdays.forEach((day, index) => {
                 const sales = salesByDay[index];
                 const intensity = maxSales > 0 ? (sales / maxSales) : 0;
                 const lightness = 90 - (intensity * 50); 
                 const bgColor = `hsl(340, 65%, ${lightness}%)`;
-                
-                const dayCell = `
-                    <div class="p-2 rounded-lg" style="background-color: ${bgColor};">
-                        <p class="font-bold text-sm">${day.substring(0,3)}</p>
-                        <p class="text-xs font-semibold text-stone-700">${formatCurrency(sales)}</p>
-                    </div>
-                `;
-                heatmapContainer.innerHTML += dayCell;
+                heatmapContainer.innerHTML += `<div class="p-2 rounded-lg" style="background-color: ${bgColor};"><p class="font-bold text-sm">${day.substring(0,3)}</p><p class="text-xs font-semibold text-stone-700">${formatCurrency(sales)}</p></div>`;
             });
         }
 
-        function renderSalesByChannelChart(data) { 
-             const chartData = {
+        function renderSalesByChannelChart(data) {
+            if(!Array.isArray(data) || data.length === 0){
+                data = [ { channel: "Online", total_sales: 3200 }, { channel: "Tienda Física", total_sales: 2100 }, { channel: "Distribuidor", total_sales: 950 }];
+            }
+            const chartData = {
                 labels: data.map(item => item.channel),
-                datasets: [{ 
-                    data: data.map(item => item.total_sales), 
-                    backgroundColor: ['rgba(92, 26, 51, 0.8)', 'rgba(140, 43, 79, 0.8)', 'rgba(180, 80, 110, 0.8)'], 
-                    borderColor: '#FFFFFF', 
-                    borderWidth: 4 
-                }] 
+                datasets: [{
+                    data: data.map(item => item.total_sales),
+                    backgroundColor: ['rgba(92, 26, 51, 0.8)', 'rgba(140, 43, 79, 0.8)', 'rgba(180, 80, 110, 0.8)'],
+                    borderColor: '#FFFFFF', borderWidth: 4
+                }]
             };
-            charts.channel = renderChart('salesByChannelChart', charts.channel, 'doughnut', chartData, { 
-                responsive: true, maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { position: 'top', labels: { font: { weight: 'bold' } } }, 
-                    title: { display: true, text: 'Ventas por Canal', font: { weight: 'bold', size: 18 } } 
-                } 
-            }); 
+            charts.channel = renderChart('salesByChannelChart', charts.channel, 'doughnut', chartData, {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'top', labels: { font: { weight: 'bold' } } }, title: { display: true, text: 'Ventas por Canal', font: { weight: 'bold', size: 18 } } }
+            });
         }
 
         function renderPaginationControls(page, hasNext) { const { pagination } = DOMElements.catalog; pagination.innerHTML = `<button id="prev-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${page === 1 ? 'disabled' : ''}>Anterior</button><span class="font-bold">Página ${page}</span><button id="next-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${!hasNext ? 'disabled' : ''}>Siguiente</button>`; document.getElementById('prev-page-btn').onclick = () => { if (page > 1) loadProducts(page - 1); }; document.getElementById('next-page-btn').onclick = () => { if (hasNext) loadProducts(page + 1); }; }
@@ -1185,17 +1046,13 @@
         
         function handleInitialStockSubmit(event) {
             event.preventDefault();
-            const stockData = {};
             const inputs = DOMElements.initialStockForm.querySelectorAll('input[type="number"]');
-            inputs.forEach(input => {
-                stockData[input.id] = input.value;
-                localStorage.setItem(input.id, input.value);
-            });
+            inputs.forEach(input => { localStorage.setItem(input.id, input.value); });
             alert('Stock inicial guardado con éxito.');
         }
 
         function handleResetStock() {
-            if (confirm('¿Estás seguro de que quieres resetear el stock inicial? Se borrarán los valores guardados.')) {
+            if (confirm('¿Estás seguro de que quieres resetear el stock inicial?')) {
                 DOMElements.initialStockForm.reset();
                 const inputs = DOMElements.initialStockForm.querySelectorAll('input[type="number"]');
                 inputs.forEach(input => localStorage.removeItem(input.id));
@@ -1205,54 +1062,28 @@
         
         function handleDailyLogSubmit(event) {
             event.preventDefault();
-            
             const salesData = [];
             const productRows = DOMElements.dailyLogForm.querySelectorAll('tbody tr');
             productRows.forEach(row => {
-                const productName = row.cells[0].innerText;
-                const onlineSold = row.querySelector('input[name^="sold_online"]').value;
-                const physicalSold = row.querySelector('input[name^="sold_physical"]').value;
-                const cost = row.querySelector('input[name^="cost"]').value;
                 salesData.push({
-                    productName,
+                    productName: row.cells[0].innerText,
                     unitsSold: {
-
-                        online: onlineSold ? parseInt(onlineSold, 10) : 0,
-                        physical: physicalSold ? parseInt(physicalSold, 10) : 0,
+                        online: parseInt(row.querySelector('input[name^="sold_online"]').value, 10) || 0,
+                        physical: parseInt(row.querySelector('input[name^="sold_physical"]').value, 10) || 0,
                     },
-                    cost: cost ? parseFloat(cost) : null
+                    cost: parseFloat(row.querySelector('input[name^="cost"]').value) || null
                 });
             });
-
             const supplierName = document.getElementById('supplier-name').value.trim();
             const promisedDeliveryDate = document.getElementById('promised-delivery').value;
             let supplierOrderData = null;
             if (supplierName && promisedDeliveryDate) {
                 supplierOrderData = { supplierName, promisedDeliveryDate };
-                const newOrder = {
-                    id: Date.now(),
-                    name: supplierName,
-                    date: promisedDeliveryDate
-                };
-                pendingOrders.push(newOrder);
+                pendingOrders.push({ id: Date.now(), name: supplierName, date: promisedDeliveryDate });
                 renderPendingOrders();
-
             }
-            
-            const dailyData = {
-                date: new Date().toISOString().split('T')[0],
-                sales: salesData,
-                marketing: {
-                    investment: parseFloat(document.getElementById('marketing-investment').value) || 0,
-                    channels: Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value),
-                    promotions: document.getElementById('active-promotions').value.trim()
-                },
-                events: { specialEvents: document.getElementById('special-events').value.trim() },
-                newSupplierOrder: supplierOrderData
-            };
-
-            console.log('Datos del Registro Diario:', JSON.stringify(dailyData, null, 2));
-            alert('Datos registrados con éxito. Revisa la consola para ver el JSON.');
+            console.log('Datos del Registro Diario:', JSON.stringify({ sales: salesData, newSupplierOrder: supplierOrderData }, null, 2));
+            alert('Datos registrados con éxito.');
             DOMElements.dailyLogForm.reset();
         }
         
@@ -1266,13 +1097,7 @@
             pendingOrders.forEach(order => {
                 const item = document.createElement('div');
                 item.className = 'flex justify-between items-center bg-stone-100 p-2 rounded-lg';
-                item.innerHTML = `
-                    <div>
-                        <span class="font-semibold">${order.name}</span>
-                        <span class="text-stone-500 ml-2"> (Prometido: ${order.date})</span>
-                    </div>
-                    <button data-order-id="${order.id}" class="mark-received-btn text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full font-semibold hover:bg-green-300">Marcar como Recibido</button>
-                `;
+                item.innerHTML = `<div><span class="font-semibold">${order.name}</span><span class="text-stone-500 ml-2"> (Prometido: ${order.date})</span></div><button data-order-id="${order.id}" class="mark-received-btn text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full font-semibold hover:bg-green-300">Marcar como Recibido</button>`;
                 list.appendChild(item);
             });
         }
@@ -1281,19 +1106,36 @@
             if (event.target.classList.contains('mark-received-btn')) {
                 const orderId = parseInt(event.target.dataset.orderId, 10);
                 const order = pendingOrders.find(o => o.id === orderId);
-                const deliveryData = {
-                    ...order,
-                    receivedDate: new Date().toISOString().split('T')[0]
-                };
-                console.log('Pedido Recibido:', deliveryData);
+                console.log('Pedido Recibido:', { ...order, receivedDate: new Date().toISOString().split('T')[0] });
                 alert(`Pedido de ${order.name} marcado como recibido.`);
-                
                 pendingOrders = pendingOrders.filter(o => o.id !== orderId);
                 renderPendingOrders();
             }
         }
         
-        // Inicializar la aplicación
+        function renderProductPerformanceMatrixChart() {
+            const productData = [
+                { name: 'BOOTLEG RED', units: 450, margin: 8.5, profit: 3825 }, { name: 'MOMENT DE PLAISIR', units: 380, margin: 9.2, profit: 3496 },
+                { name: 'SANTORINI GAVALA', units: 120, margin: 12.5, profit: 1500 }, { name: 'VINO ESPECIAL ED.', units: 50, margin: 25.0, profit: 1250 },
+                { name: 'S SMITH CIDER', units: 600, margin: 3.5, profit: 2100 }, { name: 'VINO DE MESA TINTO', units: 800, margin: 2.0, profit: 1600 },
+                { name: 'SCHLINK HAUS', units: 90, margin: 4.1, profit: 369 }
+            ];
+            const chartData = {
+                labels: productData.map(p => p.name),
+                datasets: [
+                    { label: 'Unidades Vendidas', data: productData.map(p => p.units), backgroundColor: 'rgba(59, 130, 246, 0.7)' },
+                    { label: 'Margen Neto (€)', data: productData.map(p => p.margin), backgroundColor: 'rgba(22, 163, 74, 0.7)' },
+                    { label: 'Beneficio Total (€)', data: productData.map(p => p.profit), backgroundColor: 'rgba(92, 26, 51, 0.7)' }
+                ]
+            };
+            const options = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' }, title: { display: true, text: 'Rendimiento por Producto', font: { size: 18, weight: 'bold' } }, tooltip: { mode: 'index', intersect: false } },
+                scales: { x: { stacked: false }, y: { beginAtZero: true } }
+            };
+            charts.productMatrix = renderChart('productPerformanceMatrixChart', charts.productMatrix, 'bar', chartData, options);
+        }
+
         if (localStorage.getItem('grapeiq_token')) {
             showDashboard();
         } else {
