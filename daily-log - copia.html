@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GrapeIQ · Registro Diario</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body{font-family:'Montserrat',sans-serif;background-color:#F8F7F4}
+    .wine-grad{background-image:linear-gradient(to right,#5C1A33,#8C2B4F)}
+    .tab{cursor:pointer}
+    .tab-active{border-color:#5C1A33;color:#5C1A33;font-weight:700}
+  </style>
+</head>
+<body class="text-stone-800">
+  <div class="p-4 sm:p-8">
+    <header>
+      <div class="flex justify-between items-center mb-2">
+        <div class="flex items-center gap-4">
+          <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+          <span class="text-3xl font-light text-stone-400">|</span>
+          <h1 class="text-3xl font-semibold text-stone-700">Registro Diario</h1>
+        </div>
+        <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
+      </div>
+
+      <div class="mb-6 border-b border-stone-200">
+        <nav class="flex space-x-8" aria-label="Tabs">
+          <a href="performance.html" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Análisis de Rendimiento</a>
+          <a href="forecast.html" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Predicciones y Escenarios</a>
+          <a href="catalog.html" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Catálogo y Stock</a>
+          <a href="daily-log.html" class="tab px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Registro Diario</a>
+          <a href="weather.html" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Clima</a>
+          <a href="settings.html" class="tab px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Configuración</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <form id="daily-log-form" class="space-y-6">
+        <section class="bg-white p-6 rounded-2xl shadow-lg">
+          <h3 class="text-xl font-bold text-stone-800 mb-4">Ventas y Costes</h3>
+          <p class="text-stone-500 mb-4 text-sm">Introduce las unidades vendidas hoy por canal y el coste actualizado de los productos.</p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead class="border-b border-stone-200">
+                <tr>
+                  <th class="p-4 font-bold text-sm">Producto</th>
+                  <th class="p-4 font-bold text-sm">Ventas Online (Uds.)</th>
+                  <th class="p-4 font-bold text-sm">Ventas Físicas (Uds.)</th>
+                  <th class="p-4 font-bold text-sm">Coste por Unidad (€)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-stone-100"><td class="p-4 font-semibold text-sm">BOOTLEG RED - 750ML</td><td class="p-2"><input type="number" name="sold_online_100009" placeholder="Ej: 3" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" name="sold_physical_100009" placeholder="Ej: 9" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" step="0.01" name="cost_100009" placeholder="Ej: 4.50" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td></tr>
+                <tr class="border-b border-stone-100"><td class="p-4 font-semibold text-sm">MOMENT DE PLAISIR - 750ML</td><td class="p-2"><input type="number" name="sold_online_100024" placeholder="Ej: 2" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" name="sold_physical_100024" placeholder="Ej: 6" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" step="0.01" name="cost_100024" placeholder="Ej: 5.20" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td></tr>
+                <tr class="border-b border-stone-100"><td class="p-4 font-semibold text-sm">S SMITH ORGANIC PEAR CIDER - 18.7OZ</td><td class="p-2"><input type="number" name="sold_online_1001" placeholder="Ej: 10" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" name="sold_physical_1001" placeholder="Ej: 14" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" step="0.01" name="cost_1001" placeholder="Ej: 1.80" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td></tr>
+                <tr class="border-b border-stone-100"><td class="p-4 font-semibold text-sm">SCHLINK HAUS KABINETT - 750ML</td><td class="p-2"><input type="number" name="sold_online_100145" placeholder="Ej: 1" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" name="sold_physical_100145" placeholder="Ej: 4" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" step="0.01" name="cost_100145" placeholder="Ej: 6.00" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td></tr>
+                <tr><td class="p-4 font-semibold text-sm">SANTORINI GAVALA WHITE - 750ML</td><td class="p-2"><input type="number" name="sold_online_100293" placeholder="Ej: 3" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" name="sold_physical_100293" placeholder="Ej: 4" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" step="0.01" name="cost_100293" placeholder="Ej: 7.50" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-2xl shadow-lg space-y-4">
+            <h3 class="text-xl font-bold text-stone-800">Marketing</h3>
+            <p class="text-stone-500 -mt-2 text-xs italic">Dejar en blanco salvo los días que haya campañas activas.</p>
+            <div><label for="marketing-investment" class="block mb-1 text-sm font-semibold">Inversión en Marketing (€)</label><input type="number" step="0.01" id="marketing-investment" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+            <div>
+              <label class="block mb-2 text-sm font-semibold">Canales de Marketing Activos</label>
+              <div class="flex gap-4 items-center">
+                <label class="flex items-center gap-2"><input type="checkbox" id="channel-social" value="social_media" class="h-4 w-4 rounded border-stone-300 text-[#5C1A33] focus:ring-[#5C1A33]"> Redes Sociales</label>
+                <label class="flex items-center gap-2"><input type="checkbox" id="channel-email" value="email" class="h-4 w-4 rounded border-stone-300 text-[#5C1A33] focus:ring-[#5C1A33]"> Email</label>
+              </div>
+            </div>
+            <div><label for="active-promotions" class="block mb-1 text-sm font-semibold">Promociones Activas</label><textarea id="active-promotions" rows="2" placeholder="Ej: 2x1 en vinos..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></textarea></div>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl shadow-lg space-y-4">
+            <h3 class="text-xl font-bold text-stone-800">Eventos y Proveedores</h3>
+            <p class="text-stone-500 -mt-2 text-xs italic">Dejar en blanco salvo eventos especiales o nuevos pedidos.</p>
+            <div><label for="special-events" class="block mb-1 text-sm font-semibold">Eventos Especiales</label><textarea id="special-events" rows="2" placeholder="Ej: Fiesta patronal..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></textarea></div>
+            <div class="border-t border-stone-200 pt-4">
+              <h4 class="font-semibold text-stone-700 mb-2">Nuevo Pedido a Proveedor</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label for="supplier-name" class="block mb-1 text-sm">Nombre Proveedor</label><input type="text" id="supplier-name" placeholder="Ej: Vinos S.L." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                <div><label for="promised-delivery" class="block mb-1 text-sm">Fecha Prometida</label><input type="date" id="promised-delivery" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+              </div>
+              <h4 class="font-semibold text-stone-700 mt-4 mb-2">Pedidos Pendientes de Recibir</h4>
+              <div id="pending-orders-list" class="space-y-2 text-sm"><p class="text-stone-500 text-center py-2">No hay pedidos pendientes.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <button type="submit" class="w-full wine-grad text-white py-4 rounded-full font-bold text-lg hover:opacity-90 transition-opacity">Guardar Registro Diario</button>
+      </form>
+    </main>
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!localStorage.getItem('grapeiq_token')) { window.location.href = 'login.html'; return; }
+    document.getElementById('logout-btn').addEventListener('click', () => { localStorage.removeItem('grapeiq_token'); window.location.href = 'login.html'; });
+
+    let pendingOrders = [];
+    const dailyLogForm = document.getElementById('daily-log-form');
+    const pendingOrdersList = document.getElementById('pending-orders-list');
+
+    dailyLogForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const salesData = [];
+      dailyLogForm.querySelectorAll('tbody tr').forEach(row => {
+        salesData.push({
+          productName: row.cells[0].innerText,
+          unitsSold: {
+            online: parseInt(row.querySelector('input[name^="sold_online"]').value, 10) || 0,
+            physical: parseInt(row.querySelector('input[name^="sold_physical"]').value, 10) || 0
+          },
+          cost: parseFloat(row.querySelector('input[name^="cost"]').value) || null
+        });
+      });
+
+      const supplierName = document.getElementById('supplier-name').value.trim();
+      const promisedDeliveryDate = document.getElementById('promised-delivery').value;
+      if (supplierName && promisedDeliveryDate) {
+        pendingOrders.push({ id: Date.now(), name: supplierName, date: promisedDeliveryDate });
+        renderPendingOrders();
+      }
+
+      console.log('Datos del Registro Diario:', JSON.stringify({ sales: salesData }, null, 2));
+      alert('Datos registrados con éxito.');
+      dailyLogForm.reset();
+    });
+
+    function renderPendingOrders() {
+      if (pendingOrders.length === 0) {
+        pendingOrdersList.innerHTML = '<p class="text-stone-500 text-center py-2">No hay pedidos pendientes.</p>';
+        return;
+      }
+      pendingOrdersList.innerHTML = '';
+      pendingOrders.forEach(order => {
+        const el = document.createElement('div');
+        el.className = 'flex justify-between items-center bg-stone-100 p-2 rounded-lg';
+        el.innerHTML = `<div><span class="font-semibold">${order.name}</span><span class="text-stone-500 ml-2">(Prometido: ${order.date})</span></div><button data-order-id="${order.id}" class="mark-received-btn text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full font-semibold hover:bg-green-300">Marcar como Recibido</button>`;
+        pendingOrdersList.appendChild(el);
+      });
+    }
+    pendingOrdersList.addEventListener('click', (e) => {
+      if (e.target.classList.contains('mark-received-btn')) {
+        const id = parseInt(e.target.dataset.orderId, 10);
+        const order = pendingOrders.find(o => o.id === id);
+        alert(`Pedido de ${order.name} marcado como recibido.`);
+        pendingOrders = pendingOrders.filter(o => o.id !== id);
+        renderPendingOrders();
+      }
+    });
+
+    renderPendingOrders();
+  });
+  </script>
+</body>
+</html>

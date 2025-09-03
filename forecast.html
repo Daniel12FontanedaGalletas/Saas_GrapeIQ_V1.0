@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Predicciones y Escenarios - GrapeIQ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family:'Montserrat',sans-serif; background:#F8F7F4; }
+    .wine-grad{ background-image:linear-gradient(to right,#5C1A33,#8C2B4F); }
+    .loader { border: 4px solid #e0e0e0; border-top: 4px solid #5C1A33; border-radius: 50%; width: 16px; height: 16px; animation: spin 1.5s linear infinite; }
+    @keyframes spin { 0% {transform:rotate(0);} 100% {transform:rotate(360deg);} }
+    .details-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
+    .tab-active{ border-color:#5C1A33; color:#5C1A33; font-weight:700; }
+  </style>
+</head>
+<body class="text-stone-800">
+  <div class="p-4 sm:p-8">
+    <header class="flex justify-between items-center mb-6">
+      <div class="flex items-center gap-4">
+        <a href="performance.html" class="flex items-center gap-4">
+          <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+          <span class="text-3xl font-light text-stone-400">|</span>
+          <h1 class="text-3xl font-semibold text-stone-700">Predicciones y Escenarios</h1>
+        </a>
+      </div>
+      <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
+    </header>
+
+    <div class="mb-6 border-b border-stone-200">
+      <nav class="flex space-x-8" aria-label="Tabs">
+        <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Análisis de Rendimiento</a>
+        <a href="forecast.html"  class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Predicciones y Escenarios</a>
+        <a href="catalog.html"   class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Catálogo y Stock</a>
+        <a href="daily-log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</a>
+        <a href="weather.html"   class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Clima</a>
+        <a href="settings.html"  class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Configuración</a>
+      </nav>
+    </div>
+
+    <main>
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+        <div class="panel-con-fondo rounded-2xl shadow-lg p-6 flex flex-col"
+             style="background-image:url('https://images.unsplash.com/photo-1596399770542-a72012c8de8c?q=80&w=2940&auto=format&fit=crop');">
+          <div class="contenido-panel">
+            <h3 class="text-2xl font-bold text-stone-800 mb-1">1. Predicción de Ventas por SKU</h3>
+            <p class="text-sm text-stone-600 mb-4">Genera una predicción de ventas para los próximos 90 días para un producto específico.</p>
+            <div class="flex items-center gap-4 mb-4">
+              <input type="text" id="sku-forecast-input" placeholder="Ej: 100009" class="w-full max-w-xs px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33] bg-white/70">
+              <button id="run-sku-forecast-btn" class="wine-grad text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 flex items-center gap-2">
+                Predecir
+                <div id="forecast-loader" class="loader hidden"></div>
+              </button>
+            </div>
+            <p id="sku-forecast-error" class="text-red-600 text-sm font-semibold h-5"></p>
+            <div class="mt-4 h-96 bg-stone-50/80 backdrop-blur-sm rounded-xl p-4 flex-grow">
+              <canvas id="skuForecastChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-con-fondo rounded-2xl shadow-lg p-6 flex flex-col"
+             style="background-image:url('https://images.unsplash.com/photo-1596399770542-a72012c8de8c?q=80&w=2940&auto=format&fit=crop');">
+          <div class="contenido-panel">
+            <h3 class="text-2xl font-bold text-stone-800 mb-1">2. Comparador de Escenarios</h3>
+            <p class="text-sm text-stone-600 mb-4">Simula precios y volúmenes para encontrar el escenario de mayor beneficio.</p>
+            <div id="scenarios-container" class="space-y-3 flex-grow overflow-y-auto pr-2" style="max-height: 400px;"></div>
+            <div class="flex gap-4 mt-4">
+              <button type="button" id="add-scenario-btn" class="bg-stone-200 text-stone-700 px-4 py-2 rounded-full font-semibold hover:bg-stone-300">Añadir Escenario</button>
+              <button type="button" id="reset-scenarios-btn" class="bg-stone-100 text-stone-500 px-4 py-2 rounded-full font-semibold hover:bg-stone-200">Resetear</button>
+            </div>
+            <div id="scenarios-table-container" class="mt-6 overflow-x-auto bg-white/70 backdrop-blur-sm rounded-lg"></div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="text-2xl font-bold text-stone-700 mb-4 mt-8 border-t border-stone-200 pt-6">Otros Modelos de Predicción</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl shadow-lg">
+          <div class="p-6 flex justify-between items-center">
+            <h3 class="text-xl font-bold text-stone-800">Días de Alta Demanda</h3>
+            <button class="toggle-details-btn text-2xl font-semibold text-stone-400 hover:text-stone-800 transition-colors">+</button>
+          </div>
+          <div class="details-content px-6 pb-6">
+            <p class="text-sm text-stone-600 mb-4">Identifica qué días de la semana o fechas especiales son propensos a tener picos de ventas.</p>
+            <div class="bg-stone-50 p-4 rounded-lg border">
+              <h4 class="font-bold mb-2">Variables utilizadas:</h4>
+              <div class="flex flex-wrap gap-2 text-sm">
+                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Ventas Diarias (Formulario)</span>
+                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Eventos Especiales (Formulario)</span>
+                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full">Festivos Nacionales (Automático)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg">
+          <div class="p-6 flex justify-between items-center">
+            <h3 class="text-xl font-bold text-stone-800">Impacto de Marketing</h3>
+            <button class="toggle-details-btn text-2xl font-semibold text-stone-400 hover:text-stone-800 transition-colors">+</button>
+          </div>
+          <div class="details-content px-6 pb-6">
+            <p class="text-sm text-stone-600 mb-4">Estima el retorno de la inversión (ROI) de tus campañas para optimizar el gasto publicitario.</p>
+            <div class="bg-stone-50 p-4 rounded-lg border">
+              <h4 class="font-bold mb-2">Variables utilizadas:</h4>
+              <div class="flex flex-wrap gap-2 text-sm">
+                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Inversión y Canales (Formulario)</span>
+                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Ventas en días de campaña</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg">
+          <div class="p-6 flex justify-between items-center">
+            <h3 class="text-xl font-bold text-stone-800">Ventas según el Clima</h3>
+            <button class="toggle-details-btn text-2xl font-semibold text-stone-400 hover:text-stone-800 transition-colors">+</button>
+          </div>
+          <div class="details-content px-6 pb-6">
+            <p class="text-sm text-stone-600 mb-4">Anticipa cómo afectará el tiempo a la demanda de ciertos tipos de vino.</p>
+            <div class="bg-stone-50 p-4 rounded-lg border">
+              <h4 class="font-bold mb-2">Variables utilizadas:</h4>
+              <div class="flex flex-wrap gap-2 text-sm">
+                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full">Datos Meteorológicos (API)</span>
+                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Ventas por Tipo de Producto</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg opacity-60">
+          <div class="p-6 flex justify-between items-center">
+            <div>
+              <h3 class="text-xl font-bold text-stone-800">Rotura de Stock</h3>
+              <p class="text-sm font-semibold text-amber-600">Próximamente</p>
+            </div>
+            <button class="toggle-details-btn text-2xl font-semibold text-stone-400 hover:text-stone-800 transition-colors">+</button>
+          </div>
+          <div class="details-content px-6 pb-6">
+            <p class="text-sm text-stone-600 mb-4">Anticipa cuándo un producto se agotará. Se activará tras acumular datos.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'http://127.0.0.1:8000';
+    function requireAuth(){ if(!localStorage.getItem('grapeiq_token')) location.href='login.html';}
+    function logout(){ localStorage.removeItem('grapeiq_token'); location.href='login.html'; }
+    document.getElementById('logout-btn').addEventListener('click', logout);
+    requireAuth();
+
+    const charts = {};
+    function renderSkuForecastChart(data){
+      if (!data || !Array.isArray(data.dates) || data.dates.length===0){
+        data = { dates:["2024-09-01","2024-09-02","2024-09-03","2024-09-04","2024-09-05","2024-09-06","2024-09-07"], sales:[5,7,6,8,10,9,7] };
+      }
+      const chartData = { labels:data.dates, datasets:[{ label:'Ventas Predichas', data:data.sales, borderColor:'#5C1A33', backgroundColor:'rgba(92,26,51,0.1)', fill:true, tension:0.3 }]};
+      if (charts.skuForecast) charts.skuForecast.destroy();
+      const ctx = document.getElementById('skuForecastChart').getContext('2d');
+      charts.skuForecast = new Chart(ctx,{ type:'line', data:chartData, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, title:{display:true, text:'Predicción de Ventas (90 días)', font:{size:16, weight:'600'}} }, scales:{ y:{ beginAtZero:true } } }});
+    }
+    async function apiFetch(endpoint, options = {}) {
+      const headers = { 'Content-Type': 'application/json' };
+      const token = localStorage.getItem('grapeiq_token');
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (options.body && options.body instanceof FormData) delete headers['Content-Type'];
+      const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+      if (resp.status === 401) { logout(); throw new Error('Sesión expirada o no autorizada.'); }
+      if (!resp.ok) {
+        let msg='Ocurrió un error en la API'; try{ const j=await resp.json(); msg=j.detail||msg; }catch{}
+        throw new Error(msg);
+      }
+      const ct = resp.headers.get('content-type')||''; return ct.includes('application/json') ? resp.json() : resp.text();
+    }
+
+    document.querySelectorAll('.toggle-details-btn').forEach(btn=>{
+      btn.addEventListener('click', function(){
+        const content = this.parentElement.nextElementSibling;
+        if (content.style.maxHeight){ content.style.maxHeight = null; this.textContent = '+'; }
+        else { content.style.maxHeight = content.scrollHeight + 'px'; this.textContent = '−'; }
+      });
+    });
+
+    const runBtn = document.getElementById('run-sku-forecast-btn');
+    const skuInput = document.getElementById('sku-forecast-input');
+    const errEl = document.getElementById('sku-forecast-error');
+    const loader = document.getElementById('forecast-loader');
+
+    async function handleSkuForecast(){
+      const sku = skuInput.value.trim();
+      if (!sku){ errEl.textContent='Por favor, introduce un SKU.'; return; }
+      errEl.textContent=''; runBtn.disabled=true; loader.classList.remove('hidden');
+      try {
+        const forecastData = await apiFetch(`/api/forecast/sku/${sku}`);
+        renderSkuForecastChart(forecastData);
+      } catch(e){
+        errEl.textContent = `Error: ${e.message}`;
+        renderSkuForecastChart({ dates:[], sales:[] });
+      } finally {
+        runBtn.disabled=false; loader.classList.add('hidden');
+      }
+    }
+    runBtn.addEventListener('click', handleSkuForecast);
+    skuInput.addEventListener('keypress', e=>{ if (e.key==='Enter'){ e.preventDefault(); handleSkuForecast(); }});
+
+    const DOM = {
+      scenariosContainer: document.getElementById('scenarios-container'),
+      scenariosTableContainer: document.getElementById('scenarios-table-container'),
+      addScenarioBtn: document.getElementById('add-scenario-btn'),
+      resetScenariosBtn: document.getElementById('reset-scenarios-btn'),
+    };
+    let scenarioCounter = 0;
+    function addScenario(){
+      scenarioCounter++;
+      const id = `scenario-${scenarioCounter}`;
+      const html = `
+        <div id="${id}" class="scenario-block p-4 border border-stone-200 rounded-lg bg-stone-50" data-id="${scenarioCounter}">
+          <div class="flex justify-between items-center mb-3">
+            <h4 class="font-bold text-stone-700">Escenario ${scenarioCounter}</h4>
+            <button type="button" class="remove-scenario-btn text-red-500 hover:text-red-700 font-bold" data-target="${id}">✕</button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-semibold mb-1">SKU del Producto</label>
+              <input type="text" class="scenario-sku w-full p-2 border border-stone-300 rounded-md" placeholder="Ej: 100009">
+              <p class="product-name-display text-xs text-stone-500 mt-1 h-4"></p>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1">Unidades a Vender</label>
+              <input type="number" class="scenario-units w-full p-2 border border-stone-300 rounded-md" placeholder="Ej: 10000">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1">Precio de Venta (€)</label>
+              <input type="number" step="0.01" class="scenario-price w-full p-2 border border-stone-300 rounded-md" placeholder="Ej: 2.50">
+            </div>
+          </div>
+        </div>`;
+      DOM.scenariosContainer.insertAdjacentHTML('beforeend', html);
+      document.querySelector(`#${id} .remove-scenario-btn`).addEventListener('click', (e)=>{
+        document.getElementById(e.currentTarget.dataset.target).remove();
+        scenarioCounter = 0;
+        document.querySelectorAll('.scenario-block').forEach(block=>{
+          scenarioCounter++; block.querySelector('h4').textContent = `Escenario ${scenarioCounter}`;
+        });
+        updateScenariosTable();
+      });
+      let skuTimeout;
+      document.querySelector(`#${id} .scenario-sku`).addEventListener('input', ()=>{
+        clearTimeout(skuTimeout);
+        skuTimeout = setTimeout(()=>fetchProductForScenario(id), 500);
+      });
+    }
+    async function fetchProductForScenario(id){
+      const block = document.getElementById(id);
+      const skuInput = block.querySelector('.scenario-sku');
+      const nameDisplay = block.querySelector('.product-name-display');
+      const sku = skuInput.value.trim();
+      if (!sku){ nameDisplay.textContent=''; block.dataset.cost=''; block.dataset.name=''; updateScenariosTable(); return; }
+      try{
+        const products = await apiFetch(`/api/products/?sku=${encodeURIComponent(sku)}&limit=1`);
+        if (products && products.length>0){
+          const p = products[0];
+          nameDisplay.textContent = p.name;
+          block.dataset.cost = p.cost_per_unit || 0;
+          block.dataset.name = p.name;
+        }else{
+          nameDisplay.textContent = 'SKU no encontrado';
+          block.dataset.cost=''; block.dataset.name='';
+        }
+      }catch(_){
+        nameDisplay.textContent = 'Error al buscar SKU';
+        block.dataset.cost=''; block.dataset.name='';
+      }finally{ updateScenariosTable(); }
+    }
+    function resetScenarios(){
+      scenarioCounter=0; DOM.scenariosContainer.innerHTML=''; addScenario(); addScenario(); updateScenariosTable();
+    }
+    function formatCurrency(v){ if (v===null||isNaN(v)) return '€0,00'; return `€${parseFloat(v).toLocaleString('es-ES',{minimumFractionDigits:2, maximumFractionDigits:2})}`; }
+    function updateScenariosTable(){
+      const blocks = DOM.scenariosContainer.querySelectorAll('.scenario-block');
+      if (blocks.length===0){ DOM.scenariosTableContainer.innerHTML=''; return; }
+      const data = [];
+      blocks.forEach(block=>{
+        const id = parseInt(block.querySelector('h4').textContent.replace('Escenario ','') ,10);
+        const units = parseFloat(block.querySelector('.scenario-units').value)||0;
+        const price = parseFloat(block.querySelector('.scenario-price').value)||0;
+        const cost = parseFloat(block.dataset.cost)||0;
+        const name = block.dataset.name || 'N/A';
+        const revenue = units*price;
+        const totalCost = units*cost;
+        const profit = revenue-totalCost;
+        data.push({ id, name, units, price, cost, revenue, totalCost, profit });
+      });
+      if (data.every(s=>s.units===0 && s.price===0)){
+        DOM.scenariosTableContainer.innerHTML = '<p class="text-center text-stone-500 mt-4">Introduce datos para ver la comparación.</p>';
+        return;
+      }
+      const maxProfit = Math.max(...data.map(s=>s.profit));
+      let html = `<table class="w-full text-left">
+          <thead class="border-b border-stone-300">
+            <tr>
+              <th class="p-3 font-bold">Esc.</th><th class="p-3 font-bold">Producto</th><th class="p-3 font-bold text-right">Unidades</th>
+              <th class="p-3 font-bold text-right">Ingresos</th><th class="p-3 font-bold text-right">Beneficio</th>
+            </tr>
+          </thead><tbody>`;
+      data.forEach(d=>{
+        const isBest = d.profit>0 && d.profit===maxProfit;
+        html += `<tr class="border-b border-stone-100 ${isBest?'bg-green-50':''}">
+            <td class="p-3 font-bold ${isBest?'text-green-800':''}">#${d.id}</td>
+            <td class="p-3 text-sm truncate" style="max-width:120px;">${d.name}</td>
+            <td class="p-3 text-right">${d.units.toLocaleString('es-ES')}</td>
+            <td class="p-3 text-right">${formatCurrency(d.revenue)}</td>
+            <td class="p-3 text-right font-bold ${isBest?'text-green-800 text-lg':''}">${formatCurrency(d.profit)}</td>
+          </tr>`;
+      });
+      html += '</tbody></table>';
+      DOM.scenariosTableContainer.innerHTML = html;
+    }
+    DOM.addScenarioBtn.addEventListener('click', addScenario);
+    DOM.resetScenariosBtn.addEventListener('click', resetScenarios);
+    DOM.scenariosContainer.addEventListener('input', updateScenariosTable);
+    DOM.scenariosContainer.addEventListener('change', updateScenariosTable);
+
+    renderSkuForecastChart();
+    resetScenarios();
+  </script>
+</body>
+</html>
