@@ -14,8 +14,29 @@
   </style>
 </head>
 <body class="text-stone-800">
+  <!-- Fondo de imagen a pantalla completa -->
+  <div class="fixed inset-0 w-full h-full z-[-1]">
+    <img src="pinos.jpg" alt="Fondo" class="w-full h-full object-cover"/>
+  </div>
+  <!-- Hora y día en grande sobre el fondo, abajo a la derecha (cuadrante 4, centrado) -->
+  <div id="datetime-overlay"
+       class="fixed z-10 pointer-events-none select-none
+              flex flex-col items-end justify-end
+              w-1/2 h-1/2
+              right-0 bottom-0
+              pr-12 pb-12
+              md:pr-24 md:pb-20">
+    <div id="current-time"
+         class="text-white text-4xl md:text-6xl font-light tracking-tight drop-shadow-lg"
+         style="font-family: 'Inter', 'Montserrat', 'Segoe UI', Arial, sans-serif; letter-spacing: -1px;">
+    </div>
+    <div id="current-date"
+         class="text-white text-lg md:text-2xl font-normal mt-2 drop-shadow-lg"
+         style="font-family: 'Inter', 'Montserrat', 'Segoe UI', Arial, sans-serif; letter-spacing: -0.5px;">
+    </div>
+  </div>
   <div class="flex items-center justify-center h-screen bg-cover bg-center"
-       style="background-image: url('foto.jpg');">
+       style="background-image: none;">
     <div class="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl w-full max-w-sm">
       <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="w-48 mx-auto mb-6">
       <div class="space-y-4">
@@ -75,6 +96,19 @@
         if (e.key === 'Enter') handleLogin();
       });
     });
+
+    // Actualiza la hora y el día en tiempo real (sin segundos, fuente más moderna y ligera)
+    function updateDateTime() {
+      const now = new Date();
+      // Hora con formato HH:MM (sin segundos)
+      const timeStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      // Día con formato: Lunes, 1 de enero de 2024
+      const dateStr = now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      document.getElementById('current-time').textContent = timeStr;
+      document.getElementById('current-date').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+    }
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
   </script>
 </body>
 </html>
