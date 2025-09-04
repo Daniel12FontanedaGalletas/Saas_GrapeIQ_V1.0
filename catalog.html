@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>GrapeIQ · Catálogo y Stock</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
@@ -19,9 +18,11 @@
   <div class="p-4 sm:p-8">
     <header class="flex justify-between items-center mb-6">
         <div class="flex items-center gap-4">
-          <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
-          <span class="text-3xl font-light text-stone-400">|</span>
-          <h1 class="text-3xl font-semibold text-stone-700">Catálogo y Stock</h1>
+          <a href="performance.html" class="flex items-center gap-4">
+            <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+            <span class="text-3xl font-light text-stone-400">|</span>
+            <h1 class="text-3xl font-semibold text-stone-700">Catálogo y Stock</h1>
+          </a>
         </div>
         <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
     </header>
@@ -30,36 +31,18 @@
       <nav class="flex space-x-8" aria-label="Tabs">
         <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Análisis de Rendimiento</a>
         <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Predicciones y Escenarios</a>
-        <a href="catalog.html" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Catálogo y Stock</a>
-        <a href="daily-log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</a>
+        <a href="catalog.html" id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Catálogo y Stock</a>
+        <a href="daily-log.html" id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</a>
         <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Clima</a>
         <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Configuración</a>
       </nav>
     </div>
 
     <main class="space-y-6">
-      <section class="bg-white p-6 rounded-2xl shadow-lg">
-        <h3 class="text-xl font-bold text-stone-800 mb-2">Gestión de Stock Inicial</h3>
-        <p class="text-stone-500 mb-4 text-sm">Establece el inventario inicial. El sistema restará las ventas diarias a partir de estos valores.</p>
-        <form id="initial-stock-form" class="space-y-4">
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <div><label for="stock_100009" class="block text-sm font-semibold mb-1">BOOTLEG RED</label><input type="number" id="stock_100009" placeholder="Uds." class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></div>
-            <div><label for="stock_100024" class="block text-sm font-semibold mb-1">MOMENT DE PLAISIR</label><input type="number" id="stock_100024" placeholder="Uds." class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></div>
-            <div><label for="stock_1001" class="block text-sm font-semibold mb-1">S SMITH CIDER</label><input type="number" id="stock_1001" placeholder="Uds." class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></div>
-            <div><label for="stock_100145" class="block text-sm font-semibold mb-1">SCHLINK HAUS</label><input type="number" id="stock_100145" placeholder="Uds." class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></div>
-            <div><label for="stock_100293" class="block text-sm font-semibold mb-1">SANTORINI GAVALA</label><input type="number" id="stock_100293" placeholder="Uds." class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></div>
-          </div>
-          <div class="flex gap-4 pt-2">
-            <button type="submit" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Guardar Stock</button>
-            <button type="button" id="reset-stock-btn" class="bg-stone-200 text-stone-700 px-6 py-2 rounded-full font-semibold hover:bg-stone-300">Resetear</button>
-          </div>
-        </form>
-      </section>
-
       <section class="flex justify-between items-center">
         <div class="relative">
           <input type="text" id="sku-filter-input" placeholder="Buscar por SKU..." class="w-full max-w-xs pl-10 pr-4 py-2 border border-stone-300 rounded-full">
-          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
         </div>
         <button id="add-product-btn" class="wine-grad text-white px-5 py-2 rounded-full font-semibold hover:opacity-90 flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -90,12 +73,8 @@
     <div id="add-product-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white text-stone-800 w-full max-w-4xl p-8 rounded-3xl shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8 relative">
         <div>
-          <div class="flex items-center gap-3 mb-6">
-            <div class="bg-[#5C1A33] text-white p-2 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-            </div>
-            <div><h2 class="text-2xl font-bold">Añadir Nuevo Vino al Catálogo</h2><p class="text-stone-500 text-sm">Completa los campos para añadir un nuevo producto.</p></div>
-          </div>
+          <h2 class="text-2xl font-bold">Añadir Nuevo Vino al Catálogo</h2>
+          <p class="text-stone-500 text-sm mb-6">Completa los campos para añadir un nuevo producto.</p>
           <form id="add-product-form" class="space-y-4">
             <h3 class="font-bold text-lg border-b border-stone-200 pb-2">Datos del vino</h3>
             <div><label class="block mb-1 text-sm font-semibold">Nombre del Vino <span class="text-red-500">*</span></label><input type="text" id="product-name" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
@@ -116,13 +95,13 @@
         </div>
         <div class="bg-stone-50 p-6 rounded-2xl border border-stone-200">
           <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg">Métricas en Tiempo Real</h3><button id="clear-metrics-btn" class="text-sm text-stone-500 hover:text-stone-800">Borrar</button></div>
-          <div class="grid grid-cols-2 gap-4 text-center">
-            <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Precio</p><p id="metric-price" class="font-bold text-xl">-</p></div>
-            <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Coste</p><p id="metric-cost" class="font-bold text-xl">-</p></div>
-            <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Margen</p><p id="metric-margin-abs" class="font-bold text-xl">-</p></div>
-            <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Margen %</p><p id="metric-margin-perc" class="font-bold text-xl">-</p></div>
-            <div class="bg-white p-3 rounded-lg border col-span-2"><p class="text-stone-500 text-sm">Ingresos (estim.)</p><p id="metric-total-revenue" class="font-bold text-3xl text-green-600">-</p></div>
-          </div>
+            <div class="grid grid-cols-2 gap-4 text-center">
+              <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Precio</p><p id="metric-price" class="font-bold text-xl">-</p></div>
+              <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Coste</p><p id="metric-cost" class="font-bold text-xl">-</p></div>
+              <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Margen</p><p id="metric-margin-abs" class="font-bold text-xl">-</p></div>
+              <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Margen %</p><p id="metric-margin-perc" class="font-bold text-xl">-</p></div>
+              <div class="bg-white p-3 rounded-lg border col-span-2"><p class="text-stone-500 text-sm">Ingresos (estim.)</p><p id="metric-total-revenue" class="font-bold text-3xl text-green-600">-</p></div>
+            </div>
           <p class="text-xs text-stone-500 mt-4 text-center">Las métricas se actualizan al escribir.</p>
         </div>
         <div class="md:col-span-2 flex justify-end gap-4 mt-6">
@@ -134,81 +113,191 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const API_BASE_URL = 'http://127.0.0.1:8000';
-      if (!localStorage.getItem('grapeiq_token')) { window.location.href = 'login.html'; return; }
-      document.getElementById('logout-btn').addEventListener('click', () => { localStorage.removeItem('grapeiq_token'); window.location.href = 'login.html'; });
+    // --- Configuración y Autenticación Estandarizada ---
+    const API_BASE_URL = 'http://127.0.0.1:8000';
+    const TOKEN_KEY = 'accessToken';
+    const ROLE_KEY = 'userRole';
 
-      async function apiFetch(endpoint, options = {}) {
-        const headers = { 'Content-Type': 'application/json' };
-        const token = localStorage.getItem('grapeiq_token'); if (token) headers['Authorization'] = `Bearer ${token}`;
-        if (options.body && options.body instanceof FormData) delete headers['Content-Type'];
-        const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-        if (resp.status === 401) { localStorage.removeItem('grapeiq_token'); window.location.href = 'login.html'; throw new Error('Sesión expirada o no autorizada.'); }
-        if (!resp.ok) { let d='Ocurrió un error en la API'; try{const e=await resp.json(); d=e.detail||d;}catch{} throw new Error(d); }
-        const ct = resp.headers.get('content-type')||''; return ct.includes('application/json')? resp.json(): resp.text();
-      }
-
-      const catalog = {
-        addProductBtn: document.getElementById('add-product-btn'),
-        tableBody: document.getElementById('product-table-body'),
-        placeholder: document.getElementById('catalog-placeholder'),
-        pagination: document.getElementById('catalog-pagination'),
-        filterInput: document.getElementById('sku-filter-input'),
-        modal: {
-          container: document.getElementById('add-product-modal'),
-          form: document.getElementById('add-product-form'),
-          cancelBtn: document.getElementById('cancel-product-btn'),
-          clearMetricsBtn: document.getElementById('clear-metrics-btn'),
-          inputs: { name: document.getElementById('product-name'), sku: document.getElementById('product-sku'), price: document.getElementById('product-price'), type: document.getElementById('product-type'), cost: document.getElementById('product-cost'), quantity: document.getElementById('product-quantity') },
-          metrics: { price: document.getElementById('metric-price'), cost: document.getElementById('metric-cost'), marginAbs: document.getElementById('metric-margin-abs'), marginPerc: document.getElementById('metric-margin-perc'), totalRevenue: document.getElementById('metric-total-revenue') }
+    function requireAuth() {
+        if (!localStorage.getItem(TOKEN_KEY)) {
+            window.location.href = 'login.html';
         }
-      };
+    }
 
-      let currentPage = 1; const pageSize = 10; let skuFilterTimeout;
-      catalog.addProductBtn.addEventListener('click', () => catalog.modal.container.classList.remove('hidden'));
-      catalog.modal.cancelBtn.addEventListener('click', () => catalog.modal.container.classList.add('hidden'));
-      catalog.modal.clearMetricsBtn.addEventListener('click', () => { catalog.modal.form.reset(); updateMetrics(); });
-      Object.values(catalog.modal.inputs).forEach(i => i.addEventListener('input', updateMetrics));
-      catalog.modal.form.addEventListener('submit', handleSaveProduct);
-      catalog.filterInput.addEventListener('input', () => { clearTimeout(skuFilterTimeout); skuFilterTimeout=setTimeout(()=>loadProducts(1),500); });
-      document.getElementById('initial-stock-form').addEventListener('submit', (e)=>{ e.preventDefault(); e.currentTarget.querySelectorAll('input[type="number"]').forEach(inp=>localStorage.setItem(inp.id, inp.value)); alert('Stock inicial guardado con éxito.'); });
-      document.getElementById('reset-stock-btn').addEventListener('click', ()=>{ if(confirm('¿Seguro que quieres resetear el stock?')){ const f=document.getElementById('initial-stock-form'); f.reset(); f.querySelectorAll('input[type="number"]').forEach(inp=>localStorage.removeItem(inp.id)); alert('Stock reseteado.'); }});
+    function logout() {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(ROLE_KEY);
+        window.location.href = 'login.html';
+    }
 
-      async function loadProducts(page=1){
-        currentPage=page; const offset=(page-1)*pageSize; const sku=catalog.filterInput.value||'';
-        try{
-          const products = await apiFetch(`/api/products/?limit=${pageSize}&offset=${offset}&sku=${encodeURIComponent(sku)}`);
-          catalog.tableBody.innerHTML=''; if(Array.isArray(products)&&products.length>0){ catalog.placeholder.classList.add('hidden');
-            products.forEach(p=>{ catalog.tableBody.insertAdjacentHTML('beforeend', `<tr class="border-b border-stone-100"><td class="p-4 font-semibold">${p.name}</td><td class="p-4 text-stone-500">${p.sku}</td><td class="p-4">${p.price_per_unit ? `€${p.price_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.cost_per_unit ? `€${p.cost_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.stock_quantity != null ? p.stock_quantity : '-'}</td></tr>`); });
-          } else { if(page===1) catalog.placeholder.classList.remove('hidden'); }
-          renderPaginationControls(page, Array.isArray(products) && products.length===pageSize);
-        }catch(err){ alert(`Error al cargar los productos: ${err.message}`); }
-      }
+    async function apiFetch(endpoint, options = {}) {
+        const headers = { 'Content-Type': 'application/json' };
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        if (options.body && options.body instanceof FormData) {
+            delete headers['Content-Type'];
+        }
+        const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+        if (resp.status === 401) {
+            logout();
+            throw new Error('Sesión expirada o no autorizada.');
+        }
+        if (!resp.ok) {
+            let msg = 'Ocurrió un error en la API';
+            try {
+                const j = await resp.json();
+                msg = j.detail || msg;
+            } catch {}
+            throw new Error(msg);
+        }
+        const ct = resp.headers.get('content-type') || '';
+        return ct.includes('application/json') ? resp.json() : resp.text();
+    }
 
-      function renderPaginationControls(page, hasNext){
-        catalog.pagination.innerHTML = `<button id="prev-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${page===1?'disabled':''}>Anterior</button><span class="font-bold">Página ${page}</span><button id="next-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${!hasNext?'disabled':''}>Siguiente</button>`;
-        document.getElementById('prev-page-btn').onclick=()=>{ if(page>1) loadProducts(page-1); };
-        document.getElementById('next-page-btn').onclick=()=>{ if(hasNext) loadProducts(page+1); };
-      }
+    function updateUIVisibility() {
+        const role = localStorage.getItem(ROLE_KEY);
+        if (role === 'lector') {
+            const menuCatalogo = document.getElementById('menu-catalogo');
+            const menuRegistro = document.getElementById('menu-registro-diario');
+            if (menuCatalogo) menuCatalogo.style.display = 'none';
+            if (menuRegistro) menuRegistro.style.display = 'none';
+            
+            const addProductBtn = document.getElementById('add-product-btn');
+            if(addProductBtn) addProductBtn.style.display = 'none';
+        }
+    }
+    
+    // --- Lógica específica de la página de Catálogo ---
+    function setupPageEventListeners() {
+        const catalog = {
+            addProductBtn: document.getElementById('add-product-btn'),
+            tableBody: document.getElementById('product-table-body'),
+            placeholder: document.getElementById('catalog-placeholder'),
+            pagination: document.getElementById('catalog-pagination'),
+            filterInput: document.getElementById('sku-filter-input'),
+            modal: {
+                container: document.getElementById('add-product-modal'),
+                form: document.getElementById('add-product-form'),
+                cancelBtn: document.getElementById('cancel-product-btn'),
+                clearMetricsBtn: document.getElementById('clear-metrics-btn'),
+                inputs: { 
+                    name: document.getElementById('product-name'), 
+                    sku: document.getElementById('product-sku'), 
+                    price: document.getElementById('product-price'), 
+                    type: document.getElementById('product-type'), 
+                    cost: document.getElementById('product-cost'), 
+                    quantity: document.getElementById('product-quantity') 
+                },
+                metrics: { 
+                    price: document.getElementById('metric-price'), 
+                    cost: document.getElementById('metric-cost'), 
+                    marginAbs: document.getElementById('metric-margin-abs'), 
+                    marginPerc: document.getElementById('metric-margin-perc'), 
+                    totalRevenue: document.getElementById('metric-total-revenue') 
+                }
+            }
+        };
 
-      function updateMetrics(){
-        const {inputs,metrics}=catalog.modal; const price=parseFloat(inputs.price.value)||0; const cost=parseFloat(inputs.cost.value)||0; const qty=parseInt(inputs.quantity.value)||0;
-        metrics.price.textContent = price>0? `€${price.toFixed(2)}`:'-';
-        metrics.cost.textContent  = cost>0?  `€${cost.toFixed(2)}` :'-';
-        if(price>0 && cost>0 && price>=cost){ const m=price-cost; metrics.marginAbs.textContent=`€${m.toFixed(2)}`; metrics.marginPerc.textContent=`${((m/price)*100).toFixed(1)}%`; }
-        else { metrics.marginAbs.textContent='-'; metrics.marginPerc.textContent='-'; }
-        metrics.totalRevenue.textContent = (price>0 && qty>0)? `€${(price*qty).toFixed(2)}`:'-';
-      }
+        let currentPage = 1; 
+        const pageSize = 10; 
+        let skuFilterTimeout;
 
-      async function handleSaveProduct(e){
-        e.preventDefault();
-        const {modal}=catalog;
-        const productData={ name:modal.inputs.name.value, sku:modal.inputs.sku.value, price_per_unit:parseFloat(modal.inputs.price.value), product_type:modal.inputs.type.value, cost_per_unit:modal.inputs.cost.value?parseFloat(modal.inputs.cost.value):null, stock_quantity:modal.inputs.quantity.value?parseInt(modal.inputs.quantity.value):null };
-        try{ await apiFetch('/api/products/', { method:'POST', body:JSON.stringify(productData) }); modal.container.classList.add('hidden'); modal.form.reset(); updateMetrics(); loadProducts(currentPage); }
-        catch(err){ alert(`Error al guardar el producto: ${err.message}`); }
-      }
-      loadProducts(1);
+        catalog.addProductBtn.addEventListener('click', () => catalog.modal.container.classList.remove('hidden'));
+        catalog.modal.cancelBtn.addEventListener('click', () => {
+            catalog.modal.container.classList.add('hidden');
+            catalog.modal.form.reset();
+            updateMetrics();
+        });
+        catalog.modal.clearMetricsBtn.addEventListener('click', () => {
+            catalog.modal.form.reset();
+            updateMetrics();
+        });
+        Object.values(catalog.modal.inputs).forEach(i => i.addEventListener('input', updateMetrics));
+        catalog.modal.form.addEventListener('submit', handleSaveProduct);
+        catalog.filterInput.addEventListener('input', () => { clearTimeout(skuFilterTimeout); skuFilterTimeout=setTimeout(()=>loadProducts(1),500); });
+
+        async function loadProducts(page = 1) {
+            currentPage = page;
+            const offset = (page - 1) * pageSize;
+            const sku = catalog.filterInput.value || '';
+            try {
+                const products = await apiFetch(`/api/products/?limit=${pageSize}&offset=${offset}&sku=${encodeURIComponent(sku)}`);
+                catalog.tableBody.innerHTML = '';
+                if (Array.isArray(products) && products.length > 0) {
+                    catalog.placeholder.classList.add('hidden');
+                    products.forEach(p => {
+                        catalog.tableBody.insertAdjacentHTML('beforeend', `<tr class="border-b border-stone-100"><td class="p-4 font-semibold">${p.name}</td><td class="p-4 text-stone-500">${p.sku}</td><td class="p-4">${p.price_per_unit ? `€${p.price_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.cost_per_unit ? `€${p.cost_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.stock_quantity != null ? p.stock_quantity : '-'}</td></tr>`);
+                    });
+                } else {
+                    if (page === 1) catalog.placeholder.classList.remove('hidden');
+                }
+                renderPaginationControls(page, Array.isArray(products) && products.length === pageSize);
+            } catch (err) {
+                alert(`Error al cargar los productos: ${err.message}`);
+            }
+        }
+
+        function renderPaginationControls(page, hasNext) {
+            catalog.pagination.innerHTML = `<button id="prev-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${page === 1 ? 'disabled' : ''}>Anterior</button><span class="font-bold">Página ${page}</span><button id="next-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${!hasNext ? 'disabled' : ''}>Siguiente</button>`;
+            document.getElementById('prev-page-btn').onclick = () => { if (page > 1) loadProducts(page - 1); };
+            document.getElementById('next-page-btn').onclick = () => { if (hasNext) loadProducts(page + 1); };
+        }
+        
+        function updateMetrics() {
+            const {inputs, metrics} = catalog.modal;
+            const price = parseFloat(inputs.price.value) || 0;
+            const cost = parseFloat(inputs.cost.value) || 0;
+            const qty = parseInt(inputs.quantity.value) || 0;
+            
+            metrics.price.textContent = price > 0 ? `€${price.toFixed(2)}` : '-';
+            metrics.cost.textContent  = cost > 0 ?  `€${cost.toFixed(2)}` : '-';
+            
+            if(price > 0 && cost > 0 && price >= cost) {
+                const m = price - cost;
+                metrics.marginAbs.textContent = `€${m.toFixed(2)}`;
+                metrics.marginPerc.textContent = `${((m / price) * 100).toFixed(1)}%`;
+            } else {
+                metrics.marginAbs.textContent = '-';
+                metrics.marginPerc.textContent = '-';
+            }
+            metrics.totalRevenue.textContent = (price > 0 && qty > 0) ? `€${(price * qty).toFixed(2)}` : '-';
+        }
+
+        async function handleSaveProduct(e) {
+            e.preventDefault();
+            const { modal } = catalog;
+            const productData = { 
+                name: modal.inputs.name.value, 
+                sku: modal.inputs.sku.value, 
+                price_per_unit: parseFloat(modal.inputs.price.value), 
+                product_type: modal.inputs.type.value, 
+                cost_per_unit: modal.inputs.cost.value ? parseFloat(modal.inputs.cost.value) : null, 
+                stock_quantity: modal.inputs.quantity.value ? parseInt(modal.inputs.quantity.value) : null 
+            };
+            try {
+                await apiFetch('/api/products/', { method: 'POST', body: JSON.stringify(productData) });
+                modal.container.classList.add('hidden');
+                modal.form.reset();
+                updateMetrics();
+                loadProducts(currentPage);
+            } catch (err) {
+                alert(`Error al guardar el producto: ${err.message}`);
+            }
+        }
+        
+        loadProducts(1);
+    }
+    
+    // --- Ejecución al Cargar la Página ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const logoutBtn = document.getElementById('logout-btn');
+        if(logoutBtn) logoutBtn.addEventListener('click', logout);
+
+        requireAuth();
+        updateUIVisibility();
+        setupPageEventListeners(); // Llama a la función que configura la lógica de esta página
     });
   </script>
 </body>

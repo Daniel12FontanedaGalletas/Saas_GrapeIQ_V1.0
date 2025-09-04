@@ -15,7 +15,7 @@
 </head>
 <body class="text-stone-800">
   <div class="flex items-center justify-center h-screen bg-cover bg-center"
-       style="background-image: url('https://images.unsplash.com/photo-1558422239-4445a4980a3a?q=80&w=2940&auto=format&fit=crop');">
+       style="background-image: url('foto.jpg');">
     <div class="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl w-full max-w-sm">
       <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="w-48 mx-auto mb-6">
       <div class="space-y-4">
@@ -37,8 +37,8 @@
     const API_BASE_URL = 'http://127.0.0.1:8000';
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Si ya hay sesión, ir al dashboard
-      if (localStorage.getItem('grapeiq_token')) {
+      // Si ya hay sesión, ir directamente a la página principal
+      if (localStorage.getItem('accessToken')) { // Usamos la nueva clave 'accessToken'
         window.location.href = 'performance.html';
         return;
       }
@@ -57,8 +57,14 @@
           const response = await fetch(`${API_BASE_URL}/api/auth/token`, { method: 'POST', body: formData });
           const data = await response.json();
           if (!response.ok) throw new Error(data.detail || 'Usuario o contraseña incorrectos.');
-          localStorage.setItem('grapeiq_token', data.access_token);
+          
+          // === MODIFICACIÓN: Guardamos el token Y el rol ===
+          // Usamos nombres de clave consistentes: 'accessToken' y 'userRole'
+          localStorage.setItem('accessToken', data.access_token);
+          localStorage.setItem('userRole', data.role); // <-- ¡Aquí guardamos el rol!
+          
           window.location.href = 'performance.html';
+
         } catch (err) {
           loginError.textContent = err.message;
         }

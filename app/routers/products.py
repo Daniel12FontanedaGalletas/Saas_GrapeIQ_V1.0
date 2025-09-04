@@ -3,15 +3,15 @@ from pydantic import BaseModel
 from typing import Optional
 
 from ..database import get_db_connection
-from ..services.security import get_current_user
+from ..services.security import role_checker
+from .. import schemas
 
 router = APIRouter(
     prefix="/api/products",
-    tags=["Products"],
-    dependencies=[Depends(get_current_user)]
+    tags=["Products"]
 )
 
-class Product(BaseModel):
+class ProductCreate(BaseModel):
     name: str
     sku: str
     price_per_unit: float
@@ -21,15 +21,15 @@ class Product(BaseModel):
 
 @router.get("/")
 def get_products(
-    user: dict = Depends(get_current_user),
+    user: schemas.User = Depends(role_checker(["admin", "lector"])),
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    sku_filter: Optional[str] = Query(None, alias="sku") # Nuevo parámetro para el filtro
+    sku_filter: Optional[str] = Query(None, alias="sku")
 ):
-    tenant_id = user.get("tenant_id")
+    # --- ¡CORRECCIÓN! Convertimos el UUID a string ---
+    tenant_id = str(user.tenant_id)
     products = []
     
-    # Construcción dinámica de la consulta SQL
     base_query = """
         SELECT id, name, sku, product_type, price_per_unit, cost_per_unit, stock_quantity 
         FROM products 
@@ -38,7 +38,7 @@ def get_products(
     params = [tenant_id]
 
     if sku_filter:
-        base_query += " AND sku ILIKE %s" # ILIKE para búsqueda case-insensitive
+        base_query += " AND sku ILIKE %s"
         params.append(f"%{sku_filter}%")
 
     base_query += " ORDER BY name LIMIT %s OFFSET %s"
@@ -55,8 +55,9 @@ def get_products(
     return products
 
 @router.post("/", status_code=201)
-def create_product(product: Product, user: dict = Depends(get_current_user)):
-    tenant_id = user.get("tenant_id")
+def create_product(product: ProductCreate, user: schemas.User = Depends(role_checker(["admin"]))):
+    # --- ¡CORRECCIÓN! Convertimos el UUID a string ---
+    tenant_id = str(user.tenant_id)
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             try:
@@ -77,5 +78,5 @@ def create_product(product: Product, user: dict = Depends(get_current_user)):
             except Exception as e:
                 conn.rollback()
                 if "duplicate key value" in str(e).lower():
-                     raise HTTPException(status_code=409, detail=f"El SKU '{product.sku}' ya existe.")
+                    raise HTTPException(status_code=409, detail=f"El SKU '{product.sku}' ya existe.")
                 raise HTTPException(status_code=500, detail=f"Error en la base de datos: {e}")

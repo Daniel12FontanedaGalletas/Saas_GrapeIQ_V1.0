@@ -1,84 +1,200 @@
-<div class="space-y-8">
-    <div id="margins-results-container" class="hidden">
-        <h2 class="text-2xl font-bold text-stone-700 mb-4">Resultados de Rentabilidad</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="font-semibold text-stone-500 mb-2">Margen Bruto</h3><p id="result-gross-margin" class="text-5xl font-bold text-green-700">-</p></div>
-            <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="font-semibold text-stone-500 mb-2">Margen Neto Real</h3><p id="result-net-margin" class="text-5xl font-bold text-blue-700">-</p></div>
-        </div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Análisis Financiero - GrapeIQ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family:'Montserrat',sans-serif; background:#F8F7F4; }
+    .wine-grad{ background-image:linear-gradient(to right,#5C1A33,#8C2B4F); }
+    .tab-active{ border-color:#5C1A33; color:#5C1A33; font-weight:700; }
+  </style>
+</head>
+<body class="text-stone-800">
+  <div class="p-4 sm:p-8">
+    <header class="flex justify-between items-center mb-6">
+      <div class="flex items-center gap-4">
+        <a href="performance.html" class="flex items-center gap-4">
+          <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+          <span class="text-3xl font-light text-stone-400">|</span>
+          <h1 class="text-3xl font-semibold text-stone-700">Análisis Financiero</h1>
+        </a>
+      </div>
+      <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
+    </header>
+
+    <div class="mb-6 border-b border-stone-200">
+      <nav class="flex space-x-8" aria-label="Tabs">
+        <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="performance">Análisis de Rendimiento</a>
+        <a href="forecast.html"   class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="forecast">Predicciones y Escenarios</a>
+        <a href="catalog.html"     id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="catalog">Catálogo y Stock</a>
+        <a href="daily-log.html"   id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="daily-log">Registro Diario</a>
+        <a href="weather.html"     class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="weather">Clima</a>
+        <a href="settings.html"    class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="settings">Configuración</a>
+        <!-- Este enlace podría ser añadido si Financials se convierte en una pestaña principal -->
+        <!-- <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active" data-tab="financials">Finanzas</a> -->
+      </nav>
     </div>
 
-    <form id="financials-form" class="space-y-8">
-        <div>
-            <h2 class="text-2xl font-bold text-stone-700 mb-4">Calcular Márgenes de Rentabilidad</h2>
-            <div class="bg-white p-6 rounded-2xl shadow-lg">
-                <label for="total-revenue" class="block text-lg font-semibold mb-2">1. Ingresos Totales (Ventas) del Período (€)</label>
-                <input type="number" step="0.01" id="total-revenue" placeholder="Ej: 50000.00" class="w-full max-w-sm bg-stone-50 p-3 rounded-lg border border-stone-300 text-lg">
+    <main>
+        <div class="space-y-8">
+            <div id="margins-results-container" class="hidden">
+                <h2 class="text-2xl font-bold text-stone-700 mb-4">Resultados de Rentabilidad</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="font-semibold text-stone-500 mb-2">Margen Bruto</h3><p id="result-gross-margin" class="text-5xl font-bold text-green-700">-</p></div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="font-semibold text-stone-500 mb-2">Margen Neto Real</h3><p id="result-net-margin" class="text-5xl font-bold text-blue-700">-</p></div>
+                </div>
             </div>
-        </div>
         
-        <div class="bg-white p-6 rounded-2xl shadow-lg">
-            <h3 class="text-xl font-bold text-stone-800 mb-4">2. Coste de los Bienes Vendidos (COGS)</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div><label for="cogs-raw-material" class="block mb-1 font-semibold">Materia Prima</label><input type="number" step="0.01" id="cogs-raw-material" placeholder="Coste de uva, levaduras..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-                <div><label for="cogs-packaging" class="block mb-1 font-semibold">Embotellado y Empaquetado</label><input type="number" step="0.01" id="cogs-packaging" placeholder="Botellas, corchos, cajas..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-                <div><label for="cogs-production" class="block mb-1 font-semibold">Elaboración y Crianza</label><input type="number" step="0.01" id="cogs-production" placeholder="Mano de obra, barricas..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-            </div>
+            <form id="financials-form" class="space-y-8">
+                <div>
+                    <h2 class="text-2xl font-bold text-stone-700 mb-4">Calcular Márgenes de Rentabilidad</h2>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <label for="total-revenue" class="block text-lg font-semibold mb-2">1. Ingresos Totales (Ventas) del Período (€)</label>
+                        <input type="number" step="0.01" id="total-revenue" placeholder="Ej: 50000.00" class="w-full max-w-sm bg-stone-50 p-3 rounded-lg border border-stone-300 text-lg">
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold text-stone-800 mb-4">2. Coste de los Bienes Vendidos (COGS)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div><label for="cogs-raw-material" class="block mb-1 font-semibold">Materia Prima</label><input type="number" step="0.01" id="cogs-raw-material" placeholder="Coste de uva, levaduras..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                        <div><label for="cogs-packaging" class="block mb-1 font-semibold">Embotellado y Empaquetado</label><input type="number" step="0.01" id="cogs-packaging" placeholder="Botellas, corchos, cajas..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                        <div><label for="cogs-production" class="block mb-1 font-semibold">Elaboración y Crianza</label><input type="number" step="0.01" id="cogs-production" placeholder="Mano de obra, barricas..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                    </div>
+                </div>
+        
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-xl font-bold text-stone-800 mb-4">3. Gastos Operativos del Período</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div><label for="op-sales-marketing" class="block mb-1 font-semibold">Venta y Marketing</label><input type="number" step="0.01" id="op-sales-marketing" placeholder="Salarios, publicidad, ferias..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                        <div><label for="op-admin" class="block mb-1 font-semibold">Administrativos</label><input type="number" step="0.01" id="op-admin" placeholder="Oficina, personal, software..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                        <div><label for="op-financial" class="block mb-1 font-semibold">Financieros e Impuestos</label><input type="number" step="0.01" id="op-financial" placeholder="Intereses, tasas, impuestos..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                    </div>
+                </div>
+        
+                <div class="flex gap-4">
+                    <button type="submit" class="wine-grad text-white px-8 py-3 rounded-full font-bold text-lg hover:opacity-90">Calcular Márgenes</button>
+                    <button type="reset" id="reset-financials-btn" class="bg-stone-200 text-stone-700 px-6 py-3 rounded-full font-semibold hover:bg-stone-300">Limpiar Campos</button>
+                </div>
+            </form>
         </div>
+    </main>
+  </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-lg">
-            <h3 class="text-xl font-bold text-stone-800 mb-4">3. Gastos Operativos del Período</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div><label for="op-sales-marketing" class="block mb-1 font-semibold">Venta y Marketing</label><input type="number" step="0.01" id="op-sales-marketing" placeholder="Salarios, publicidad, ferias..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-                <div><label for="op-admin" class="block mb-1 font-semibold">Administrativos</label><input type="number" step="0.01" id="op-admin" placeholder="Oficina, personal, software..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-                <div><label for="op-financial" class="block mb-1 font-semibold">Financieros e Impuestos</label><input type="number" step="0.01" id="op-financial" placeholder="Intereses, tasas, impuestos..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-            </div>
-        </div>
+  <script>
+    // --- Configuración y Autenticación Estandarizada ---
+    const API_BASE_URL = 'http://127.0.0.1:8000';
+    const TOKEN_KEY = 'accessToken';
+    const ROLE_KEY = 'userRole';
 
-        <div class="flex gap-4">
-            <button type="submit" class="wine-grad text-white px-8 py-3 rounded-full font-bold text-lg hover:opacity-90">Calcular Márgenes</button>
-            <button type="reset" id="reset-financials-btn" class="bg-stone-200 text-stone-700 px-6 py-3 rounded-full font-semibold hover:bg-stone-300">Limpiar Campos</button>
-        </div>
-    </form>
-</div>
+    function requireAuth() {
+        if (!localStorage.getItem(TOKEN_KEY)) {
+            window.location.href = 'login.html';
+        }
+    }
 
-<script>
-    (function() {
+    function logout() {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(ROLE_KEY);
+        window.location.href = 'login.html';
+    }
+
+    async function apiFetch(endpoint, options = {}) {
+        const headers = { 'Content-Type': 'application/json' };
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        if (options.body && options.body instanceof FormData) {
+            delete headers['Content-Type'];
+        }
+        const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+        if (resp.status === 401) {
+            logout();
+            throw new Error('Sesión expirada o no autorizada.');
+        }
+        if (!resp.ok) {
+            let msg = 'Ocurrió un error en la API';
+            try {
+                const j = await resp.json();
+                msg = j.detail || msg;
+            } catch {}
+            throw new Error(msg);
+        }
+        const ct = resp.headers.get('content-type') || '';
+        return ct.includes('application/json') ? resp.json() : resp.text();
+    }
+
+    function updateUIVisibility() {
+        const role = localStorage.getItem(ROLE_KEY);
+        if (role === 'lector') {
+            const menuCatalogo = document.getElementById('menu-catalogo');
+            const menuRegistro = document.getElementById('menu-registro-diario');
+            if (menuCatalogo) menuCatalogo.style.display = 'none';
+            if (menuRegistro) menuRegistro.style.display = 'none';
+        }
+    }
+
+    // --- Lógica específica de la página de Finanzas ---
+    function setupPageEventListeners() {
         const financialsForm = document.getElementById('financials-form');
         const resetFinancialsBtn = document.getElementById('reset-financials-btn');
         const resultsContainer = document.getElementById('margins-results-container');
         const resultGrossMargin = document.getElementById('result-gross-margin');
         const resultNetMargin = document.getElementById('result-net-margin');
 
-        financialsForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const totalRevenue = parseFloat(document.getElementById('total-revenue').value) || 0;
-            if (totalRevenue === 0) {
-                alert("Por favor, introduce los Ingresos Totales para poder calcular los márgenes.");
-                return;
-            }
+        if (financialsForm) {
+            financialsForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                const totalRevenue = parseFloat(document.getElementById('total-revenue').value) || 0;
+                if (totalRevenue === 0) {
+                    alert("Por favor, introduce los Ingresos Totales para poder calcular los márgenes.");
+                    return;
+                }
 
-            const totalCOGS = (parseFloat(document.getElementById('cogs-raw-material').value) || 0) +
-                              (parseFloat(document.getElementById('cogs-packaging').value) || 0) +
-                              (parseFloat(document.getElementById('cogs-production').value) || 0);
+                const totalCOGS = (parseFloat(document.getElementById('cogs-raw-material').value) || 0) +
+                                  (parseFloat(document.getElementById('cogs-packaging').value) || 0) +
+                                  (parseFloat(document.getElementById('cogs-production').value) || 0);
 
-            const totalOpEx = (parseFloat(document.getElementById('op-sales-marketing').value) || 0) +
-                            (parseFloat(document.getElementById('op-admin').value) || 0) +
-                            (parseFloat(document.getElementById('op-financial').value) || 0);
+                const totalOpEx = (parseFloat(document.getElementById('op-sales-marketing').value) || 0) +
+                                  (parseFloat(document.getElementById('op-admin').value) || 0) +
+                                  (parseFloat(document.getElementById('op-financial').value) || 0);
 
-            const grossMargin = totalRevenue > 0 ? ((totalRevenue - totalCOGS) / totalRevenue) * 100 : 0;
-            const netMargin = totalRevenue > 0 ? ((totalRevenue - totalCOGS - totalOpEx) / totalRevenue) * 100 : 0;
+                const grossMargin = totalRevenue > 0 ? ((totalRevenue - totalCOGS) / totalRevenue) * 100 : 0;
+                const netMargin = totalRevenue > 0 ? ((totalRevenue - totalCOGS - totalOpEx) / totalRevenue) * 100 : 0;
 
-            resultGrossMargin.textContent = `${grossMargin.toFixed(2)}%`;
-            resultNetMargin.textContent = `${netMargin.toFixed(2)}%`;
-            resultsContainer.style.display = 'block';
-            window.scrollTo(0, 0);
-        });
+                resultGrossMargin.textContent = `${grossMargin.toFixed(2)}%`;
+                resultNetMargin.textContent = `${netMargin.toFixed(2)}%`;
+                resultsContainer.classList.remove('hidden');
+                resultsContainer.style.display = 'block'; // Asegurarse de que sea visible
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
 
-        resetFinancialsBtn.addEventListener('click', function() {
-            resultsContainer.style.display = 'none';
-            resultGrossMargin.textContent = '-';
-            resultNetMargin.textContent = '-';
-        });
-    })();
-</script>
+        if (resetFinancialsBtn) {
+            resetFinancialsBtn.addEventListener('click', function() {
+                resultsContainer.classList.add('hidden');
+                resultGrossMargin.textContent = '-';
+                resultNetMargin.textContent = '-';
+            });
+        }
+    }
+    
+    // --- Ejecución al Cargar la Página ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const logoutBtn = document.getElementById('logout-btn');
+        if(logoutBtn) logoutBtn.addEventListener('click', logout);
+
+        requireAuth();
+        updateUIVisibility();
+        setupPageEventListeners(); // Llama a la función que configura la lógica de esta página
+    });
+  </script>
+</body>
+</html>

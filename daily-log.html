@@ -18,21 +18,23 @@
   <div class="p-4 sm:p-8">
     <header class="flex justify-between items-center mb-6">
       <div class="flex items-center gap-4">
-        <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
-        <span class="text-3xl font-light text-stone-400">|</span>
-        <h1 class="text-3xl font-semibold text-stone-700">Registro Diario</h1>
+        <a href="performance.html" class="flex items-center gap-4">
+            <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+            <span class="text-3xl font-light text-stone-400">|</span>
+            <h1 class="text-3xl font-semibold text-stone-700">Registro Diario</h1>
+        </a>
       </div>
       <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
     </header>
 
     <div class="mb-6 border-b border-stone-200">
       <nav class="flex space-x-8" aria-label="Tabs">
-        <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Análisis de Rendimiento</a>
-        <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Predicciones y Escenarios</a>
-        <a href="catalog.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Catálogo y Stock</a>
-        <a href="daily-log.html" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Registro Diario</a>
-        <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Clima</a>
-        <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Configuración</a>
+        <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="performance">Análisis de Rendimiento</a>
+        <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="forecast">Predicciones y Escenarios</a>
+        <a href="catalog.html" id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="catalog">Catálogo y Stock</a>
+        <a href="daily-log.html" id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active" data-tab="daily-log">Registro Diario</a>
+        <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="weather">Clima</a>
+        <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="settings">Configuración</a>
       </nav>
     </div>
 
@@ -99,58 +101,128 @@
   </div>
 
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    if (!localStorage.getItem('grapeiq_token')) { window.location.href = 'login.html'; return; }
-    document.getElementById('logout-btn').addEventListener('click', () => { localStorage.removeItem('grapeiq_token'); window.location.href = 'login.html'; });
+    // --- Configuración y Autenticación Estandarizada ---
+    const API_BASE_URL = 'http://127.0.0.1:8000';
+    const TOKEN_KEY = 'accessToken';
+    const ROLE_KEY = 'userRole';
 
-    let pendingOrders = [];
-    const dailyLogForm = document.getElementById('daily-log-form');
-    const pendingOrdersList = document.getElementById('pending-orders-list');
-
-    dailyLogForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const salesData = [];
-      dailyLogForm.querySelectorAll('tbody tr').forEach(row => {
-        salesData.push({
-          productName: row.cells[0].innerText,
-          unitsSold: { online: parseInt(row.querySelector('input[name^="sold_online"]').value, 10) || 0, physical: parseInt(row.querySelector('input[name^="sold_physical"]').value, 10) || 0 },
-          cost: parseFloat(row.querySelector('input[name^="cost"]').value) || null
-        });
-      });
-      const supplierName = document.getElementById('supplier-name').value.trim();
-      const promisedDeliveryDate = document.getElementById('promised-delivery').value;
-      if (supplierName && promisedDeliveryDate) {
-        pendingOrders.push({ id: Date.now(), name: supplierName, date: promisedDeliveryDate });
-        renderPendingOrders();
-      }
-      console.log('Datos del Registro Diario:', JSON.stringify({ sales: salesData }, null, 2));
-      alert('Datos registrados con éxito.');
-      dailyLogForm.reset();
-    });
-
-    function renderPendingOrders() {
-      if (pendingOrders.length === 0) {
-        pendingOrdersList.innerHTML = '<p class="text-stone-500 text-center py-2">No hay pedidos pendientes.</p>'; return;
-      }
-      pendingOrdersList.innerHTML = '';
-      pendingOrders.forEach(order => {
-        const el = document.createElement('div');
-        el.className = 'flex justify-between items-center bg-stone-100 p-2 rounded-lg';
-        el.innerHTML = `<div><span class="font-semibold">${order.name}</span><span class="text-stone-500 ml-2">(Prometido: ${order.date})</span></div><button data-order-id="${order.id}" class="mark-received-btn text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full font-semibold hover:bg-green-300">Marcar como Recibido</button>`;
-        pendingOrdersList.appendChild(el);
-      });
+    function requireAuth() {
+        if (!localStorage.getItem(TOKEN_KEY)) {
+            window.location.href = 'login.html';
+        }
     }
-    pendingOrdersList.addEventListener('click', (e) => {
-      if (e.target.classList.contains('mark-received-btn')) {
-        const id = parseInt(e.target.dataset.orderId, 10);
-        const order = pendingOrders.find(o => o.id === id);
-        alert(`Pedido de ${order.name} marcado como recibido.`);
-        pendingOrders = pendingOrders.filter(o => o.id !== id);
+
+    function logout() {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(ROLE_KEY);
+        window.location.href = 'login.html';
+    }
+
+    async function apiFetch(endpoint, options = {}) {
+        const headers = { 'Content-Type': 'application/json' };
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        if (options.body && options.body instanceof FormData) {
+            delete headers['Content-Type'];
+        }
+        const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+        if (resp.status === 401) {
+            logout();
+            throw new Error('Sesión expirada o no autorizada.');
+        }
+        if (!resp.ok) {
+            let msg = 'Ocurrió un error en la API';
+            try {
+                const j = await resp.json();
+                msg = j.detail || msg;
+            } catch {}
+            throw new Error(msg);
+        }
+        const ct = resp.headers.get('content-type') || '';
+        return ct.includes('application/json') ? resp.json() : resp.text();
+    }
+
+    function updateUIVisibility() {
+        const role = localStorage.getItem(ROLE_KEY);
+        if (role === 'lector') {
+            const menuCatalogo = document.getElementById('menu-catalogo');
+            const menuRegistro = document.getElementById('menu-registro-diario');
+            if (menuCatalogo) menuCatalogo.style.display = 'none';
+            if (menuRegistro) menuRegistro.style.display = 'none';
+        }
+    }
+
+    // --- Lógica específica de la página de Registro Diario ---
+    function setupPageEventListeners() {
+        let pendingOrders = [];
+        const dailyLogForm = document.getElementById('daily-log-form');
+        const pendingOrdersList = document.getElementById('pending-orders-list');
+
+        if(dailyLogForm) {
+            dailyLogForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const salesData = [];
+                dailyLogForm.querySelectorAll('tbody tr').forEach(row => {
+                    salesData.push({
+                    productName: row.cells[0].innerText,
+                    unitsSold: { online: parseInt(row.querySelector('input[name^="sold_online"]').value, 10) || 0, physical: parseInt(row.querySelector('input[name^="sold_physical"]').value, 10) || 0 },
+                    cost: parseFloat(row.querySelector('input[name^="cost"]').value) || null
+                    });
+                });
+                const supplierName = document.getElementById('supplier-name').value.trim();
+                const promisedDeliveryDate = document.getElementById('promised-delivery').value;
+                if (supplierName && promisedDeliveryDate) {
+                    pendingOrders.push({ id: Date.now(), name: supplierName, date: promisedDeliveryDate });
+                    renderPendingOrders();
+                }
+                console.log('Datos del Registro Diario:', JSON.stringify({ sales: salesData }, null, 2));
+                alert('Datos registrados con éxito.');
+                dailyLogForm.reset();
+            });
+        }
+
+        function renderPendingOrders() {
+            if (!pendingOrdersList) return;
+            if (pendingOrders.length === 0) {
+                pendingOrdersList.innerHTML = '<p class="text-stone-500 text-center py-2">No hay pedidos pendientes.</p>'; return;
+            }
+            pendingOrdersList.innerHTML = '';
+            pendingOrders.forEach(order => {
+                const el = document.createElement('div');
+                el.className = 'flex justify-between items-center bg-stone-100 p-2 rounded-lg';
+                el.innerHTML = `<div><span class="font-semibold">${order.name}</span><span class="text-stone-500 ml-2">(Prometido: ${order.date})</span></div><button data-order-id="${order.id}" class="mark-received-btn text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full font-semibold hover:bg-green-300">Marcar como Recibido</button>`;
+                pendingOrdersList.appendChild(el);
+            });
+        }
+
+        if (pendingOrdersList) {
+            pendingOrdersList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('mark-received-btn')) {
+                    const id = parseInt(e.target.dataset.orderId, 10);
+                    const order = pendingOrders.find(o => o.id === id);
+                    if (order) {
+                        alert(`Pedido de ${order.name} marcado como recibido.`);
+                        pendingOrders = pendingOrders.filter(o => o.id !== id);
+                        renderPendingOrders();
+                    }
+                }
+            });
+        }
+        
         renderPendingOrders();
-      }
+    }
+
+    // --- Ejecución al Cargar la Página ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const logoutBtn = document.getElementById('logout-btn');
+        if(logoutBtn) logoutBtn.addEventListener('click', logout);
+
+        requireAuth();
+        updateUIVisibility();
+        setupPageEventListeners(); // Llama a la función que configura la lógica de esta página
     });
-    renderPendingOrders();
-  });
   </script>
 </body>
 </html>

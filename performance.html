@@ -32,12 +32,12 @@
 
     <div class="mb-6 border-b border-stone-200">
       <nav class="flex space-x-8" aria-label="Tabs">
-        <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Análisis de Rendimiento</a>
-        <a href="forecast.html"  class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Predicciones y Escenarios</a>
-        <a href="catalog.html"   class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Catálogo y Stock</a>
-        <a href="daily-log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</a>
-        <a href="weather.html"   class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Clima</a>
-        <a href="settings.html"  class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Configuración</a>
+        <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active" data-tab="performance">Análisis de Rendimiento</a>
+        <a href="forecast.html"   class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="forecast">Predicciones y Escenarios</a>
+        <a href="catalog.html"     id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="catalog">Catálogo y Stock</a>
+        <a href="daily-log.html"   id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="daily-log">Registro Diario</a>
+        <a href="weather.html"     class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="weather">Clima</a>
+        <a href="settings.html"    class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="settings">Configuración</a>
       </nav>
     </div>
 
@@ -124,29 +124,54 @@
   </div>
 
   <script>
-    // --- Auth + Nav ---
+    // --- Configuración y Autenticación Estandarizada ---
     const API_BASE_URL = 'http://127.0.0.1:8000';
-    function requireAuth(){ if(!localStorage.getItem('grapeiq_token')) location.href='login.html';}
-    function logout(){ localStorage.removeItem('grapeiq_token'); location.href='login.html'; }
-    document.getElementById('logout-btn').addEventListener('click', logout);
-    requireAuth();
+    const TOKEN_KEY = 'accessToken'; // Nombre estandarizado
+    const ROLE_KEY = 'userRole';     // Nombre estandarizado
 
-    // --- Utils & API ---
-    async function apiFetch(endpoint, options = {}) {
-      const headers = { 'Content-Type': 'application/json' };
-      const token = localStorage.getItem('grapeiq_token');
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      if (options.body && options.body instanceof FormData) delete headers['Content-Type'];
-      const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-      if (resp.status === 401) { logout(); throw new Error('Sesión expirada o no autorizada.'); }
-      if (!resp.ok) {
-        let msg = 'Ocurrió un error en la API';
-        try { const j = await resp.json(); msg = j.detail || msg; } catch {}
-        throw new Error(msg);
-      }
-      const ct = resp.headers.get('content-type') || '';
-      return ct.includes('application/json') ? resp.json() : resp.text();
+    function requireAuth(){ 
+        if(!localStorage.getItem(TOKEN_KEY)) window.location.href='login.html';
     }
+    
+    function logout(){ 
+        localStorage.removeItem(TOKEN_KEY); 
+        localStorage.removeItem(ROLE_KEY);
+        window.location.href='login.html'; 
+    }
+    
+    document.getElementById('logout-btn').addEventListener('click', logout);
+
+    async function apiFetch(endpoint, options = {}) {
+        const headers = { 'Content-Type': 'application/json' };
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        if (options.body && options.body instanceof FormData) delete headers['Content-Type'];
+        
+        const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+        
+        if (resp.status === 401) { logout(); throw new Error('Sesión expirada o no autorizada.'); }
+        if (!resp.ok) {
+            let msg = 'Ocurrió un error en la API';
+            try { const j = await resp.json(); msg = j.detail || msg; } catch {}
+            throw new Error(msg);
+        }
+        
+        const ct = resp.headers.get('content-type') || '';
+        return ct.includes('application/json') ? resp.json() : resp.text();
+    }
+    
+    function updateUIVisibility() {
+        const role = localStorage.getItem(ROLE_KEY);
+        if (role === 'lector') {
+            const menuCatalogo = document.getElementById('menu-catalogo');
+            const menuRegistro = document.getElementById('menu-registro-diario');
+            if(menuCatalogo) menuCatalogo.style.display = 'none';
+            if(menuRegistro) menuRegistro.style.display = 'none';
+        }
+    }
+
+    // --- Utils & API (código original) ---
     const charts = {};
     function formatCurrency(v){ if (v===null || isNaN(v)) return '€0,00'; return `€${parseFloat(v).toLocaleString('es-ES',{minimumFractionDigits:2, maximumFractionDigits:2})}`; }
     function renderChart(chartId, existing, type, data, options){
@@ -163,7 +188,7 @@
       return new Chart(ctx, { type, data, options });
     }
 
-    // --- KPIs + Analytics ---
+    // --- KPIs + Analytics (código original) ---
     const DOM = {
       kpiSales: document.getElementById('kpi-total-sales'),
       kpiTransfers: document.getElementById('kpi-inventory-transfers'),
@@ -247,14 +272,17 @@
       });
     }
 
-    function renderTopProductsByUnitsChart(){
-      const data = [
-        { sku:"100009", total_units:320 },{ sku:"100024", total_units:290 },
-        { sku:"1001", total_units:250 },{ sku:"100145", total_units:210 },
-        { sku:"100293", total_units:180 },{ sku:"100500", total_units:160 },
-        { sku:"100600", total_units:140 },{ sku:"100700", total_units:120 },
-        { sku:"100800", total_units:100 },{ sku:"100900", total_units:90 }
-      ];
+    function renderTopProductsByUnitsChart(data){
+        // He añadido los datos que faltaban desde tu archivo original
+        if (!Array.isArray(data) || data.length === 0) {
+            data = [
+                { sku:"100009", total_units:320 },{ sku:"100024", total_units:290 },
+                { sku:"1001", total_units:250 },{ sku:"100145", total_units:210 },
+                { sku:"100293", total_units:180 },{ sku:"100500", total_units:160 },
+                { sku:"100600", total_units:140 },{ sku:"100700", total_units:120 },
+                { sku:"100800", total_units:100 },{ sku:"100900", total_units:90 }
+            ];
+        }
       const chartData = {
         labels: data.map(p=>p.sku),
         datasets: [{ label:'Unidades Vendidas', data: data.map(p=>p.total_units),
@@ -344,7 +372,12 @@
       });
     }
 
-    loadPerformanceData();
+    // --- Ejecución al Cargar la Página ---
+    document.addEventListener('DOMContentLoaded', () => {
+        requireAuth();
+        updateUIVisibility();
+        loadPerformanceData();
+    });
   </script>
 </body>
 </html>

@@ -1,41 +1,45 @@
+from .. import crud
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from ..database import get_db_connection
+
 from ..services import security
+from .. import schemas
 
 router = APIRouter(
     prefix="/api/auth",
-    tags=["Authentication"] # Etiqueta para la documentación automática
+    tags=["Authentication"]
 )
 
-@router.post("/token")
+@router.post("/token", response_model=schemas.Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     """
-    Endpoint para el login de usuarios.
-    Recibe un username y password y devuelve un token de acceso.
+    Verifica las credenciales y devuelve un token de acceso junto con el rol del usuario.
     """
-    # Busca al usuario en la base de datos
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT hashed_password, tenant_id FROM users WHERE username = %s",
-                (form_data.username,)
-            )
-            user_record = cur.fetchone()
+    user = crud.get_user_by_username(username=form_data.username)
 
-            # Si el usuario no existe o la contraseña es incorrecta, devuelve un error
-            if not user_record or not security.verify_password(form_data.password, user_record[0]):
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Usuario o contraseña incorrectos",
-                    headers={"WWW-Authenticate": "Bearer"},
-                )
-            
-            tenant_id = str(user_record[1])
+    if not user or not security.verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Usuario o contraseña incorrectos",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Si el usuario no tiene un rol en la base de datos (porque es antiguo),
+    # le asignamos 'admin' por defecto para que pueda iniciar sesión.
+    # Esto hace que el sistema sea retrocompatible.
+    user_role = user.role or "admin"
 
-            # Si las credenciales son correctas, crea el token JWT
-            access_token = security.create_access_token(
-                data={"sub": form_data.username, "tenant_id": tenant_id}
-            )
-            
-            return {"access_token": access_token, "token_type": "bearer"}
+    access_token = security.create_access_token(
+        data={
+            "sub": user.username, 
+            "tenant_id": str(user.tenant_id),
+            "role": user_role 
+        }
+    )
+    
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "role": user_role
+    }
+

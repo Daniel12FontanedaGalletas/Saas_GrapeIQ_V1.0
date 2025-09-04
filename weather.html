@@ -29,9 +29,11 @@
   <div class="p-4 sm:p-8">
     <header class="flex justify-between items-center mb-6">
       <div class="flex items-center gap-4">
-        <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
-        <span class="text-3xl font-light text-stone-400">|</span>
-        <h1 class="text-3xl font-semibold text-stone-700">Clima</h1>
+        <a href="performance.html" class="flex items-center gap-4">
+            <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+            <span class="text-3xl font-light text-stone-400">|</span>
+            <h1 class="text-3xl font-semibold text-stone-700">Clima</h1>
+        </a>
       </div>
       <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
     </header>
@@ -40,8 +42,8 @@
       <nav class="flex space-x-8" aria-label="Tabs">
         <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Análisis de Rendimiento</a>
         <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Predicciones y Escenarios</a>
-        <a href="catalog.html"  class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Catálogo y Stock</a>
-        <a href="daily-log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</a>
+        <a href="catalog.html"   id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Catálogo y Stock</a>
+        <a href="daily-log.html" id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</a>
         <a href="weather.html"   class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Clima</a>
         <a href="settings.html"  class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Configuración</a>
       </nav>
@@ -111,64 +113,126 @@
   </div>
 
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    if (!localStorage.getItem('grapeiq_token')) { window.location.href='login.html'; return; }
-    document.getElementById('logout-btn').addEventListener('click', ()=>{ localStorage.removeItem('grapeiq_token'); window.location.href='login.html'; });
-    const input = document.getElementById('city-input'), clearBtn = document.getElementById('clear-input'), searchBtn = document.getElementById('search-btn'), geoBtn = document.getElementById('geo-btn'), suggestions = document.getElementById('suggestions'), errorMsg = document.getElementById('error-msg'), recentTags = document.getElementById('recent-tags'), locName = document.getElementById('loc-name'), locCoords = document.getElementById('loc-coords'), updatedAt = document.getElementById('updated-at'), tempVal = document.getElementById('temp-val'), humVal = document.getElementById('hum-val'), cloudChip = document.getElementById('cloud-chip');
-    let debounceTimer=null, sparkChart=null, map = L.map('map', { zoomControl:true, scrollWheelZoom:true }).setView([40.4,-3.7], 8), marker=null, cloudCircle=null;
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'&copy; OpenStreetMap'}).addTo(map);
+    // --- Configuración y Autenticación Estandarizada ---
+    const API_BASE_URL = 'http://127.0.0.1:8000';
+    const TOKEN_KEY = 'accessToken';
+    const ROLE_KEY = 'userRole';
 
-    function setCloudOverlay(lat, lon, cloudPct){ const radius=12000, opacity=Math.max(0.08, Math.min(0.7, (cloudPct||0)/100*0.7)); if (cloudCircle) map.removeLayer(cloudCircle); cloudCircle=L.circle([lat,lon],{ radius, color:'rgba(92,26,51,0.35)', weight:1, fillColor:'#ffffff', fillOpacity:opacity }).addTo(map); }
-    const fmtTime = iso => { try{return new Date(iso).toLocaleString('es-ES',{dateStyle:'medium',timeStyle:'short'})}catch{return iso} };
-    function saveRecent(city){ const max=6, list=JSON.parse(localStorage.getItem('weather_recent')||'[]'), newList=[city, ...list.filter(x=>x.id!==city.id)].slice(0,max); localStorage.setItem('weather_recent', JSON.stringify(newList)); renderRecents(); }
-    function renderRecents(){
-      const list=JSON.parse(localStorage.getItem('weather_recent')||'[]');
-      recentTags.innerHTML='';
-      if(!list.length){ recentTags.innerHTML='<span class="text-stone-400 text-sm">Sin búsquedas aún.</span>'; return; }
-      list.forEach(c=>{ const b=document.createElement('button'); b.className='px-3 py-1 pill bg-stone-100 hover:bg-stone-200 text-sm'; b.textContent=`${c.name}, ${c.country_code||c.country||''}`.replace(/, $/,''); b.addEventListener('click',()=>selectCity(c)); recentTags.appendChild(b); });
+    function requireAuth() {
+        if (!localStorage.getItem(TOKEN_KEY)) {
+            window.location.href = 'login.html';
+        }
     }
-    async function geocode(q){ const url=`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=es&format=json`, r=await fetch(url); if(!r.ok) throw new Error('No se pudo buscar la ciudad.'); const data=await r.json(); return (data.results||[]).map(x=>({id:`${x.id}`,name:x.name,country:x.country,country_code:x.country_code,latitude:x.latitude,longitude:x.longitude,admin1:x.admin1})); }
-    async function fetchCurrent(lat,lon){ const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,cloud_cover&hourly=temperature_2m&forecast_days=2&timezone=auto`, r=await fetch(url); if(!r.ok) throw new Error('No se pudo obtener el clima.'); return r.json(); }
-    function renderSuggestions(items){
-      suggestions.innerHTML=''; if(!items || !items.length){ suggestions.classList.add('hidden'); return; }
-      items.forEach(c=>{ const div=document.createElement('div'); div.className='suggestion-item px-3 py-2 cursor-pointer'; const region=c.admin1?` · ${c.admin1}`:''; div.innerHTML=`<span class="font-semibold">${c.name}</span><span class="text-stone-500">, ${c.country}${region}</span>`; div.addEventListener('click',()=>{ selectCity(c); suggestions.classList.add('hidden'); }); suggestions.appendChild(div); });
-      suggestions.classList.remove('hidden');
+
+    function logout() {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(ROLE_KEY);
+        window.location.href = 'login.html';
     }
-    function renderSparkline(hourly){
-      if(!hourly?.time || !hourly?.temperature_2m) return;
-      const now=Date.now(), pts=[];
-      for(let i=0;i<hourly.time.length;i++){ const t=new Date(hourly.time[i]).getTime(); if(t>=now-24*3600*1000 && t<=now+6*3600*1000){ pts.push({x:t,y:hourly.temperature_2m[i]}); } }
-      const ctx=document.getElementById('tempSpark').getContext('2d');
-      if(sparkChart) sparkChart.destroy();
-      sparkChart=new Chart(ctx,{ type:'line', data:{datasets:[{data:pts,borderColor:'#5C1A33',backgroundColor:'rgba(92,26,51,.12)',tension:.35,fill:true,pointRadius:0}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}} });
+
+    async function apiFetch(endpoint, options = {}) {
+        const headers = { 'Content-Type': 'application/json' };
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        if (options.body && options.body instanceof FormData) {
+            delete headers['Content-Type'];
+        }
+        const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+        if (resp.status === 401) {
+            logout();
+            throw new Error('Sesión expirada o no autorizada.');
+        }
+        if (!resp.ok) {
+            let msg = 'Ocurrió un error en la API';
+            try {
+                const j = await resp.json();
+                msg = j.detail || msg;
+            } catch {}
+            throw new Error(msg);
+        }
+        const ct = resp.headers.get('content-type') || '';
+        return ct.includes('application/json') ? resp.json() : resp.text();
     }
-    async function selectCity(city){
-      errorMsg.textContent=''; input.value=`${city.name}, ${city.country_code||city.country||''}`.replace(/, $/,'');
-      tempVal.textContent='—'; humVal.textContent='—'; updatedAt.textContent='Cargando…'; updatedAt.classList.add('shimmer');
-      try{
-        const data=await fetchCurrent(city.latitude,city.longitude), t=data.current?.temperature_2m, h=data.current?.relative_humidity_2m, cc=data.current?.cloud_cover, time=data.current?.time;
-        locName.textContent=`${city.name}${city.country?', '+city.country:''}`;
-        locCoords.textContent=`Lat ${city.latitude.toFixed(2)}, Lon ${city.longitude.toFixed(2)}`;
-        updatedAt.textContent=`Actualizado: ${fmtTime(time)}`; updatedAt.classList.remove('shimmer');
-        tempVal.textContent=(typeof t==='number')?t.toFixed(1):'—'; humVal.textContent =(typeof h==='number')?h.toFixed(0):'—';
-        cloudChip.textContent =`Nubosidad: ${typeof cc==='number'?cc.toFixed(0)+'%':'—'}`;
-        renderSparkline(data.hourly);
-        const lat=city.latitude, lon=city.longitude;
-        if(marker) map.removeLayer(marker); marker=L.marker([lat,lon]).addTo(map).bindPopup(`<b>${city.name}</b><br>${city.country||''}`).openPopup();
-        map.setView([lat,lon], 11); setCloudOverlay(lat,lon,(typeof cc==='number')?cc:0);
-        saveRecent(city);
-      }catch(e){ updatedAt.classList.remove('shimmer'); errorMsg.textContent=e.message; }
+
+    function updateUIVisibility() {
+        const role = localStorage.getItem(ROLE_KEY);
+        if (role === 'lector') {
+            const menuCatalogo = document.getElementById('menu-catalogo');
+            const menuRegistro = document.getElementById('menu-registro-diario');
+            if (menuCatalogo) menuCatalogo.style.display = 'none';
+            if (menuRegistro) menuRegistro.style.display = 'none';
+        }
     }
-    let inputDebounce;
-    input.addEventListener('input', ()=>{ errorMsg.textContent=''; clearTimeout(inputDebounce); const q=input.value.trim(); if(q.length<2){ suggestions.classList.add('hidden'); return; } inputDebounce=setTimeout(async()=>{ try{ renderSuggestions(await geocode(q)); } catch(e){ suggestions.classList.add('hidden'); errorMsg.textContent=e.message; } },300); });
-    input.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); searchBtn.click(); }});
-    document.addEventListener('click',(e)=>{ if (!e.target.closest('#city-input') && !e.target.closest('#suggestions')) { suggestions.classList.add('hidden'); } });
-    clearBtn.addEventListener('click',(e)=>{ e.preventDefault(); input.value=''; suggestions.classList.add('hidden'); errorMsg.textContent=''; });
-    searchBtn.addEventListener('click', async (e)=>{ e.preventDefault(); const q=input.value.trim(); if(q.length<2){ errorMsg.textContent='Introduce al menos 2 caracteres.'; return; } try{ const items=await geocode(q); if(!items.length){ errorMsg.textContent='No se encontraron resultados.'; return; } selectCity(items[0]); suggestions.classList.add('hidden'); }catch(err){ errorMsg.textContent=err.message; } });
-    geoBtn.addEventListener('click',(e)=>{ e.preventDefault(); errorMsg.textContent=''; if(!navigator.geolocation){ errorMsg.textContent='Geolocalización no soportada.'; return; } navigator.geolocation.getCurrentPosition(async pos=>{ const {latitude,longitude}=pos.coords; try{ const url=`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=es&format=json`, r=await fetch(url), data=await r.json(), res=(data.results&&data.results[0])||{name:'Mi ubicación',country:'',country_code:''}; selectCity({id:`geo-${Date.now()}`,name:res.name||'Mi ubicación',country:res.country||'',country_code:res.country_code||'',latitude,longitude,admin1:res.admin1||''}); }catch{ selectCity({id:`geo-${Date.now()}`,name:'Mi ubicación',country:'',country_code:'',latitude,longitude}); } }, ()=>{ errorMsg.textContent='No se pudo obtener tu ubicación.'; }, {enableHighAccuracy:true,timeout:8000}); });
-    renderRecents();
-    (async()=>{ try{ const items=await geocode('Madrid'); if(items.length) selectCity(items[0]); }catch{} })();
-  });
+
+    // --- Lógica específica de la página de Clima ---
+    function setupPageEventListeners() {
+        const input = document.getElementById('city-input'), clearBtn = document.getElementById('clear-input'), searchBtn = document.getElementById('search-btn'), geoBtn = document.getElementById('geo-btn'), suggestions = document.getElementById('suggestions'), errorMsg = document.getElementById('error-msg'), recentTags = document.getElementById('recent-tags'), locName = document.getElementById('loc-name'), locCoords = document.getElementById('loc-coords'), updatedAt = document.getElementById('updated-at'), tempVal = document.getElementById('temp-val'), humVal = document.getElementById('hum-val'), cloudChip = document.getElementById('cloud-chip');
+        let debounceTimer=null, sparkChart=null, map = L.map('map', { zoomControl:true, scrollWheelZoom:true }).setView([40.4,-3.7], 8), marker=null, cloudCircle=null;
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'&copy; OpenStreetMap'}).addTo(map);
+
+        function setCloudOverlay(lat, lon, cloudPct){ const radius=12000, opacity=Math.max(0.08, Math.min(0.7, (cloudPct||0)/100*0.7)); if (cloudCircle) map.removeLayer(cloudCircle); cloudCircle=L.circle([lat,lon],{ radius, color:'rgba(92,26,51,0.35)', weight:1, fillColor:'#ffffff', fillOpacity:opacity }).addTo(map); }
+        const fmtTime = iso => { try{return new Date(iso).toLocaleString('es-ES',{dateStyle:'medium',timeStyle:'short'})}catch{return iso} };
+        function saveRecent(city){ const max=6, list=JSON.parse(localStorage.getItem('weather_recent')||'[]'), newList=[city, ...list.filter(x=>x.id!==city.id)].slice(0,max); localStorage.setItem('weather_recent', JSON.stringify(newList)); renderRecents(); }
+        function renderRecents(){
+            const list=JSON.parse(localStorage.getItem('weather_recent')||'[]');
+            recentTags.innerHTML='';
+            if(!list.length){ recentTags.innerHTML='<span class="text-stone-400 text-sm">Sin búsquedas aún.</span>'; return; }
+            list.forEach(c=>{ const b=document.createElement('button'); b.className='px-3 py-1 pill bg-stone-100 hover:bg-stone-200 text-sm'; b.textContent=`${c.name}, ${c.country_code||c.country||''}`.replace(/, $/,''); b.addEventListener('click',()=>selectCity(c)); recentTags.appendChild(b); });
+        }
+        async function geocode(q){ const url=`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=es&format=json`, r=await fetch(url); if(!r.ok) throw new Error('No se pudo buscar la ciudad.'); const data=await r.json(); return (data.results||[]).map(x=>({id:`${x.id}`,name:x.name,country:x.country,country_code:x.country_code,latitude:x.latitude,longitude:x.longitude,admin1:x.admin1})); }
+        async function fetchCurrent(lat,lon){ const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,cloud_cover&hourly=temperature_2m&forecast_days=2&timezone=auto`, r=await fetch(url); if(!r.ok) throw new Error('No se pudo obtener el clima.'); return r.json(); }
+        function renderSuggestions(items){
+            suggestions.innerHTML=''; if(!items || !items.length){ suggestions.classList.add('hidden'); return; }
+            items.forEach(c=>{ const div=document.createElement('div'); div.className='suggestion-item px-3 py-2 cursor-pointer'; const region=c.admin1?` · ${c.admin1}`:''; div.innerHTML=`<span class="font-semibold">${c.name}</span><span class="text-stone-500">, ${c.country}${region}</span>`; div.addEventListener('click',()=>{ selectCity(c); suggestions.classList.add('hidden'); }); suggestions.appendChild(div); });
+            suggestions.classList.remove('hidden');
+        }
+        function renderSparkline(hourly){
+            if(!hourly?.time || !hourly?.temperature_2m) return;
+            const now=Date.now(), pts=[];
+            for(let i=0;i<hourly.time.length;i++){ const t=new Date(hourly.time[i]).getTime(); if(t>=now-24*3600*1000 && t<=now+6*3600*1000){ pts.push({x:t,y:hourly.temperature_2m[i]}); } }
+            const ctx=document.getElementById('tempSpark').getContext('2d');
+            if(sparkChart) sparkChart.destroy();
+            sparkChart=new Chart(ctx,{ type:'line', data:{datasets:[{data:pts,borderColor:'#5C1A33',backgroundColor:'rgba(92,26,51,.12)',tension:.35,fill:true,pointRadius:0}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}} });
+        }
+        async function selectCity(city){
+            errorMsg.textContent=''; input.value=`${city.name}, ${city.country_code||city.country||''}`.replace(/, $/,'');
+            tempVal.textContent='—'; humVal.textContent='—'; updatedAt.textContent='Cargando…'; updatedAt.classList.add('shimmer');
+            try{
+                const data=await fetchCurrent(city.latitude,city.longitude), t=data.current?.temperature_2m, h=data.current?.relative_humidity_2m, cc=data.current?.cloud_cover, time=data.current?.time;
+                locName.textContent=`${city.name}${city.country?', '+city.country:''}`;
+                locCoords.textContent=`Lat ${city.latitude.toFixed(2)}, Lon ${city.longitude.toFixed(2)}`;
+                updatedAt.textContent=`Actualizado: ${fmtTime(time)}`; updatedAt.classList.remove('shimmer');
+                tempVal.textContent=(typeof t==='number')?t.toFixed(1):'—'; humVal.textContent =(typeof h==='number')?h.toFixed(0):'—';
+                cloudChip.textContent =`Nubosidad: ${typeof cc==='number'?cc.toFixed(0)+'%':'—'}`;
+                renderSparkline(data.hourly);
+                const lat=city.latitude, lon=city.longitude;
+                if(marker) map.removeLayer(marker); marker=L.marker([lat,lon]).addTo(map).bindPopup(`<b>${city.name}</b><br>${city.country||''}`).openPopup();
+                map.setView([lat,lon], 11); setCloudOverlay(lat,lon,(typeof cc==='number')?cc:0);
+                saveRecent(city);
+            }catch(e){ updatedAt.classList.remove('shimmer'); errorMsg.textContent=e.message; }
+        }
+        let inputDebounce;
+        input.addEventListener('input', ()=>{ errorMsg.textContent=''; clearTimeout(inputDebounce); const q=input.value.trim(); if(q.length<2){ suggestions.classList.add('hidden'); return; } inputDebounce=setTimeout(async()=>{ try{ renderSuggestions(await geocode(q)); } catch(e){ suggestions.classList.add('hidden'); errorMsg.textContent=e.message; } },300); });
+        input.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); searchBtn.click(); }});
+        document.addEventListener('click',(e)=>{ if (!e.target.closest('#city-input') && !e.target.closest('#suggestions')) { suggestions.classList.add('hidden'); } });
+        clearBtn.addEventListener('click',(e)=>{ e.preventDefault(); input.value=''; suggestions.classList.add('hidden'); errorMsg.textContent=''; });
+        searchBtn.addEventListener('click', async (e)=>{ e.preventDefault(); const q=input.value.trim(); if(q.length<2){ errorMsg.textContent='Introduce al menos 2 caracteres.'; return; } try{ const items=await geocode(q); if(!items.length){ errorMsg.textContent='No se encontraron resultados.'; return; } selectCity(items[0]); suggestions.classList.add('hidden'); }catch(err){ errorMsg.textContent=err.message; } });
+        geoBtn.addEventListener('click',(e)=>{ e.preventDefault(); errorMsg.textContent=''; if(!navigator.geolocation){ errorMsg.textContent='Geolocalización no soportada.'; return; } navigator.geolocation.getCurrentPosition(async pos=>{ const {latitude,longitude}=pos.coords; try{ const url=`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=es&format=json`, r=await fetch(url), data=await r.json(), res=(data.results&&data.results[0])||{name:'Mi ubicación',country:'',country_code:''}; selectCity({id:`geo-${Date.now()}`,name:res.name||'Mi ubicación',country:res.country||'',country_code:res.country_code||'',latitude,longitude,admin1:res.admin1||''}); }catch{ selectCity({id:`geo-${Date.now()}`,name:'Mi ubicación',country:'',country_code:'',latitude,longitude}); } }, ()=>{ errorMsg.textContent='No se pudo obtener tu ubicación.'; }, {enableHighAccuracy:true,timeout:8000}); });
+        renderRecents();
+        (async()=>{ try{ const items=await geocode('Madrid'); if(items.length) selectCity(items[0]); }catch{} })();
+    }
+
+    // --- Ejecución al Cargar la Página ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const logoutBtn = document.getElementById('logout-btn');
+        if(logoutBtn) logoutBtn.addEventListener('click', logout);
+
+        requireAuth();
+        updateUIVisibility();
+        setupPageEventListeners(); // Llama a la función que configura la lógica de esta página
+    });
   </script>
 </body>
 </html>

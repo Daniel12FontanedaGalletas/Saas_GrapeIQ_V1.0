@@ -2,6 +2,7 @@ import os
 import psycopg2
 from dotenv import load_dotenv
 from passlib.context import CryptContext
+import argparse # <-- 1. Importamos argparse para leer argumentos de la terminal
 
 # Carga las variables de entorno
 load_dotenv()
@@ -15,66 +16,32 @@ def get_password_hash(password):
 
 def create_database_schema(cur):
     """Crea las tablas de la base de datos si no existen."""
-    print("Creando el esquema de la base de datos (si es necesario)...")
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS tenants (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            name VARCHAR(255) NOT NULL,
-            created_at TIMESTAMPTZ DEFAULT NOW()
-        );
-    """)
+    print("Verificando el esquema de la base de datos...")
+    # --- MODIFICACIÓN: Añadimos la columna 'role' a la tabla de usuarios ---
+    # Le damos un valor por defecto 'lector' para mantener la consistencia.
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+            tenant_id UUID,
             username VARCHAR(255) UNIQUE NOT NULL,
             hashed_password VARCHAR(255) NOT NULL,
+            role VARCHAR(50) DEFAULT 'lector',
             created_at TIMESTAMPTZ DEFAULT NOW()
         );
     """)
-    # --- CORRECCIÓN CLAVE: Se usa 'product_type' consistentemente ---
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS products (
-            id SERIAL PRIMARY KEY,
-            tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
-            sku VARCHAR(255) NOT NULL,
-            name VARCHAR(255),
-            product_type VARCHAR(100),
-            supplier VARCHAR(255),
-            price_per_unit NUMERIC(10, 2),
-            cost_per_unit NUMERIC(10, 2),
-            stock_quantity INTEGER,
-            UNIQUE(tenant_id, sku)
-        );
-    """)
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS sales (
-            id SERIAL PRIMARY KEY,
-            tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
-            sale_date DATE NOT NULL,
-            sku VARCHAR(255) NOT NULL,
-            channel VARCHAR(50),
-            sales_value NUMERIC(10, 2)
-        );
-    """)
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS inventory_transfers (
-            id SERIAL PRIMARY KEY,
-            tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
-            transfer_date DATE NOT NULL,
-            sku VARCHAR(255) NOT NULL,
-            quantity INTEGER
-        );
-    """)
-    print("Esquema de base de datos verificado/creado con éxito.")
+    # El resto de las tablas se mantienen igual
+    cur.execute("CREATE TABLE IF NOT EXISTS tenants (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(255) NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW());")
+    cur.execute("CREATE TABLE IF NOT EXISTS products (id SERIAL PRIMARY KEY, tenant_id UUID, sku VARCHAR(255) NOT NULL, name VARCHAR(255), product_type VARCHAR(100), supplier VARCHAR(255), price_per_unit NUMERIC(10, 2), cost_per_unit NUMERIC(10, 2), stock_quantity INTEGER, UNIQUE(tenant_id, sku));")
+    cur.execute("CREATE TABLE IF NOT EXISTS sales (id SERIAL PRIMARY KEY, tenant_id UUID, sale_date DATE NOT NULL, sku VARCHAR(255) NOT NULL, channel VARCHAR(50), sales_value NUMERIC(10, 2));")
+    cur.execute("CREATE TABLE IF NOT EXISTS inventory_transfers (id SERIAL PRIMARY KEY, tenant_id UUID, transfer_date DATE NOT NULL, sku VARCHAR(255) NOT NULL, quantity INTEGER);")
+    print("Eschema de base de datos verificado.")
 
-def create_initial_data():
-    """Crea un tenant y un usuario administrador inicial."""
-    tenant_name = "Mi Primera Empresa"
-    admin_username = "admin"
-    admin_password = "password123"
+# --- 2. MODIFICACIÓN: Creamos una función más genérica ---
+def create_user(username, password, role):
+    """Crea un nuevo usuario en la base de datos con un rol específico."""
     
-    hashed_password = get_password_hash(admin_password)
+    hashed_password = get_password_hash(password)
+    tenant_name = "Default Tenant" # Asumimos un tenant por defecto para los nuevos usuarios
     
     conn = None
     try:
@@ -84,38 +51,36 @@ def create_initial_data():
         
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
-        print("¡Conexión a la base de datos exitosa!")
-
-        # Crear tablas
+        
+        # Asegurarse de que el esquema de la BD está creado
         create_database_schema(cur)
 
         # Verificar si el usuario ya existe
-        cur.execute("SELECT id FROM users WHERE username = %s", (admin_username,))
+        cur.execute("SELECT id FROM users WHERE username = %s", (username,))
         if cur.fetchone():
-            print(f"El usuario '{admin_username}' ya existe. No se creará de nuevo.")
-            conn.commit()
+            print(f"El usuario '{username}' ya existe. No se creará de nuevo.")
             return
 
-        # 1. Crear el Tenant
-        print(f"Creando tenant: '{tenant_name}'...")
-        cur.execute("INSERT INTO tenants (name) VALUES (%s) RETURNING id;", (tenant_name,))
-        tenant_id = cur.fetchone()[0]
-        print(f"Tenant creado con ID: {tenant_id}")
+        # Verificar si el tenant por defecto existe, si no, crearlo.
+        cur.execute("SELECT id FROM tenants WHERE name = %s", (tenant_name,))
+        tenant_id_row = cur.fetchone()
+        if not tenant_id_row:
+            print(f"Creando tenant por defecto: '{tenant_name}'...")
+            cur.execute("INSERT INTO tenants (name) VALUES (%s) RETURNING id;", (tenant_name,))
+            tenant_id = cur.fetchone()[0]
+        else:
+            tenant_id = tenant_id_row[0]
 
-        # 2. Crear el Usuario
-        print(f"Creando usuario: '{admin_username}'...")
+        # --- MODIFICACIÓN: Insertamos el usuario con su rol ---
+        print(f"Creando usuario: '{username}' con rol: '{role}'...")
         cur.execute(
-            "INSERT INTO users (tenant_id, username, hashed_password) VALUES (%s, %s, %s);",
-            (tenant_id, admin_username, hashed_password)
+            "INSERT INTO users (tenant_id, username, hashed_password, role) VALUES (%s, %s, %s, %s);",
+            (tenant_id, username, hashed_password, role)
         )
         print("Usuario creado con éxito.")
 
         conn.commit()
         
-        print("\n¡Configuración inicial completada!")
-        print(f"  -> Usuario: {admin_username}")
-        print(f"  -> Contraseña: {admin_password}")
-
     except Exception as e:
         print(f"\n--- ERROR ---: {e}")
         if conn:
@@ -125,5 +90,18 @@ def create_initial_data():
             conn.close()
             print("\nConexión cerrada.")
 
+# --- 3. MODIFICACIÓN: Usamos argparse para leer los datos desde la terminal ---
 if __name__ == "__main__":
-    create_initial_data()
+    # Creamos un objeto para parsear los argumentos
+    parser = argparse.ArgumentParser(description="Crear un nuevo usuario en la base de datos.")
+    
+    # Argumentos que el script aceptará
+    parser.add_argument("username", type=str, help="El nombre de usuario.")
+    parser.add_argument("password", type=str, help="La contraseña del usuario.")
+    parser.add_argument("--role", type=str, default="lector", choices=['lector', 'admin'], help="El rol del usuario (lector o admin). Por defecto: lector.")
+    
+    # Leemos los argumentos que se pasaron por la terminal
+    args = parser.parse_args()
+    
+    # Llamamos a la función principal con los argumentos leídos
+    create_user(args.username, args.password, args.role)
