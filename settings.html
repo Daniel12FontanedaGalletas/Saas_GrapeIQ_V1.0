@@ -11,36 +11,120 @@
   <style>
     body{font-family:'Montserrat',sans-serif;background-color:#F8F7F4}
     .tab-active{border-color:#5C1A33;color:#5C1A33;font-weight:700}
+    .wine-grad{background-image:linear-gradient(to right,#5C1A33,#8C2B4F)}
   </style>
 </head>
 <body class="text-stone-800">
+  <div class="fixed inset-0 w-full h-full z-[-1] pointer-events-none">
+    <img src="assets/pexels-ahmetyuksek-33771535.jpg" alt="Fondo de viñedo" class="w-full h-full object-cover"/>
+  </div>
+
   <div class="p-4 sm:p-8">
-    <header class="flex justify-between items-center mb-6">
-      <div class="flex items-center gap-4">
-        <a href="performance.html" class="flex items-center gap-4">
-            <img src="GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
-            <span class="text-3xl font-light text-stone-400">|</span>
-            <h1 class="text-3xl font-semibold text-stone-700">Configuración</h1>
-        </a>
-      </div>
-      <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
-    </header>
+    <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg mb-8">
+        <header class="flex justify-between items-center p-6">
+          <div class="flex items-center gap-4">
+              <a href="performance.html" class="flex items-center gap-4">
+                  <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+                  <span class="text-3xl font-light text-stone-400">|</span>
+                  <h1 class="text-3xl font-semibold text-stone-700">Configuración</h1>
+              </a>
+          </div>
+          <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
+        </header>
 
-    <div class="mb-6 border-b border-stone-200">
-      <nav class="flex space-x-8" aria-label="Tabs">
-        <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Análisis de Rendimiento</a>
-        <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Predicciones y Escenarios</a>
-        <a href="catalog.html" id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Catálogo y Stock</a>
-        <a href="daily-log.html" id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</a>
-        <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Clima</a>
-        <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Configuración</a>
-      </nav>
+        <div class="border-t border-stone-200 px-6">
+            <nav class="flex space-x-8" aria-label="Tabs">
+                <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Análisis de Rendimiento</a>
+                <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Predicciones y Escenarios</a>
+                <a href="catalog.html" id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Catálogo y Stock</a>
+                <a href="daily-log.html" id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</a>
+                <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Clima</a>
+                <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Configuración</a>
+            </nav>
+        </div>
     </div>
-
+    
     <main>
-      <div class="text-center p-16 bg-white rounded-2xl shadow-lg">
-        <h2 class="text-2xl font-bold">Configuración</h2>
-        <p class="text-stone-500">Próximamente: La gestión de tu cuenta, usuarios y facturación.</p>
+      <div class="max-w-[1200px] mx-auto bg-white/80 backdrop-blur-md rounded-3xl shadow-2xl p-10 border border-stone-100">
+        <h2 class="text-3xl font-extrabold mb-8 text-stone-800 tracking-tight text-center">Configuración de Cuenta</h2>
+        <div class="flex flex-col lg:flex-row gap-10">
+          <div class="flex-1 flex flex-col gap-10">
+            <section class="bg-white rounded-2xl shadow p-8 border border-stone-100 flex flex-col justify-between min-h-[420px]">
+              <div>
+                <h3 class="text-xl font-semibold mb-4 text-stone-700">Perfil</h3>
+                <form id="profile-form" class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-semibold mb-1 text-stone-600" for="username">Nombre / Email (login)</label>
+                    <input type="text" id="username" name="username" class="w-full p-3 rounded-lg border border-stone-300 bg-stone-50" placeholder="tu@email.com" autocomplete="username">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold mb-1 text-stone-600" for="role">Rol</label>
+                    <select id="role" name="role" class="w-full p-3 rounded-lg border border-stone-300 bg-stone-50">
+                        <option value="admin">Administrador</option>
+                        <option value="lector">Lector</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="wine-grad text-white px-6 py-2 rounded-full font-bold hover:opacity-90 transition-opacity w-full">Guardar Cambios</button>
+                  <p id="success-message" class="mt-2 text-center text-green-600 font-semibold h-4"></p>
+                  <p id="error-message" class="mt-2 text-center text-red-600 font-semibold h-4"></p>
+                </form>
+              </div>
+            </section>
+            <section class="bg-white rounded-2xl shadow p-8 border border-stone-100 flex flex-col justify-between">
+              <h3 class="text-xl font-semibold mb-4 text-stone-700">Preferencias</h3>
+              <form id="preferences-form" class="grid grid-cols-1 gap-6">
+                <div>
+                  <label class="flex items-center gap-2">
+                    <input type="checkbox" id="pref-darkmode" class="rounded border-stone-300 text-[#5C1A33] focus:ring-[#5C1A33]">
+                    Activar modo oscuro
+                  </label>
+                </div>
+                <div>
+                  <label class="flex items-center gap-2">
+                    <input type="checkbox" id="pref-notifications" class="rounded border-stone-300 text-[#5C1A33] focus:ring-[#5C1A33]">
+                    Recibir notificaciones por email
+                  </label>
+                </div>
+              </form>
+            </section>
+          </div>
+          <div class="flex-1 flex flex-col gap-10">
+            <section class="flex flex-col justify-center">
+              <div class="w-full bg-white rounded-2xl shadow-xl p-8 border border-stone-100">
+                <div class="flex flex-col items-center mb-6">
+                  <div class="bg-[#8C2B4F]/10 rounded-full p-3 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[#8C2B4F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.104 0 2-.896 2-2V7a2 2 0 10-4 0v2c0 1.104.896 2 2 2zm0 0v2m0 4h.01"/>
+                    </svg>
+                  </div>
+                  <h3 class="text-xl font-semibold text-stone-800 mb-1">Cambiar contraseña</h3>
+                  <p class="text-stone-500 text-sm text-center">Por seguridad, confirma tu contraseña actual.</p>
+                </div>
+                <form id="password-form" class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium mb-1 text-stone-600" for="current-password">Contraseña actual</label>
+                    <input type="password" id="current-password" class="w-full p-3 rounded-lg border border-stone-300 bg-stone-50" autocomplete="current-password">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium mb-1 text-stone-600" for="new-password">Nueva contraseña</label>
+                    <input type="password" id="new-password" class="w-full p-3 rounded-lg border border-stone-300 bg-stone-50" placeholder="Mínimo 12 caracteres" autocomplete="new-password">
+                  </div>
+                  <button type="submit" class="w-full wine-grad text-white py-3 rounded-full font-bold text-lg">Guardar nueva contraseña</button>
+                </form>
+              </div>
+            </section>
+          </div>
+        </div>
+        <div class="mt-12">
+          <h3 class="text-xl font-semibold mb-4 text-red-700">Zona peligrosa</h3>
+          <div class="bg-red-50 border border-red-200 rounded-lg p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <div class="font-bold text-red-700">Eliminar cuenta</div>
+              <div class="text-red-600 text-sm mt-1">Esta acción es irreversible. Todos tus datos serán eliminados.</div>
+            </div>
+            <button id="delete-account-btn" class="bg-red-600 text-white px-6 py-2 rounded-full font-bold hover:bg-red-700 transition-colors">Eliminar Cuenta</button>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -64,31 +148,24 @@
     }
 
     async function apiFetch(endpoint, options = {}) {
-        const headers = { 'Content-Type': 'application/json' };
+        const headers = { ...options.headers };
         const token = localStorage.getItem(TOKEN_KEY);
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (options.body && !(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(options.body);
         }
-        if (options.body && options.body instanceof FormData) {
-            delete headers['Content-Type'];
-        }
+        
         const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-        if (resp.status === 401) {
-            logout();
-            throw new Error('Sesión expirada o no autorizada.');
-        }
+        
+        if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
         if (!resp.ok) {
-            let msg = 'Ocurrió un error en la API';
-            try {
-                const j = await resp.json();
-                msg = j.detail || msg;
-            } catch {}
-            throw new Error(msg);
+            const data = await resp.json().catch(() => ({ detail: 'Error en la petición.' }));
+            throw new Error(data.detail);
         }
-        const ct = resp.headers.get('content-type') || '';
-        return ct.includes('application/json') ? resp.json() : resp.text();
+        return resp.json();
     }
-
+    
     function updateUIVisibility() {
         const role = localStorage.getItem(ROLE_KEY);
         if (role === 'lector') {
@@ -99,6 +176,78 @@
         }
     }
     
+    // --- Lógica Específica de la Página de Configuración ---
+    const profileForm = document.getElementById('profile-form');
+    const usernameInput = document.getElementById('username');
+    const roleInput = document.getElementById('role');
+    const successMessage = document.getElementById('success-message');
+    const errorMessage = document.getElementById('error-message');
+
+    // Carga los datos del usuario en el formulario
+    async function loadUserData() {
+      try {
+        const user = await apiFetch('/api/users/me');
+        usernameInput.value = user.username || '';
+        roleInput.value = user.role || 'lector';
+      } catch (error) {
+        errorMessage.textContent = 'Error al cargar los datos del usuario.';
+        console.error(error);
+      }
+    }
+
+    // Guarda los cambios del formulario de perfil
+    profileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      successMessage.textContent = '';
+      errorMessage.textContent = '';
+      const button = e.target.querySelector('button[type="submit"]');
+      button.disabled = true;
+      button.textContent = 'Guardando...';
+
+      const formData = new FormData(profileForm);
+
+      try {
+        const responseData = await apiFetch('/api/users/me', {
+          method: 'PUT',
+          body: formData,
+        });
+
+        // Si recibimos un nuevo token, lo guardamos para mantener la sesión
+        if (responseData.new_access_token) {
+            localStorage.setItem(TOKEN_KEY, responseData.new_access_token);
+        }
+
+        successMessage.textContent = '¡Perfil actualizado con éxito!';
+        setTimeout(() => successMessage.textContent = '', 3000);
+      } catch (error) {
+        errorMessage.textContent = `Error: ${error.message}`;
+        setTimeout(() => errorMessage.textContent = '', 3000);
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Guardar Cambios';
+      }
+    });
+
+    // Lógica para el resto de la página
+    function setupPageEventListeners() {
+      document.getElementById('password-form').addEventListener('submit', function(e) {
+          e.preventDefault();
+          alert('Funcionalidad de cambio de contraseña no implementada en este ejemplo.');
+      });
+
+      document.getElementById('preferences-form').addEventListener('change', function() {
+          localStorage.setItem('pref-darkmode', document.getElementById('pref-darkmode').checked);
+          localStorage.setItem('pref-notifications', document.getElementById('pref-notifications').checked);
+      });
+
+      document.getElementById('delete-account-btn').addEventListener('click', function() {
+          if (confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
+              alert('Cuenta eliminada (simulado).');
+              logout();
+          }
+      });
+    }
+
     // --- Ejecución al Cargar la Página ---
     document.addEventListener('DOMContentLoaded', () => {
         const logoutBtn = document.getElementById('logout-btn');
@@ -106,8 +255,8 @@
 
         requireAuth();
         updateUIVisibility();
-
-        // Esta página no tiene lógica adicional, por lo que no llamamos a setupPageEventListeners
+        loadUserData();
+        setupPageEventListeners();
     });
   </script>
 </body>

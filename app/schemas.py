@@ -60,3 +60,7 @@ class FinancialEntry(FinancialEntryBase):
     owner_id: uuid.UUID
     class Config:
         from_attributes = True
+
+class UserUpdateResponse(UserInDB):
+    new_access_token: str
+    token_type: str = "bearer"

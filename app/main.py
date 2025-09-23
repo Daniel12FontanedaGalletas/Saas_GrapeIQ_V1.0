@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # IMPORTA LAS FUNCIONES DE DATABASE Y LOS ROUTERS
 from .database import connect_to_db, close_db_connection
 # Se añade el nuevo router 'products'
-from .routers import auth, ingest, data, forecast, weather, products
+from .routers import auth, ingest, data, forecast, weather, products, users
 
 app = FastAPI(
     title="GrapeIQ API",
@@ -26,7 +26,7 @@ def shutdown_event():
 origins = [
     "http://localhost",
     "http://127.0.0.1",
-    "http://127.0.0.1:5500", # <-- ¡AÑADIDO! El origen de tu frontend.
+    "http://127.0.0.1:5500", 
     "null"
 ]
 
@@ -48,3 +48,4 @@ app.include_router(ingest.router)
 app.include_router(data.router)
 app.include_router(forecast.router)
 app.include_router(products.router)
+app.include_router(users.router)

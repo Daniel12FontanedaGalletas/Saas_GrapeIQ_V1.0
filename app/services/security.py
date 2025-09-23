@@ -1,12 +1,13 @@
 import os
 from datetime import datetime, timedelta
 from typing import List
+from .. import crud
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from dotenv import load_dotenv
-from .. import models, schemas, crud
+from .. import models, schemas
 
 load_dotenv()
 
@@ -30,7 +31,7 @@ def create_access_token(data: dict) -> str:
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def get_current_user(token: str = Depends(oauth2_scheme)) -> schemas.User:
+def get_current_user(token: str = Depends(oauth2_scheme)) -> schemas.UserInDB:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="No se pudieron validar las credenciales",
@@ -51,6 +52,17 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> schemas.User:
         raise credentials_exception
     
     return user
+
+# --- MODIFICACIÓN: Añadimos la función que faltaba ---
+def get_current_active_user(current_user: schemas.UserInDB = Depends(get_current_user)) -> schemas.UserInDB:
+    """
+    Esta función es una dependencia que simplemente reenvía el usuario actual.
+    Sirve para mantener la consistencia con el router de usuarios que la estaba pidiendo.
+    """
+    # En un futuro, aquí se podría añadir lógica para comprobar si el usuario está "activo".
+    # Por ahora, simplemente lo devolvemos.
+    return current_user
+
 
 def role_checker(required_roles: List[str]):
     def check_user_role(current_user: schemas.User = Depends(get_current_user)) -> schemas.User:

@@ -1,13 +1,12 @@
 # Saas_GrapeIQ_V1.0/app/routers/users.py
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from sqlalchemy.orm import Session
-import shutil
-from pathlib import Path
+from fastapi import APIRouter, Depends, HTTPException, Form
+from typing import Optional
 
-from .. import models
+from .. import schemas, crud
 from ..services import security
-from ..database import get_db
+from ..database import get_db_connection
+from contextlib import closing
 
 router = APIRouter(
     prefix="/api/users",
@@ -15,49 +14,49 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-# Directorio para guardar las imágenes de perfil
-UPLOAD_DIR = Path("./static/profile_pics")
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-
-@router.get("/me", response_model=models.UserInDB)
-async def read_users_me(current_user: models.User = Depends(security.get_current_user)):
-    """
-    Obtiene la información del usuario actualmente autenticado.
-    """
+@router.get("/me", response_model=schemas.UserInDB)
+async def read_users_me(current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
     return current_user
 
-@router.put("/me", response_model=models.UserInDB)
+# --- MODIFICACIÓN: Cambiamos el 'response_model' y la lógica de retorno ---
+@router.put("/me", response_model=schemas.UserUpdateResponse)
 async def update_user_me(
-    db: Session = Depends(get_db),
-    winery_name: str = Form(...),
-    file: Optional[UploadFile] = File(None),
-    current_user: models.User = Depends(security.get_current_user)
+    username: str = Form(...),
+    role: str = Form(...),
+    current_user: schemas.UserInDB = Depends(security.get_current_active_user)
 ):
-    """
-    Actualiza el nombre de la bodega y la foto de perfil del usuario.
-    """
-    user_in_db = db.query(models.User).filter(models.User.username == current_user.username).first()
-    if not user_in_db:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    # Actualizar nombre de la bodega
-    user_in_db.winery_name = winery_name
-
-    # Si se sube un nuevo archivo de imagen
-    if file:
-        # Generar un nombre de archivo seguro
-        file_extension = Path(file.filename).suffix
-        new_filename = f"{current_user.username}_{Path(file.filename).stem}{file_extension}"
-        file_path = UPLOAD_DIR / new_filename
+    try:
+        with get_db_connection() as conn:
+            with closing(conn.cursor()) as cur:
+                cur.execute(
+                    """
+                    UPDATE users
+                    SET username = %s, role = %s
+                    WHERE id = %s
+                    """,
+                    (username, role, str(current_user.id))
+                )
+                conn.commit()
         
-        # Guardar el archivo en el servidor
-        with file_path.open("wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        updated_user = crud.get_user_by_username(username)
+        if not updated_user:
+            raise HTTPException(status_code=404, detail="No se pudo encontrar al usuario después de actualizar.")
         
-        # Guardar la URL de acceso en la base de datos
-        user_in_db.profile_image_url = f"/static/profile_pics/{new_filename}"
+        # --- MODIFICACIÓN: Creamos un nuevo token con la información actualizada ---
+        new_token = security.create_access_token(
+            data={
+                "sub": updated_user.username, 
+                "role": updated_user.role,
+                "tenant_id": str(updated_user.tenant_id)
+            }
+        )
+            
+        # Devolvemos tanto los datos del usuario como el nuevo token
+        return schemas.UserUpdateResponse(
+            **updated_user.model_dump(),
+            new_access_token=new_token
+        )
 
-    db.commit()
-    db.refresh(user_in_db)
-    
-    return user_in_db
+    except Exception as e:
+        print(f"Error al actualizar el usuario: {e}")
+        raise HTTPException(status_code=500, detail="Error interno al actualizar el perfil.")
