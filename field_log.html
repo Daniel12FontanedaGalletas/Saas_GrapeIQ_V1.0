@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cuaderno de Campo - GrapeIQ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family:'Montserrat',sans-serif; background:#F8F7F4; }
+    .tab-active{ border-color:#5C1A33; color:#5C1A33; font-weight:700; }
+    .fc-event { cursor: pointer; }
+    .fc-daygrid-day.fc-day-today { background-color: rgba(92, 26, 51, 0.1); }
+    .fc .fc-button-primary { background-color: #5C1A33; border-color: #5C1A33; }
+    .fc .fc-button-primary:hover { background-color: #4a1529; border-color: #4a1529; }
+    .modal { display: none; }
+    .modal-active { display: flex; }
+    .time-input-hidden { display: none; }
+  </style>
+</head>
+<body class="text-stone-800">
+  <div class="p-4 sm:p-8">
+    <header class="flex justify-between items-center mb-6">
+        <a href="performance.html" class="flex items-center gap-4">
+          <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+          <span class="text-3xl font-light text-stone-400">|</span>
+          <h1 class="text-3xl font-semibold text-stone-700">Cuaderno de Campo</h1>
+        </a>
+      <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
+    </header>
+
+    <div class="mb-6 border-b border-stone-200">
+      <nav class="flex space-x-8" aria-label="Tabs">
+          <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Análisis de Rendimiento</a>
+          <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Predicciones</a>
+          <a href="catalog.html" id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Catálogo y Stock</a>
+          <a href="daily-log.html"   id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</a>
+          <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Cuaderno de Campo</a>
+          <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Clima</a>
+          <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Configuración</a>
+      </nav>
+    </div>
+
+    <main class="space-y-8">
+      <div class="bg-white p-6 rounded-2xl shadow-lg">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold text-stone-700">Registro de Actividades</h2>
+          <button id="add-log-btn" class="bg-[#5C1A33] text-white px-5 py-2 rounded-full font-semibold hover:bg-[#4a1529]">Añadir Nueva Entrada</button>
+        </div>
+        <div id='calendar'></div>
+      </div>
+      
+      <div class="bg-white p-6 rounded-2xl shadow-lg">
+          <h2 class="text-2xl font-bold text-stone-700 mb-4">Generar Informe</h2>
+          <div class="flex flex-col sm:flex-row items-center gap-4">
+              <div>
+                  <label for="start-date" class="block text-sm font-medium text-stone-600 mb-1">Fecha de Inicio</label>
+                  <input type="date" id="start-date" class="px-4 py-2 border border-stone-300 rounded-lg">
+              </div>
+              <div>
+                  <label for="end-date" class="block text-sm font-medium text-stone-600 mb-1">Fecha de Fin</label>
+                  <input type="date" id="end-date" class="px-4 py-2 border border-stone-300 rounded-lg">
+              </div>
+              <div class="flex gap-2 mt-auto">
+                <button id="export-csv-btn" class="bg-green-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-green-700">Exportar a CSV</button>
+                <button id="export-pdf-btn" class="bg-red-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-red-700">Exportar a PDF</button>
+              </div>
+          </div>
+          <p id="export-error" class="text-red-500 text-sm mt-2 h-4"></p>
+      </div>
+    </main>
+  </div>
+
+  <div id="log-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50">
+      <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md m-4">
+        <h3 id="modal-title" class="text-2xl font-bold text-stone-800 mb-6">Nueva Entrada</h3>
+        <form id="log-form">
+          <input type="hidden" id="log-id">
+          <div class="space-y-4">
+            <div>
+              <label for="log_date" class="block text-sm font-medium text-stone-600 mb-1">Fecha</label>
+              <input type="date" id="log_date" name="log_date" required class="w-full px-4 py-2 border border-stone-300 rounded-lg">
+            </div>
+            <div>
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" id="specify-time-checkbox" class="rounded border-stone-300 text-[#5C1A33] focus:ring-[#5C1A33]">
+                    Especificar hora (si no, se considera todo el día)
+                </label>
+            </div>
+            <div id="time-input-container" class="time-input-hidden grid grid-cols-2 gap-4">
+              <div>
+                  <label for="start_time" class="block text-sm font-medium text-stone-600 mb-1">Hora Inicio</label>
+                  <input type="time" id="start_time" name="start_time" class="w-full px-4 py-2 border border-stone-300 rounded-lg">
+              </div>
+              <div>
+                  <label for="end_time" class="block text-sm font-medium text-stone-600 mb-1">Hora Fin</label>
+                  <input type="time" id="end_time" name="end_time" class="w-full px-4 py-2 border border-stone-300 rounded-lg">
+              </div>
+            </div>
+            <div>
+              <label for="activity_type" class="block text-sm font-medium text-stone-600 mb-1">Tipo de Actividad</label>
+              <select id="activity_type" name="activity_type" required class="w-full px-4 py-2 border border-stone-300 rounded-lg">
+                <option value="Poda">Poda</option>
+                <option value="Riego">Riego</option>
+                <option value="Tratamiento Fitosanitario">Tratamiento Fitosanitario</option>
+                <option value="Abonado">Abonado</option>
+                <option value="Vendimia">Vendimia</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </div>
+            <div>
+              <label for="plot_name" class="block text-sm font-medium text-stone-600 mb-1">Parcela</label>
+              <input type="text" id="plot_name" name="plot_name" class="w-full px-4 py-2 border border-stone-300 rounded-lg">
+            </div>
+            <div>
+              <label for="description" class="block text-sm font-medium text-stone-600 mb-1">Descripción</label>
+              <textarea id="description" name="description" rows="3" class="w-full px-4 py-2 border border-stone-300 rounded-lg"></textarea>
+            </div>
+          </div>
+          <div class="flex justify-between items-center mt-8">
+            <button type="button" id="delete-log-btn" class="bg-red-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-red-700">Eliminar</button>
+            <div class="flex gap-4">
+              <button type="button" id="close-modal-btn" class="bg-stone-200 text-stone-800 px-5 py-2 rounded-full font-semibold">Cancelar</button>
+              <button type="submit" class="bg-[#5C1A33] text-white px-5 py-2 rounded-full font-semibold">Guardar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'http://127.0.0.1:8000';
+    const TOKEN_KEY = 'accessToken';
+
+    async function apiFetch(endpoint, options = {}, expectJson = true) {
+        const headers = { ...options.headers };
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (options.body && typeof options.body !== 'string' && !(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(options.body);
+        }
+        
+        const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+        
+        if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
+        if (resp.status === 204) return;
+        if (!resp.ok) {
+            const data = await resp.json().catch(() => ({ detail: 'Error en la petición.' }));
+            throw new Error(data.detail);
+        }
+        return expectJson ? resp.json() : resp.blob();
+    }
+    
+    function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
+    function logout() { localStorage.removeItem(TOKEN_KEY); window.location.href = 'login.html'; }
+    document.getElementById('logout-btn').addEventListener('click', logout);
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        requireAuth();
+        
+        const modal = document.getElementById('log-modal');
+        const addLogBtn = document.getElementById('add-log-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const logForm = document.getElementById('log-form');
+        const modalTitle = document.getElementById('modal-title');
+        const specifyTimeCheckbox = document.getElementById('specify-time-checkbox');
+        const timeInputContainer = document.getElementById('time-input-container');
+        const deleteLogBtn = document.getElementById('delete-log-btn');
+        let calendar;
+
+        specifyTimeCheckbox.addEventListener('change', () => {
+            timeInputContainer.classList.toggle('time-input-hidden', !specifyTimeCheckbox.checked);
+            document.getElementById('start_time').required = specifyTimeCheckbox.checked;
+        });
+
+        function openModalForCreate() {
+            logForm.reset();
+            specifyTimeCheckbox.checked = false;
+            timeInputContainer.classList.add('time-input-hidden');
+            document.getElementById('log-id').value = '';
+            modalTitle.textContent = 'Nueva Entrada';
+            deleteLogBtn.style.display = 'none';
+            document.getElementById('log_date').value = new Date().toISOString().split('T')[0];
+            modal.classList.add('modal-active');
+        }
+
+        function closeModal() { modal.classList.remove('modal-active'); }
+        addLogBtn.addEventListener('click', openModalForCreate);
+        closeModalBtn.addEventListener('click', closeModal);
+
+        async function loadEvents() {
+            const logs = await apiFetch('/api/field-logs/');
+            const events = logs.map(log => ({
+                id: log.id, title: log.activity_type, start: log.start_datetime,
+                end: log.end_datetime, allDay: log.all_day,
+                extendedProps: { description: log.description, plot_name: log.plot_name }
+            }));
+            if (calendar.getEventSourceById('logs')) calendar.getEventSourceById('logs').remove();
+            calendar.addEventSource({ id: 'logs', events });
+        }
+
+        logForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const logId = document.getElementById('log-id').value;
+            const logData = {
+                log_date: document.getElementById('log_date').value,
+                activity_type: document.getElementById('activity_type').value,
+                description: document.getElementById('description').value,
+                plot_name: document.getElementById('plot_name').value,
+                start_time: specifyTimeCheckbox.checked ? document.getElementById('start_time').value : null,
+                end_time: specifyTimeCheckbox.checked ? document.getElementById('end_time').value : null
+            };
+            const endpoint = logId ? `/api/field-logs/${logId}` : '/api/field-logs/';
+            const method = logId ? 'PUT' : 'POST';
+            try {
+                await apiFetch(endpoint, { method, body: logData });
+                closeModal();
+                loadEvents();
+            } catch (error) { alert(`Error: ${error.message}`); }
+        });
+
+        deleteLogBtn.addEventListener('click', async () => {
+            const logId = document.getElementById('log-id').value;
+            if (!logId || !confirm('¿Estás seguro?')) return;
+            try {
+                await apiFetch(`/api/field-logs/${logId}`, { method: 'DELETE' });
+                closeModal();
+                loadEvents();
+            } catch (error) { alert(`Error: ${error.message}`); }
+        });
+
+        const calendarEl = document.getElementById('calendar');
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth', locale: 'es', height: 'auto',
+            slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+            eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
+            eventClick: function(info) {
+                const log = info.event;
+                modalTitle.textContent = 'Editar Entrada';
+                document.getElementById('log-id').value = log.id;
+                deleteLogBtn.style.display = 'block';
+                const startDateTime = new Date(log.start);
+                document.getElementById('log_date').value = startDateTime.toISOString().split('T')[0];
+                if (!log.allDay) {
+                    specifyTimeCheckbox.checked = true;
+                    timeInputContainer.classList.remove('time-input-hidden');
+                    document.getElementById('start_time').value = startDateTime.toTimeString().slice(0, 5);
+                    if(log.end){
+                        document.getElementById('end_time').value = new Date(log.end).toTimeString().slice(0, 5);
+                    } else {
+                        document.getElementById('end_time').value = '';
+                    }
+                } else {
+                    specifyTimeCheckbox.checked = false;
+                    timeInputContainer.classList.add('time-input-hidden');
+                }
+                document.getElementById('activity_type').value = log.title;
+                document.getElementById('description').value = log.extendedProps.description || '';
+                document.getElementById('plot_name').value = log.extendedProps.plot_name || '';
+                modal.classList.add('modal-active');
+            },
+            events: (fetchInfo, s, f) => s([])
+        });
+        calendar.render();
+        loadEvents();
+
+        const exportCsvBtn = document.getElementById('export-csv-btn');
+        const exportPdfBtn = document.getElementById('export-pdf-btn');
+        const startDateInput = document.getElementById('start-date');
+        const endDateInput = document.getElementById('end-date');
+        const exportError = document.getElementById('export-error');
+
+        function handleExport(format) {
+            const startDate = startDateInput.value;
+            const endDate = endDateInput.value;
+            exportError.textContent = '';
+
+            if (!startDate || !endDate) {
+                exportError.textContent = 'Por favor, selecciona una fecha de inicio y de fin.';
+                return;
+            }
+            if (new Date(startDate) > new Date(endDate)) {
+                exportError.textContent = 'La fecha de inicio no puede ser posterior a la fecha de fin.';
+                return;
+            }
+
+            const token = localStorage.getItem(TOKEN_KEY);
+            const url = `${API_BASE_URL}/api/field-logs/export/?start_date=${startDate}&end_date=${endDate}&format=${format}`;
+            
+            fetch(url, { headers: { 'Authorization': `Bearer ${token}` } })
+                .then(res => {
+                    if (!res.ok) throw new Error('No se pudo generar el informe.');
+                    return res.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `cuaderno_de_campo_${startDate}_a_${endDate}.${format}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                })
+                .catch(err => {
+                    exportError.textContent = err.message;
+                });
+        }
+
+        exportCsvBtn.addEventListener('click', () => handleExport('csv'));
+        exportPdfBtn.addEventListener('click', () => handleExport('pdf'));
+    });
+  </script>
+</body>
+</html>

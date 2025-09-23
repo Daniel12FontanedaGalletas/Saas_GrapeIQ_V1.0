@@ -10,3 +10,4 @@ pandas==2.1.3
 # Fijamos las versiones de prophet y matplotlib para evitar conflictos
 prophet==1.1.5
 matplotlib==3.8.2
+reportlab==4.2.0

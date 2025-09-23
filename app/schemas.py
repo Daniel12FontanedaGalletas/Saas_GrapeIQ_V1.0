@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 from enum import Enum
 import uuid
+from datetime import date, datetime, time
 
 class Token(BaseModel):
     access_token: str
@@ -29,13 +30,12 @@ class User(UserBase):
     class Config:
         from_attributes = True
 
-# --- ¡MODIFICACIÓN CLAVE! ---
-# Creamos un nuevo modelo que sí incluye la contraseña hasheada.
-# Este modelo solo se usará internamente en el backend.
 class UserInDB(User):
     hashed_password: str
 
-# --- El resto de tus schemas se mantienen igual ---
+class UserUpdateResponse(UserInDB):
+    new_access_token: str
+    token_type: str = "bearer"
 
 class ProductBase(BaseModel):
     sku: str
@@ -61,6 +61,24 @@ class FinancialEntry(FinancialEntryBase):
     class Config:
         from_attributes = True
 
-class UserUpdateResponse(UserInDB):
-    new_access_token: str
-    token_type: str = "bearer"
+# --- Esquemas para el Cuaderno de Campo ---
+class FieldLogBase(BaseModel):
+    activity_type: str
+    description: Optional[str] = None
+    plot_name: Optional[str] = None
+
+class FieldLogCreate(FieldLogBase):
+    # El frontend enviará la fecha y horas opcionales de inicio y fin
+    log_date: date
+    start_time: Optional[time] = None
+    end_time: Optional[time] = None
+
+class FieldLog(FieldLogBase):
+    id: uuid.UUID
+    # El backend devolverá datetimes completos de inicio y fin
+    start_datetime: datetime
+    end_datetime: Optional[datetime] = None
+    all_day: bool
+
+    class Config:
+        from_attributes = True

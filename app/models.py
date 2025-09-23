@@ -6,6 +6,9 @@ from sqlalchemy import Column, Integer, String
 # IMPORTAMOS declarative_base DIRECTAMENTE DE SQLAlchemy
 from sqlalchemy.ext.declarative import declarative_base
 
+from sqlalchemy import Date, Text, ForeignKey, DateTime, Boolean
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 # Creamos una 'Base' local para nuestros modelos de SQLAlchemy
 Base = declarative_base()
 
@@ -41,3 +44,16 @@ class UserInDB(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class FieldLog(Base):
+    __tablename__ = "field_logs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # Renombramos y añadimos la fecha de fin
+    start_datetime = Column(DateTime(timezone=True), nullable=False, index=True) 
+    end_datetime = Column(DateTime(timezone=True), nullable=True)
+    activity_type = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    plot_name = Column(String, nullable=True)
+    all_day = Column(Boolean, default=True)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
