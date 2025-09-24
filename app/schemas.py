@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from enum import Enum
 import uuid
 from datetime import date, datetime, time
@@ -82,3 +82,54 @@ class FieldLog(FieldLogBase):
 
     class Config:
         from_attributes = True
+        
+class GrapeLotBase(BaseModel):
+    harvest_date: date
+    variety: str
+    quantity_kg: float
+    origin_plot: Optional[str] = None
+
+class GrapeLotCreate(GrapeLotBase):
+    pass
+
+class GrapeLot(GrapeLotBase):
+    id: uuid.UUID
+    status: str
+    class Config:
+        from_attributes = True
+
+# --- Vinificaciones ---
+class VinificationBase(BaseModel):
+    start_date: date
+    description: Optional[str] = None
+
+class VinificationCreate(VinificationBase):
+    grape_lot_id: uuid.UUID
+
+class Vinification(VinificationBase):
+    id: uuid.UUID
+    status: str
+    grape_lot_id: uuid.UUID
+    class Config:
+        from_attributes = True
+
+# --- Embotellados ---
+class BottlingBase(BaseModel):
+    bottling_date: date
+    number_of_bottles: int
+    batch_number: Optional[str] = None
+
+class BottlingCreate(BottlingBase):
+    vinification_id: uuid.UUID
+
+class Bottling(BottlingBase):
+    id: uuid.UUID
+    vinification_id: uuid.UUID
+    class Config:
+        from_attributes = True
+
+# --- Esquema combinado para el Dashboard ---
+class TraceabilityDashboard(BaseModel):
+    grape_lots: List[GrapeLot]
+    vinifications: List[Vinification]
+    bottlings: List[Bottling]

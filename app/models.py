@@ -5,6 +5,7 @@ from typing import Optional
 from sqlalchemy import Column, Integer, String
 # IMPORTAMOS declarative_base DIRECTAMENTE DE SQLAlchemy
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Numeric, UniqueConstraint
 
 from sqlalchemy import Date, Text, ForeignKey, DateTime, Boolean
 from sqlalchemy.dialects.postgresql import UUID
@@ -56,4 +57,33 @@ class FieldLog(Base):
     description = Column(Text, nullable=True)
     plot_name = Column(String, nullable=True)
     all_day = Column(Boolean, default=True)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+    
+class GrapeLot(Base):
+    __tablename__ = "grape_lots"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    harvest_date = Column(Date, nullable=False)
+    variety = Column(String, nullable=False)
+    quantity_kg = Column(Numeric(10, 2), nullable=False)
+    origin_plot = Column(String)
+    status = Column(String, default='disponible')
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+
+class Vinification(Base):
+    __tablename__ = "vinifications"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    start_date = Column(Date, nullable=False)
+    end_date = Column(Date)
+    description = Column(Text)
+    status = Column(String, default='en_proceso')
+    grape_lot_id = Column(UUID(as_uuid=True), ForeignKey("grape_lots.id"), unique=True, nullable=False)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+
+class Bottling(Base):
+    __tablename__ = "bottlings"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    bottling_date = Column(Date, nullable=False)
+    number_of_bottles = Column(Integer, nullable=False)
+    batch_number = Column(String, unique=True)
+    vinification_id = Column(UUID(as_uuid=True), ForeignKey("vinifications.id"), unique=True, nullable=False)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)

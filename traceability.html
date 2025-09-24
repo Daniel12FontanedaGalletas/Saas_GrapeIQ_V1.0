@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Trazabilidad - GrapeIQ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family:'Montserrat',sans-serif; background:#F8F7F4; }
+        .tab-active{ border-color:#5C1A33; color:#5C1A33; font-weight:700; }
+        .modal { display: none; }
+        .modal-active { display: flex; }
+
+        /* --- Estilos para la Animación de la Copa de Vino --- */
+        .wine-animation-container {
+            position: fixed;
+            /* --- MODIFICACIÓN: Bajamos la animación --- */
+            top: 85vh;      /* 85% de la altura de la ventana (muy abajo) */
+            left: 100px;
+            /* Centramos en ese punto y escalamos */
+            transform: translateY(-100%) scale(0.8);
+            z-index: 1000;
+            opacity: 0.7;
+        }
+        .top-circle, .red-circle, .bottom-circle {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 3px solid black;
+            border-radius: 50%;
+            box-sizing: border-box;
+        }
+        .top-circle {
+            animation: 4s mc-top infinite;
+            z-index: 10;
+        }
+        .red-circle {
+            border: none;
+            background: rgb(200,0,0);
+            animation: 4s mc-red infinite;
+        }
+        .stem {
+            position: absolute;
+            left: 50%;
+            bottom: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 100px;
+            background: black;
+        }
+        .bottom-circle {
+            animation: 4s mc-stem infinite;
+            z-index: -1;
+            overflow: hidden;
+        }
+        @keyframes mc-top {
+            0% { top: -40px; } 50% { top: 0; } 100% { top: -40px; }
+        }
+        @keyframes mc-red {
+            0% { top: -25px; } 50% { top: 0; } 100% { top: -25px; }
+        }
+        @keyframes mc-stem {
+            0% { top: 40px; } 50% { top: 0; } 100% { top: 40px; }
+        }
+    </style>
+</head>
+<body class="text-stone-800">
+    <div class="wine-animation-container">
+        <div class="top-circle"></div>
+        <div class="red-circle"></div>
+        <div class="bottom-circle"><div class="stem"></div></div>
+    </div>
+
+    <div class="p-4 sm:p-8">
+        <header class="flex justify-between items-center mb-6">
+            <a href="performance.html" class="flex items-center gap-4">
+                <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+                <span class="text-3xl font-light text-stone-400">|</span>
+                <h1 class="text-3xl font-semibold text-stone-700">Trazabilidad del Vino</h1>
+            </a>
+            <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
+        </header>
+        <div class="mb-8 border-b border-stone-200">
+            <nav class="flex space-x-8 overflow-x-auto pb-2">
+                <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="performance">Análisis de Rendimiento</a>
+                <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="forecast">Predicciones y Escenarios</a>
+                <a href="catalog.html" id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="catalog">Catálogo y Stock</a>
+                <a href="daily-log.html" id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active" data-tab="daily-log">Registro Diario</a>
+                <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Cuaderno de Campo</a>
+                <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Trazabilidad</a>
+                <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="weather">Clima</a>
+                <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="settings">Configuración</a>
+            </nav>
+        </div>
+
+        <main class="relative grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <section class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg flex flex-col z-10">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-stone-700">🍇 Lotes de Uva</h2>
+                    <button data-action="create-lot" class="action-btn bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold hover:bg-blue-700">Añadir Lote</button>
+                </div>
+                <div id="grape-lots-list" class="space-y-3 mt-4 flex-grow"></div>
+            </section>
+            <section class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg flex flex-col z-10">
+                <h2 class="text-xl font-bold text-stone-700">🌡️ Vinificaciones</h2>
+                <div id="vinifications-list" class="space-y-3 mt-4 flex-grow"></div>
+            </section>
+            <section class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg flex flex-col z-10">
+                <h2 class="text-xl font-bold text-stone-700">🍾 Embotellados</h2>
+                <div id="bottlings-list" class="space-y-3 mt-4 flex-grow"></div>
+            </section>
+        </main>
+    </div>
+
+    <div id="modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md m-4">
+            <h3 id="modal-title" class="text-2xl font-bold text-stone-800 mb-6"></h3>
+            <form id="modal-form"></form>
+            <div class="flex justify-between items-center mt-8">
+                <button type="button" id="delete-btn" class="bg-red-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-red-700 hidden">Eliminar</button>
+                <div class="flex gap-4 ml-auto">
+                    <button type="button" id="close-modal-btn" class="bg-stone-200 text-stone-800 px-5 py-2 rounded-full font-semibold">Cancelar</button>
+                    <button type="submit" form="modal-form" class="bg-[#5C1A33] text-white px-5 py-2 rounded-full font-semibold">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Toda la lógica JavaScript anterior (sin cambios) ---
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        const TOKEN_KEY = 'accessToken';
+
+        function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
+        function logout() { localStorage.removeItem(TOKEN_KEY); window.location.href = 'login.html'; }
+
+        async function apiFetch(endpoint, options = {}) {
+            const headers = { 'Content-Type': 'application/json', ...options.headers };
+            const token = localStorage.getItem(TOKEN_KEY);
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            if (options.body && typeof options.body !== 'string') options.body = JSON.stringify(options.body);
+            
+            const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+            
+            if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
+            if (resp.status === 204) return null;
+            if (!resp.ok) {
+                const data = await resp.json().catch(() => ({ detail: 'Error en la petición.' }));
+                throw new Error(data.detail);
+            }
+            return resp.json();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            requireAuth();
+            document.getElementById('logout-btn').addEventListener('click', logout);
+
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalForm = document.getElementById('modal-form');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const deleteBtn = document.getElementById('delete-btn');
+
+            let currentAction = { type: null, id: null, parentId: null };
+
+            function closeModal() { modal.classList.remove('modal-active'); }
+            closeModalBtn.addEventListener('click', closeModal);
+
+            const formatDate = (dateStr) => (dateStr || '').split('T')[0];
+
+            function renderGrapeLots(lots) {
+                const listEl = document.getElementById('grape-lots-list');
+                listEl.innerHTML = lots.length ? lots.map(lot => `
+                    <div class="border rounded-lg p-3">
+                        <div class="flex justify-between items-center mb-1">
+                            <p class="font-bold">${lot.variety} - ${lot.quantity_kg} kg</p>
+                            <div class="flex items-center gap-2">
+                                ${lot.status === 'disponible' ? `<button data-action="start-vinification" data-id="${lot.id}" class="action-btn text-xs bg-green-600 text-white px-2 py-1 rounded-full hover:bg-green-700">Vinificar</button>` : ''}
+                                <button data-action="edit-lot" data-id="${lot.id}" class="action-btn text-lg">✏️</button>
+                            </div>
+                        </div>
+                        <p class="text-sm text-stone-600">${lot.origin_plot || 'N/A'} - ${new Date(lot.harvest_date).toLocaleDateString()}</p>
+                        ${lot.status !== 'disponible' ? `<p class="text-xs font-semibold text-yellow-600">${lot.status.toUpperCase()}</p>` : ''}
+                    </div>
+                `).join('') : '<p class="text-sm text-stone-500">No hay lotes de uva.</p>';
+            }
+
+            function renderVinifications(vinifications) {
+                const listEl = document.getElementById('vinifications-list');
+                listEl.innerHTML = vinifications.length ? vinifications.map(vini => `
+                    <div class="border rounded-lg p-3">
+                         <div class="flex justify-between items-center mb-1">
+                            <p class="font-bold">Vinificación #${vini.id.slice(0, 4)}</p>
+                            <div class="flex items-center gap-2">
+                                ${vini.status === 'en_proceso' ? `<button data-action="start-bottling" data-id="${vini.id}" class="action-btn text-xs bg-purple-600 text-white px-2 py-1 rounded-full hover:bg-purple-700">Embotellar</button>` : ''}
+                                <button data-action="edit-vinification" data-id="${vini.id}" class="action-btn text-lg">✏️</button>
+                            </div>
+                        </div>
+                        <p class="text-sm text-stone-600">Iniciado: ${new Date(vini.start_date).toLocaleDateString()}</p>
+                        ${vini.status !== 'en_proceso' ? `<p class="text-xs font-semibold text-green-600">${vini.status.toUpperCase()}</p>` : ''}
+                    </div>
+                `).join('') : '<p class="text-sm text-stone-500">No hay vinificaciones.</p>';
+            }
+            
+            function renderBottlings(bottlings) {
+                const listEl = document.getElementById('bottlings-list');
+                listEl.innerHTML = bottlings.length ? bottlings.map(b => `
+                    <div class="border rounded-lg p-3">
+                         <div class="flex justify-between items-center mb-1">
+                            <p class="font-bold">Lote Embotellado #${b.batch_number || b.id.slice(0, 4)}</p>
+                             <div class="flex items-center gap-2">
+                                <button data-action="edit-bottling" data-id="${b.id}" class="action-btn text-lg">✏️</button>
+                            </div>
+                        </div>
+                        <p class="text-sm text-stone-600">${b.number_of_bottles} botellas - ${new Date(b.bottling_date).toLocaleDateString()}</p>
+                    </div>
+                `).join('') : '<p class="text-sm text-stone-500">No hay embotellados.</p>';
+            }
+            
+            async function loadDashboardData() {
+                try {
+                    const data = await apiFetch('/api/traceability/');
+                    renderGrapeLots(data.grape_lots);
+                    renderVinifications(data.vinifications);
+                    renderBottlings(data.bottlings);
+                } catch (error) { alert('No se pudieron cargar los datos.'); }
+            }
+            
+            function showForm(type, data = {}, parentId = null) {
+                currentAction = { type, id: data.id || null, parentId };
+                deleteBtn.style.display = data.id ? 'block' : 'none';
+                
+                let html = '';
+                if (type === 'lot') {
+                    modalTitle.textContent = data.id ? 'Editar Lote de Uva' : 'Añadir Lote de Uva';
+                    html = `
+                        <div class="space-y-4">
+                            <div><label class="block text-sm">Fecha Cosecha</label><input type="date" name="harvest_date" value="${formatDate(data.harvest_date)}" required class="w-full mt-1 p-2 border rounded"></div>
+                            <div><label class="block text-sm">Variedad</label><input type="text" name="variety" value="${data.variety || ''}" required class="w-full mt-1 p-2 border rounded"></div>
+                            <div><label class="block text-sm">Cantidad (Kg)</label><input type="number" step="0.01" name="quantity_kg" value="${data.quantity_kg || ''}" required class="w-full mt-1 p-2 border rounded"></div>
+                            <div><label class="block text-sm">Viñedo Origen</label><input type="text" name="origin_plot" value="${data.origin_plot || ''}" class="w-full mt-1 p-2 border rounded"></div>
+                        </div>`;
+                } else if (type === 'vinification') {
+                    modalTitle.textContent = data.id ? 'Editar Vinificación' : 'Iniciar Vinificación';
+                    html = `<div class="space-y-4">
+                            <div><label class="block text-sm">Fecha Inicio</label><input type="date" name="start_date" value="${formatDate(data.start_date)}" required class="w-full mt-1 p-2 border rounded"></div>
+                            <div><label class="block text-sm">Descripción</label><textarea name="description" rows="3" class="w-full mt-1 p-2 border rounded">${data.description || ''}</textarea></div>
+                        </div>`;
+                } else if (type === 'bottling') {
+                    modalTitle.textContent = data.id ? 'Editar Embotellado' : 'Registrar Embotellado';
+                     html = `<div class="space-y-4">
+                            <div><label class="block text-sm">Fecha Embotellado</label><input type="date" name="bottling_date" value="${formatDate(data.bottling_date)}" required class="w-full mt-1 p-2 border rounded"></div>
+                            <div><label class="block text-sm">Nº Botellas</label><input type="number" name="number_of_bottles" value="${data.number_of_bottles || ''}" required class="w-full mt-1 p-2 border rounded"></div>
+                            <div><label class="block text-sm">Nº Lote (Opcional)</label><input type="text" name="batch_number" value="${data.batch_number || ''}" class="w-full mt-1 p-2 border rounded"></div>
+                        </div>`;
+                }
+                modalForm.innerHTML = html;
+                modal.classList.add('modal-active');
+            }
+
+            document.body.addEventListener('click', async (e) => {
+                const target = e.target.closest('.action-btn');
+                if (!target) return;
+                
+                const { action, id } = target.dataset;
+
+                if (action === 'create-lot') { showForm('lot'); }
+                else if (action === 'start-vinification') { showForm('vinification', {}, id); }
+                else if (action === 'start-bottling') { showForm('bottling', {}, id); }
+                
+                else if (action === 'edit-lot') {
+                    const data = await apiFetch(`/api/traceability/grape-lots/${id}`);
+                    showForm('lot', data);
+                }
+                else if (action === 'edit-vinification') {
+                    const data = await apiFetch(`/api/traceability/vinifications/${id}`);
+                    showForm('vinification', data);
+                }
+                else if (action === 'edit-bottling') {
+                    const data = await apiFetch(`/api/traceability/bottlings/${id}`);
+                    showForm('bottling', data);
+                }
+            });
+
+            modalForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                
+                let endpoint, method, body;
+                const { type, id, parentId } = currentAction;
+
+                if (type === 'lot') {
+                    endpoint = id ? `/api/traceability/grape-lots/${id}` : '/api/traceability/grape-lots';
+                    method = id ? 'PUT' : 'POST';
+                    body = { harvest_date: data.harvest_date, variety: data.variety, quantity_kg: parseFloat(data.quantity_kg), origin_plot: data.origin_plot };
+                } else if (type === 'vinification') {
+                    endpoint = id ? `/api/traceability/vinifications/${id}` : '/api/traceability/vinifications';
+                    method = id ? 'PUT' : 'POST';
+                    body = { start_date: data.start_date, description: data.description };
+                    if (!id) body.grape_lot_id = parentId;
+                } else if (type === 'bottling') {
+                    endpoint = id ? `/api/traceability/bottlings/${id}` : '/api/traceability/bottlings';
+                    method = id ? 'PUT' : 'POST';
+                    body = { bottling_date: data.bottling_date, number_of_bottles: parseInt(data.number_of_bottles), batch_number: data.batch_number };
+                    if (!id) body.vinification_id = parentId;
+                }
+
+                try {
+                    await apiFetch(endpoint, { method, body });
+                    closeModal();
+                    loadDashboardData();
+                } catch (error) { alert(`Error: ${error.message}`); }
+            });
+
+            deleteBtn.addEventListener('click', async () => {
+                const { type, id } = currentAction;
+                if (!id || !confirm('¿Estás seguro? Esta acción revertirá o eliminará etapas posteriores.')) return;
+
+                let endpoint;
+                if (type === 'lot') endpoint = `/api/traceability/grape-lots/${id}`;
+                else if (type === 'vinification') endpoint = `/api/traceability/vinifications/${id}`;
+                else if (type === 'bottling') endpoint = `/api/traceability/bottlings/${id}`;
+
+                if (endpoint) {
+                    try {
+                        await apiFetch(endpoint, { method: 'DELETE' });
+                        closeModal();
+                        loadDashboardData();
+                    } catch (error) { alert(`Error: ${error.message}`); }
+                }
+            });
+
+            loadDashboardData();
+        });
+    </script>
+</body>
+</html>
