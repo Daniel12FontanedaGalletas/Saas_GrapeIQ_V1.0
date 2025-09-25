@@ -1,9 +1,11 @@
+# Saas_GrapeIQ_V1.0/app/schemas.py
+
 from pydantic import BaseModel
 from typing import Optional, List
-from enum import Enum
 import uuid
-from datetime import date, datetime, time
+from datetime import date, datetime
 
+# --- Esquemas de Autenticación y Usuarios ---
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -12,13 +14,9 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: Optional[str] = None
 
-class RoleEnum(str, Enum):
-    admin = "admin"
-    lector = "lector"
-
 class UserBase(BaseModel):
     username: str
-    role: Optional[RoleEnum] = RoleEnum.lector
+    role: str = "lector"
 
 class UserCreate(UserBase):
     password: str
@@ -26,7 +24,6 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: uuid.UUID
     tenant_id: uuid.UUID
-
     class Config:
         from_attributes = True
 
@@ -37,99 +34,114 @@ class UserUpdateResponse(UserInDB):
     new_access_token: str
     token_type: str = "bearer"
 
-class ProductBase(BaseModel):
-    sku: str
-    name: str
-    product_type: str
-    price_per_unit: float
-    cost_per_unit: Optional[float] = None
-    stock_quantity: Optional[int] = None
-
-class Product(ProductBase):
-    id: int
-    class Config:
-        from_attributes = True
-
-class FinancialEntryBase(BaseModel):
-    description: str
-    amount: float
-    entry_type: str
-
-class FinancialEntry(FinancialEntryBase):
-    id: int
-    owner_id: uuid.UUID
-    class Config:
-        from_attributes = True
-
-# --- Esquemas para el Cuaderno de Campo ---
+# --- Esquemas del Cuaderno de Campo ---
 class FieldLogBase(BaseModel):
     activity_type: str
     description: Optional[str] = None
     plot_name: Optional[str] = None
 
 class FieldLogCreate(FieldLogBase):
-    # El frontend enviará la fecha y horas opcionales de inicio y fin
     log_date: date
-    start_time: Optional[time] = None
-    end_time: Optional[time] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
 
 class FieldLog(FieldLogBase):
     id: uuid.UUID
-    # El backend devolverá datetimes completos de inicio y fin
     start_datetime: datetime
     end_datetime: Optional[datetime] = None
     all_day: bool
-
     class Config:
         from_attributes = True
-        
-class GrapeLotBase(BaseModel):
-    harvest_date: date
-    variety: str
-    quantity_kg: float
-    origin_plot: Optional[str] = None
 
-class GrapeLotCreate(GrapeLotBase):
+# --- ESQUEMAS PARA GESTIÓN DE BODEGA Y TRAZABILIDAD ---
+
+# Lotes de Vino
+class WineLotBase(BaseModel):
+    name: str
+    grape_variety: Optional[str] = None
+    vintage_year: Optional[int] = None
+
+class WineLotCreate(WineLotBase):
+    initial_grape_kg: float
+
+class WineLotUpdate(WineLotBase):
+    initial_grape_kg: Optional[float] = None
+
+class WineLot(WineLotBase):
+    id: uuid.UUID
+    status: str
+    initial_grape_kg: Optional[float] = None
+    total_liters: Optional[float] = None
+    liters_unassigned: Optional[float] = None
+    class Config:
+        from_attributes = True
+
+# Contenedores (Barricas y Depósitos)
+class ContainerBase(BaseModel):
+    name: str
+    type: str
+    capacity_liters: float
+    material: Optional[str] = None
+    location: Optional[str] = None
+
+class ContainerCreate(ContainerBase):
     pass
 
-class GrapeLot(GrapeLotBase):
+class ContainerUpdate(ContainerBase):
+    pass
+
+class Container(ContainerBase):
     id: uuid.UUID
     status: str
+    current_volume: float
+    current_lot_id: Optional[uuid.UUID] = None
     class Config:
         from_attributes = True
 
-# --- Vinificaciones ---
-class VinificationBase(BaseModel):
-    start_date: date
-    description: Optional[str] = None
+# Movimientos
+class MovementCreate(BaseModel):
+    lot_id: uuid.UUID
+    source_container_id: Optional[uuid.UUID] = None
+    destination_container_id: Optional[uuid.UUID] = None
+    volume: float
+    type: str
 
-class VinificationCreate(VinificationBase):
-    grape_lot_id: uuid.UUID
+# --- ¡NUEVO ESQUEMA PARA RELLENAR! ---
+class ToppingUpCreate(BaseModel):
+    lot_id: uuid.UUID
+    destination_container_id: uuid.UUID
+    volume: float
+    type: str = "Rellenado"
 
-class Vinification(VinificationBase):
-    id: uuid.UUID
-    status: str
-    grape_lot_id: uuid.UUID
-    class Config:
-        from_attributes = True
 
-# --- Embotellados ---
-class BottlingBase(BaseModel):
-    bottling_date: date
-    number_of_bottles: int
-    batch_number: Optional[str] = None
+# Esquemas para las Vistas de la Interfaz
+class WineLotInContainer(WineLot):
+    containers: List[Container]
 
-class BottlingCreate(BottlingBase):
-    vinification_id: uuid.UUID
+class TraceabilityView(BaseModel):
+    harvested: List[WineLot]
+    fermenting: List[WineLotInContainer]
+    aging: List[WineLotInContainer]
+    ready_to_bottle: List[WineLotInContainer] # Nuevo estado para la vista
+    bottled: List[WineLot]
 
-class Bottling(BottlingBase):
-    id: uuid.UUID
-    vinification_id: uuid.UUID
-    class Config:
-        from_attributes = True
+# Esquema para actualizar el estado de un lote
+class WineLotStatusUpdate(BaseModel):
+    new_status: str
 
-# --- Esquema combinado para el Dashboard ---
-class TraceabilityDashboard(BaseModel):
-    grape_lots: List[GrapeLot]
-    vinifications: List[Vinification]
-    bottlings: List[Bottling]
+# Esquemas para el Trasiego a Múltiples Destinos
+class MovementDestination(BaseModel):
+    destination_container_id: uuid.UUID
+    volume: float
+
+class BulkMovementCreate(BaseModel):
+    lot_id: uuid.UUID
+    source_container_id: uuid.UUID
+    destinations: List[MovementDestination]
+    type: str = "Trasiego"
+
+# Esquema para Embotellado
+class BottlingCreate(BaseModel):
+    lot_id: uuid.UUID
+    source_container_ids: List[uuid.UUID]
+    type: str = "Embotellado"

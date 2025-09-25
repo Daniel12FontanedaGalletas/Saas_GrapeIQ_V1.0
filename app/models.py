@@ -1,89 +1,88 @@
 # Saas_GrapeIQ_V1.0/app/models.py
 
-from pydantic import BaseModel
-from typing import Optional
-from sqlalchemy import Column, Integer, String
-# IMPORTAMOS declarative_base DIRECTAMENTE DE SQLAlchemy
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Numeric, UniqueConstraint
-
-from sqlalchemy import Date, Text, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, Numeric, Date, Text, ForeignKey, DateTime, Boolean
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime
 import uuid
-# Creamos una 'Base' local para nuestros modelos de SQLAlchemy
+
+# Creamos una 'Base' local para todos nuestros modelos de SQLAlchemy
 Base = declarative_base()
 
-# Modelo para la tabla de usuarios en la base de datos (SQLAlchemy)
+# --- TABLAS DE GESTIÓN DE CUENTAS ---
+class Tenant(Base):
+    __tablename__ = "tenants"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String)
+
 class User(Base):
     __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    winery_name = Column(String, nullable=True)
-    profile_image_url = Column(String, nullable=True)
-    # --- MODIFICACIÓN: Añadimos la columna 'role' ---
-    # Guardará el rol del usuario (ej. "admin", "lector").
-    # 'default="lector"' asigna "lector" a los nuevos usuarios si no se especifica otro rol.
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    username = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
     role = Column(String, default="lector")
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
 
+# --- TABLAS DE MÓDULOS DE NEGOCIO ---
 
-# Modelo para los datos que devolvemos al cliente (Pydantic)
-class UserInDB(BaseModel):
-    username: str
-    winery_name: Optional[str] = None
-    profile_image_url: Optional[str] = None
-    # --- MODIFICACIÓN: Añadimos el campo 'role' ---
-    # Así el frontend sabrá qué rol tiene el usuario que ha iniciado sesión.
-    role: str
-
-    class Config:
-        # Pydantic V2 usa 'from_attributes' en lugar de 'orm_mode'
-        from_attributes = True
-
-# Modelo para el token de autenticación
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
+# Módulo: Cuaderno de Campo (sin cambios)
 class FieldLog(Base):
     __tablename__ = "field_logs"
-
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    # Renombramos y añadimos la fecha de fin
     start_datetime = Column(DateTime(timezone=True), nullable=False, index=True) 
     end_datetime = Column(DateTime(timezone=True), nullable=True)
     activity_type = Column(String, nullable=False)
-    description = Column(Text, nullable=True)
-    plot_name = Column(String, nullable=True)
+    description = Column(Text)
+    plot_name = Column(String)
     all_day = Column(Boolean, default=True)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+
+# --- NUEVA ESTRUCTURA PARA GESTIÓN DE BODEGA Y TRAZABILIDAD ---
+
+class Container(Base):
+    __tablename__ = "containers"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String, nullable=False)
+    type = Column(String, nullable=False) # 'Barrica' o 'Depósito'
+    capacity_liters = Column(Numeric(10, 2), nullable=False)
+    material = Column(String)
+    location = Column(String)
+    status = Column(String, default='vacío') # vacío, ocupado, limpieza
+    current_volume = Column(Numeric(10, 2), default=0)
+    current_lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=True)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+
+class WineLot(Base):
+    __tablename__ = "wine_lots"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String, nullable=False)
+    grape_variety = Column(String)
+    vintage_year = Column(Integer)
+    status = Column(String, default='Cosechado') # Cosechado, En Fermentación, En Crianza, Embotellado
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+
+class Movement(Base):
+    __tablename__ = "movements"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=False)
+    source_container_id = Column(UUID(as_uuid=True), ForeignKey("containers.id"), nullable=True)
+    destination_container_id = Column(UUID(as_uuid=True), ForeignKey("containers.id"), nullable=True)
+    volume = Column(Numeric(10, 2), nullable=False)
+    movement_date = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    type = Column(String, nullable=False) # Llenado Inicial, Trasiego, Embotellado
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
     
-class GrapeLot(Base):
-    __tablename__ = "grape_lots"
+class WineLot(Base):
+    __tablename__ = "wine_lots"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    harvest_date = Column(Date, nullable=False)
-    variety = Column(String, nullable=False)
-    quantity_kg = Column(Numeric(10, 2), nullable=False)
-    origin_plot = Column(String)
-    status = Column(String, default='disponible')
-    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
-
-class Vinification(Base):
-    __tablename__ = "vinifications"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    start_date = Column(Date, nullable=False)
-    end_date = Column(Date)
-    description = Column(Text)
-    status = Column(String, default='en_proceso')
-    grape_lot_id = Column(UUID(as_uuid=True), ForeignKey("grape_lots.id"), unique=True, nullable=False)
-    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
-
-class Bottling(Base):
-    __tablename__ = "bottlings"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    bottling_date = Column(Date, nullable=False)
-    number_of_bottles = Column(Integer, nullable=False)
-    batch_number = Column(String, unique=True)
-    vinification_id = Column(UUID(as_uuid=True), ForeignKey("vinifications.id"), unique=True, nullable=False)
+    name = Column(String, nullable=False)
+    grape_variety = Column(String)
+    vintage_year = Column(Integer)
+    status = Column(String, default='Cosechado')
+    
+    # --- NUEVAS COLUMNAS PARA GESTIÓN DE VOLUMEN ---
+    initial_grape_kg = Column(Numeric(10, 2), nullable=True)
+    total_liters = Column(Numeric(10, 2), nullable=True)
+    liters_unassigned = Column(Numeric(10, 2), nullable=True)
+    
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
