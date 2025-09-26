@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Gestión de Parcelas - GrapeIQ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <style>
+        body { font-family:'Montserrat',sans-serif; background:#F8F7F4; }
+        #map { height: 60vh; width: 100%; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 10; }
+        .modal { display: none; z-index: 50; }
+        .modal-active { display: flex; }
+        /* Estilos para la lista de parcelas interactiva */
+        .parcel-item { cursor: pointer; transition: background-color 0.2s; }
+        .parcel-item:hover { background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="text-stone-800">
+    <div class="p-4 sm:p-8">
+        <header class="flex justify-between items-center mb-6">
+            <a href="performance.html" class="flex items-center gap-4">
+                <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+                <span class="text-3xl font-light text-stone-400">|</span>
+                <h1 class="text-3xl font-semibold text-stone-700">Gestión de Parcelas</h1>
+            </a>
+            <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
+        </header>
+        <div class="mb-8 border-b border-stone-200">
+            <nav class="flex space-x-8 overflow-x-auto pb-2">
+                <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Análisis de Rendimiento</a>
+                <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Predicciones y Escenarios</a>
+                <a href="catalog.html" id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Catálogo y Stock</a>
+                <a href="daily-log.html" id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</a>
+                <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Finanzas</a>
+                <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Cuaderno de Campo</a>
+                <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Trazabilidad</a>
+                <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Gestión de Bodega</a>
+                <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Parcelas</a>
+                <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Clima</a>
+                <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Configuración</a>
+            </nav>
+        </div>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-4">
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold text-stone-700 mb-4">Mapa de Explotación</h2>
+                    <div id="map"></div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold text-stone-700 mb-4">Listado de Parcelas</h2>
+                    <div id="parcels-list" class="space-y-3 max-h-96 overflow-y-auto"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="parcel-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md m-4">
+            <h3 id="modal-title" class="text-2xl font-bold text-stone-800 mb-6">Guardar Nueva Parcela</h3>
+            <form id="modal-form" class="space-y-4">
+                <div><label class="block text-sm">Nombre de la Parcela</label><input type="text" name="name" required class="w-full mt-1 p-2 border rounded"></div>
+                <div><label class="block text-sm">Variedad Principal</label><input type="text" name="variety" class="w-full mt-1 p-2 border rounded"></div>
+                <div><label class="block text-sm">Superficie (hectáreas)</label><input type="number" step="0.01" name="area_hectares" class="w-full mt-1 p-2 border rounded"></div>
+            </form>
+            <div class="flex justify-end gap-4 mt-8">
+                <button type="button" id="close-modal-btn" class="bg-stone-200 text-stone-800 px-5 py-2 rounded-full font-semibold">Cancelar</button>
+                <button type="submit" form="modal-form" class="bg-[#5C1A33] text-white px-5 py-2 rounded-full font-semibold">Guardar Parcela</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        const TOKEN_KEY = 'accessToken';
+        function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
+        function logout() { localStorage.removeItem(TOKEN_KEY); window.location.href = 'login.html'; }
+        
+        async function apiFetch(endpoint, options = {}) {
+            if (!endpoint.endsWith('/')) { endpoint += '/'; }
+            const headers = { 'Content-Type': 'application/json', ...options.headers };
+            const token = localStorage.getItem(TOKEN_KEY);
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            if (options.body && typeof options.body !== 'string') options.body = JSON.stringify(options.body);
+            const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+            if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
+            if (resp.status === 204) return null;
+            if (!resp.ok) {
+                const data = await resp.json().catch(() => ({ detail: 'Error en la petición.' }));
+                throw new Error(data.detail);
+            }
+            return resp.json();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            requireAuth();
+            document.getElementById('logout-btn').addEventListener('click', logout);
+
+            const modal = document.getElementById('parcel-modal');
+            const modalForm = document.getElementById('modal-form');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const parcelsList = document.getElementById('parcels-list');
+            let drawnLayer = null;
+            let parcelLayers = {}; // Objeto para mapear IDs de parcelas a sus capas en el mapa
+
+            const map = L.map('map').setView([42.5987, -5.5671], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            const drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
+
+            const drawControl = new L.Control.Draw({
+                draw: {
+                    polygon: { shapeOptions: { color: '#5C1A33' } },
+                    polyline: false, marker: false, circle: false, rectangle: false, circlemarker: false
+                },
+                edit: { featureGroup: drawnItems, remove: false }
+            });
+            map.addControl(drawControl);
+
+            map.on(L.Draw.Event.CREATED, function (event) {
+                if (drawnLayer) { drawnItems.removeLayer(drawnLayer); }
+                drawnLayer = event.layer;
+                drawnItems.addLayer(drawnLayer);
+                modal.classList.add('modal-active');
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                modal.classList.remove('modal-active');
+                if(drawnLayer) {
+                    drawnItems.removeLayer(drawnLayer);
+                    drawnLayer = null;
+                }
+            });
+
+            modalForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!drawnLayer) return;
+
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                
+                const body = {
+                    name: data.name,
+                    variety: data.variety,
+                    area_hectares: parseFloat(data.area_hectares) || null,
+                    geojson_coordinates: drawnLayer.toGeoJSON().geometry
+                };
+
+                try {
+                    await apiFetch('/api/parcels', { method: 'POST', body });
+                    modal.classList.remove('modal-active');
+                    e.target.reset();
+                    drawnLayer = null;
+                    await loadParcels();
+                } catch (error) {
+                    alert(`Error al guardar: ${error.message}`);
+                }
+            });
+
+            async function loadParcels() {
+                try {
+                    const parcels = await apiFetch('/api/parcels');
+                    drawnItems.clearLayers();
+                    parcelsList.innerHTML = '';
+                    parcelLayers = {}; // Resetear el mapa de capas
+
+                    if(parcels.length === 0) {
+                        parcelsList.innerHTML = '<p class="text-center text-stone-500">Aún no has dibujado ninguna parcela.</p>';
+                        return;
+                    }
+
+                    parcels.forEach(p => {
+                        const geoJsonLayer = L.geoJSON(p.geojson_coordinates, {
+                            style: { color: '#5C1A33', weight: 2 }
+                        }).bindPopup(`<b>${p.name}</b><br>${p.variety || 'Sin variedad'}<br>${p.area_hectares || '?'} ha`).addTo(drawnItems);
+                        
+                        // Guardar la referencia de la capa
+                        parcelLayers[p.id] = geoJsonLayer;
+
+                        parcelsList.innerHTML += `
+                            <div class="parcel-item border rounded-lg p-3 flex justify-between items-center" data-parcel-id="${p.id}">
+                                <div>
+                                    <p class="font-bold">${p.name}</p>
+                                    <p class="text-sm text-stone-600">${p.variety || 'N/A'}</p>
+                                </div>
+                                <button class="delete-parcel-btn text-red-500 hover:text-red-700" data-parcel-id="${p.id}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>`;
+                    });
+                    if (drawnItems.getLayers().length > 0) {
+                        map.fitBounds(drawnItems.getBounds().pad(0.1));
+                    }
+                } catch (error) {
+                    parcelsList.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+                }
+            }
+
+            // --- NUEVOS EVENT LISTENERS PARA INTERACTIVIDAD ---
+            parcelsList.addEventListener('click', async (e) => {
+                const deleteBtn = e.target.closest('.delete-parcel-btn');
+                const parcelItem = e.target.closest('.parcel-item');
+
+                if (deleteBtn) {
+                    const parcelId = deleteBtn.dataset.parcelId;
+                    if (confirm('¿Estás seguro de que quieres eliminar esta parcela? Esta acción no se puede deshacer.')) {
+                        try {
+                            await apiFetch(`/api/parcels/${parcelId}`, { method: 'DELETE' });
+                            await loadParcels(); // Recargar todo para actualizar la vista
+                        } catch (error) {
+                            alert(`Error al eliminar: ${error.message}`);
+                        }
+                    }
+                } else if (parcelItem) {
+                    const parcelId = parcelItem.dataset.parcelId;
+                    const layer = parcelLayers[parcelId];
+                    if (layer) {
+                        map.fitBounds(layer.getBounds().pad(0.1));
+                    }
+                }
+            });
+
+            loadParcels();
+        });
+    </script>
+</body>
+</html>

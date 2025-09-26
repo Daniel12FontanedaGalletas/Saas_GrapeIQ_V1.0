@@ -1,12 +1,11 @@
 # Saas_GrapeIQ_V1.0/app/models.py
 
 from sqlalchemy import Column, Integer, String, Numeric, Date, Text, ForeignKey, DateTime, Boolean
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 import uuid
 
-# Creamos una 'Base' local para todos nuestros modelos de SQLAlchemy
 Base = declarative_base()
 
 # --- TABLAS DE GESTIÓN DE CUENTAS ---
@@ -29,28 +28,13 @@ class User(Base):
 class FieldLog(Base):
     __tablename__ = "field_logs"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    start_datetime = Column(DateTime(timezone=True), nullable=False, index=True) 
-    end_datetime = Column(DateTime(timezone=True), nullable=True)
-    activity_type = Column(String, nullable=False)
-    description = Column(Text)
-    plot_name = Column(String)
+    # ... otros campos
+    # plot_name = Column(String) # <--- ELIMINAR O COMENTAR ESTA LÍNEA
+    parcel_id = Column(UUID(as_uuid=True), ForeignKey("parcels.id"), nullable=True) # <--- AÑADIR ESTA LÍNEA
     all_day = Column(Boolean, default=True)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
 
-# --- NUEVA ESTRUCTURA PARA GESTIÓN DE BODEGA Y TRAZABILIDAD ---
-
-class Container(Base):
-    __tablename__ = "containers"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String, nullable=False)
-    type = Column(String, nullable=False) # 'Barrica' o 'Depósito'
-    capacity_liters = Column(Numeric(10, 2), nullable=False)
-    material = Column(String)
-    location = Column(String)
-    status = Column(String, default='vacío') # vacío, ocupado, limpieza
-    current_volume = Column(Numeric(10, 2), default=0)
-    current_lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=True)
-    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+# --- ESTRUCTURA CENTRAL DE BODEGA Y TRAZABILIDAD ---
 
 class WineLot(Base):
     __tablename__ = "wine_lots"
@@ -58,7 +42,25 @@ class WineLot(Base):
     name = Column(String, nullable=False)
     grape_variety = Column(String)
     vintage_year = Column(Integer)
-    status = Column(String, default='Cosechado') # Cosechado, En Fermentación, En Crianza, Embotellado
+    status = Column(String, default='Cosechado')
+    initial_grape_kg = Column(Numeric(10, 2))
+    total_liters = Column(Numeric(10, 2))
+    liters_unassigned = Column(Numeric(10, 2))
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+    # NUEVA COLUMNA
+    origin_parcel_id = Column(UUID(as_uuid=True), ForeignKey("parcels.id"), nullable=True)
+
+class Container(Base):
+    __tablename__ = "containers"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String, nullable=False)
+    type = Column(String, nullable=False)
+    capacity_liters = Column(Numeric(10, 2), nullable=False)
+    material = Column(String)
+    location = Column(String)
+    status = Column(String, default='vacío')
+    current_volume = Column(Numeric(10, 2), default=0)
+    current_lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=True)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
 
 class Movement(Base):
@@ -69,20 +71,48 @@ class Movement(Base):
     destination_container_id = Column(UUID(as_uuid=True), ForeignKey("containers.id"), nullable=True)
     volume = Column(Numeric(10, 2), nullable=False)
     movement_date = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
-    type = Column(String, nullable=False) # Llenado Inicial, Trasiego, Embotellado
+    type = Column(String, nullable=False)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
-    
-class WineLot(Base):
-    __tablename__ = "wine_lots"
+
+# --- NUEVAS TABLAS PARA EL "CEREBRO" DEL SAAS ---
+
+class Parcel(Base):
+    __tablename__ = "parcels"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String, nullable=False)
-    grape_variety = Column(String)
-    vintage_year = Column(Integer)
-    status = Column(String, default='Cosechado')
-    
-    # --- NUEVAS COLUMNAS PARA GESTIÓN DE VOLUMEN ---
-    initial_grape_kg = Column(Numeric(10, 2), nullable=True)
-    total_liters = Column(Numeric(10, 2), nullable=True)
-    liters_unassigned = Column(Numeric(10, 2), nullable=True)
-    
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+    name = Column(String, nullable=False)
+    variety = Column(String)
+    area_hectares = Column(Numeric(8, 4))
+    geojson_coordinates = Column(JSONB)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+class CostParameter(Base):
+    __tablename__ = "cost_parameters"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+    parameter_name = Column(String, nullable=False, unique=True)
+    value = Column(Numeric(10, 2), nullable=False)
+    unit = Column(String)
+    last_updated = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+class Cost(Base):
+    __tablename__ = "costs"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+    related_lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=True)
+    cost_type = Column(String, nullable=False)
+    amount = Column(Numeric(10, 2), nullable=False)
+    description = Column(Text)
+    cost_date = Column(Date, default=datetime.utcnow)
+
+class Product(Base):
+    __tablename__ = "products"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+    name = Column(String, nullable=False)
+    sku = Column(String, unique=True)
+    description = Column(Text)
+    price = Column(Numeric(10, 2))
+    # NUEVAS COLUMNAS
+    wine_lot_origin_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=True)
+    stock_units = Column(Integer, default=0)

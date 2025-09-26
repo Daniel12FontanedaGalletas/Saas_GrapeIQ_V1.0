@@ -14,12 +14,12 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.get("/me", response_model=schemas.UserInDB)
+@router.get("/me/", response_model=schemas.UserInDB)
 async def read_users_me(current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
     return current_user
 
 # --- MODIFICACIÓN: Cambiamos el 'response_model' y la lógica de retorno ---
-@router.put("/me", response_model=schemas.UserUpdateResponse)
+@router.put("/me/", response_model=schemas.UserUpdateResponse)
 async def update_user_me(
     username: str = Form(...),
     role: str = Form(...),

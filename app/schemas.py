@@ -1,7 +1,7 @@
 # Saas_GrapeIQ_V1.0/app/schemas.py
 
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Any
 import uuid
 from datetime import date, datetime
 
@@ -38,7 +38,7 @@ class UserUpdateResponse(UserInDB):
 class FieldLogBase(BaseModel):
     activity_type: str
     description: Optional[str] = None
-    plot_name: Optional[str] = None
+    parcel_id: Optional[uuid.UUID] = None # Modificado para usar el ID de la parcela
 
 class FieldLogCreate(FieldLogBase):
     log_date: date
@@ -53,7 +53,7 @@ class FieldLog(FieldLogBase):
     class Config:
         from_attributes = True
 
-# --- ESQUEMAS PARA GESTIÓN DE BODEGA Y TRAZABILIDAD ---
+# --- ESQUEMAS PARA LA ARQUITECTURA CENTRAL ---
 
 # Lotes de Vino
 class WineLotBase(BaseModel):
@@ -63,6 +63,7 @@ class WineLotBase(BaseModel):
 
 class WineLotCreate(WineLotBase):
     initial_grape_kg: float
+    origin_parcel_id: uuid.UUID
 
 class WineLotUpdate(WineLotBase):
     initial_grape_kg: Optional[float] = None
@@ -73,10 +74,11 @@ class WineLot(WineLotBase):
     initial_grape_kg: Optional[float] = None
     total_liters: Optional[float] = None
     liters_unassigned: Optional[float] = None
+    origin_parcel_id: Optional[uuid.UUID] = None
     class Config:
         from_attributes = True
 
-# Contenedores (Barricas y Depósitos)
+# Contenedores
 class ContainerBase(BaseModel):
     name: str
     type: str
@@ -106,13 +108,11 @@ class MovementCreate(BaseModel):
     volume: float
     type: str
 
-# --- ¡NUEVO ESQUEMA PARA RELLENAR! ---
 class ToppingUpCreate(BaseModel):
     lot_id: uuid.UUID
     destination_container_id: uuid.UUID
     volume: float
     type: str = "Rellenado"
-
 
 # Esquemas para las Vistas de la Interfaz
 class WineLotInContainer(WineLot):
@@ -122,7 +122,7 @@ class TraceabilityView(BaseModel):
     harvested: List[WineLot]
     fermenting: List[WineLotInContainer]
     aging: List[WineLotInContainer]
-    ready_to_bottle: List[WineLotInContainer] # Nuevo estado para la vista
+    ready_to_bottle: List[WineLotInContainer]
     bottled: List[WineLot]
 
 # Esquema para actualizar el estado de un lote
@@ -145,3 +145,69 @@ class BottlingCreate(BaseModel):
     lot_id: uuid.UUID
     source_container_ids: List[uuid.UUID]
     type: str = "Embotellado"
+
+# --- NUEVOS ESQUEMAS PARA EL "CEREBRO" ---
+
+# Parcelas
+class ParcelBase(BaseModel):
+    name: str
+    variety: Optional[str] = None
+    area_hectares: Optional[float] = None
+    geojson_coordinates: Optional[Any] = None
+
+class ParcelCreate(ParcelBase):
+    pass
+
+class Parcel(ParcelBase):
+    id: uuid.UUID
+    class Config:
+        from_attributes = True
+
+# Parámetros de Coste
+class CostParameterBase(BaseModel):
+    parameter_name: str
+    value: float
+    unit: Optional[str] = None
+
+class CostParameterCreate(CostParameterBase):
+    pass
+
+class CostParameter(CostParameterBase):
+    id: uuid.UUID
+    last_updated: datetime
+    class Config:
+        from_attributes = True
+
+# Costes
+class CostBase(BaseModel):
+    related_lot_id: Optional[uuid.UUID] = None
+    cost_type: str
+    amount: float
+    description: Optional[str] = None
+    cost_date: date = date.today()
+
+class CostCreate(CostBase):
+    pass
+
+class Cost(CostBase):
+    id: uuid.UUID
+    class Config:
+        from_attributes = True
+
+# Productos
+class ProductBase(BaseModel):
+    name: str
+    sku: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[float] = None
+
+class ProductCreate(ProductBase):
+    wine_lot_origin_id: uuid.UUID
+    stock_units: int
+
+class Product(ProductBase):
+    id: uuid.UUID
+    wine_lot_origin_id: Optional[uuid.UUID] = None
+    stock_units: int = 0
+    class Config:
+        from_attributes = True

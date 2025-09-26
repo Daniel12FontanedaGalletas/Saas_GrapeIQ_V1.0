@@ -32,15 +32,17 @@
 
     <div class="mb-6 border-b border-stone-200">
       <nav class="flex space-x-8" aria-label="Tabs">
-          <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="performance">Análisis de Rendimiento</a>
-          <a href="forecast.html"    class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="forecast">Predicciones y Escenarios</a>
-          <a href="catalog.html"     id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="catalog">Catálogo y Stock</a>
-          <a href="daily-log.html"   id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="daily-log">Registro Diario</a>
-          <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Cuaderno de Campo</a>
-          <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Trazabilidad</a>
-          <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Gestión de Bodega</a>
-          <a href="weather.html"     class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="weather">Clima</a>
-          <a href="settings.html"    class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="settings">Configuración</a>
+        <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active" data-tab="performance">Análisis de Rendimiento</a>
+        <a href="forecast.html"   class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="forecast">Predicciones y Escenarios</a>
+        <a href="catalog.html"     id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="catalog">Catálogo y Stock</a>
+        <a href="daily-log.html"   id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="daily-log">Registro Diario</a>
+        <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Finanzas</a>
+        <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Cuaderno de Campo</a>
+        <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Trazabilidad</a>
+        <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Gestión de Bodega</a>
+        <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Parcelas</a>
+        <a href="weather.html"     class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="weather">Clima</a>
+        <a href="settings.html"    class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="settings">Configuración</a>
       </nav>
     </div>
 
@@ -112,8 +114,8 @@
               </select>
             </div>
             <div>
-              <label for="plot_name" class="block text-sm font-medium text-stone-600 mb-1">Parcela</label>
-              <input type="text" id="plot_name" name="plot_name" class="w-full px-4 py-2 border border-stone-300 rounded-lg">
+              <label for="parcel_id" class="block text-sm font-medium text-stone-600 mb-1">Parcela (Opcional)</label>
+              <select id="parcel_id" name="parcel_id" class="w-full px-4 py-2 border border-stone-300 rounded-lg"></select>
             </div>
             <div>
               <label for="description" class="block text-sm font-medium text-stone-600 mb-1">Descripción</label>
@@ -121,7 +123,7 @@
             </div>
           </div>
           <div class="flex justify-between items-center mt-8">
-            <button type="button" id="delete-log-btn" class="bg-red-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-red-700">Eliminar</button>
+            <button type="button" id="delete-log-btn" class="bg-red-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-red-700" style="display: none;">Eliminar</button>
             <div class="flex gap-4">
               <button type="button" id="close-modal-btn" class="bg-stone-200 text-stone-800 px-5 py-2 rounded-full font-semibold">Cancelar</button>
               <button type="submit" class="bg-[#5C1A33] text-white px-5 py-2 rounded-full font-semibold">Guardar</button>
@@ -136,6 +138,7 @@
     const TOKEN_KEY = 'accessToken';
 
     async function apiFetch(endpoint, options = {}, expectJson = true) {
+        if (!endpoint.endsWith('/')) { endpoint += '/'; }
         const headers = { ...options.headers };
         const token = localStorage.getItem(TOKEN_KEY);
         if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -171,37 +174,105 @@
         const specifyTimeCheckbox = document.getElementById('specify-time-checkbox');
         const timeInputContainer = document.getElementById('time-input-container');
         const deleteLogBtn = document.getElementById('delete-log-btn');
+        const parcelSelect = document.getElementById('parcel_id');
         let calendar;
+        let parcelsCache = [];
+        let selectedEventInfo = null;
 
         specifyTimeCheckbox.addEventListener('change', () => {
             timeInputContainer.classList.toggle('time-input-hidden', !specifyTimeCheckbox.checked);
             document.getElementById('start_time').required = specifyTimeCheckbox.checked;
         });
 
-        function openModalForCreate() {
+        async function populateParcelsDropdown() {
+            if (parcelsCache.length === 0) {
+                try {
+                    parcelsCache = await apiFetch('/api/parcels');
+                } catch (e) {
+                    console.error("Error al cargar parcelas:", e);
+                    parcelSelect.innerHTML = `<option value="">Error al cargar parcelas</option>`;
+                    return;
+                }
+            }
+            parcelSelect.innerHTML = '<option value="">Ninguna</option>' + parcelsCache.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        }
+        
+        async function openModal(info) {
             logForm.reset();
             specifyTimeCheckbox.checked = false;
             timeInputContainer.classList.add('time-input-hidden');
-            document.getElementById('log-id').value = '';
-            modalTitle.textContent = 'Nueva Entrada';
             deleteLogBtn.style.display = 'none';
-            document.getElementById('log_date').value = new Date().toISOString().split('T')[0];
+            selectedEventInfo = info;
+
+            await populateParcelsDropdown();
+
+            if (info.event) {
+                modalTitle.textContent = 'Editar Entrada';
+                deleteLogBtn.style.display = 'block';
+                const log = info.event;
+                const startDateTime = new Date(log.start);
+
+                document.getElementById('log-id').value = log.id;
+                document.getElementById('log_date').value = startDateTime.toISOString().split('T')[0];
+
+                if (!log.allDay) {
+                    specifyTimeCheckbox.checked = true;
+                    timeInputContainer.classList.remove('time-input-hidden');
+                    document.getElementById('start_time').value = startDateTime.toTimeString().slice(0, 5);
+                    if (log.end) {
+                        document.getElementById('end_time').value = new Date(log.end).toTimeString().slice(0, 5);
+                    }
+                }
+                
+                document.getElementById('activity_type').value = log.title;
+                document.getElementById('description').value = log.extendedProps.description || '';
+                parcelSelect.value = log.extendedProps.parcel_id || '';
+
+            } else {
+                modalTitle.textContent = 'Nueva Entrada';
+                document.getElementById('log-id').value = '';
+                document.getElementById('log_date').value = info.dateStr || new Date().toISOString().split('T')[0];
+            }
             modal.classList.add('modal-active');
         }
-
+        
         function closeModal() { modal.classList.remove('modal-active'); }
-        addLogBtn.addEventListener('click', openModalForCreate);
+        addLogBtn.addEventListener('click', () => openModal({ dateStr: new Date().toISOString().split('T')[0] }));
         closeModalBtn.addEventListener('click', closeModal);
 
-        async function loadEvents() {
-            const logs = await apiFetch('/api/field-logs/');
-            const events = logs.map(log => ({
-                id: log.id, title: log.activity_type, start: log.start_datetime,
-                end: log.end_datetime, allDay: log.all_day,
-                extendedProps: { description: log.description, plot_name: log.plot_name }
-            }));
-            if (calendar.getEventSourceById('logs')) calendar.getEventSourceById('logs').remove();
-            calendar.addEventSource({ id: 'logs', events });
+        async function loadEventsAndParcels() {
+            try {
+                const [logs, parcels] = await Promise.all([
+                    apiFetch('/api/field-logs/'),
+                    apiFetch('/api/parcels/')
+                ]);
+                parcelsCache = parcels;
+
+                const parcelIdToNameMap = parcels.reduce((map, p) => {
+                    map[p.id] = p.name;
+                    return map;
+                }, {});
+
+                const events = logs.map(log => ({
+                    id: log.id,
+                    title: log.activity_type,
+                    start: log.start_datetime,
+                    end: log.end_datetime,
+                    allDay: log.all_day,
+                    extendedProps: {
+                        description: log.description,
+                        parcel_id: log.parcel_id,
+                        plot_name: log.parcel_id ? parcelIdToNameMap[log.parcel_id] : null
+                    }
+                }));
+                
+                if (calendar.getEventSourceById('logs')) calendar.getEventSourceById('logs').remove();
+                calendar.addEventSource({ id: 'logs', events });
+
+            } catch (error) {
+                console.error("Error al cargar eventos y parcelas:", error);
+                alert(error.message);
+            }
         }
 
         logForm.addEventListener('submit', async (e) => {
@@ -211,7 +282,7 @@
                 log_date: document.getElementById('log_date').value,
                 activity_type: document.getElementById('activity_type').value,
                 description: document.getElementById('description').value,
-                plot_name: document.getElementById('plot_name').value,
+                parcel_id: document.getElementById('parcel_id').value || null,
                 start_time: specifyTimeCheckbox.checked ? document.getElementById('start_time').value : null,
                 end_time: specifyTimeCheckbox.checked ? document.getElementById('end_time').value : null
             };
@@ -220,7 +291,7 @@
             try {
                 await apiFetch(endpoint, { method, body: logData });
                 closeModal();
-                loadEvents();
+                loadEventsAndParcels();
             } catch (error) { alert(`Error: ${error.message}`); }
         });
 
@@ -230,7 +301,7 @@
             try {
                 await apiFetch(`/api/field-logs/${logId}`, { method: 'DELETE' });
                 closeModal();
-                loadEvents();
+                loadEventsAndParcels();
             } catch (error) { alert(`Error: ${error.message}`); }
         });
 
@@ -240,35 +311,25 @@
             slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
             eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
             headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
-            eventClick: function(info) {
-                const log = info.event;
-                modalTitle.textContent = 'Editar Entrada';
-                document.getElementById('log-id').value = log.id;
-                deleteLogBtn.style.display = 'block';
-                const startDateTime = new Date(log.start);
-                document.getElementById('log_date').value = startDateTime.toISOString().split('T')[0];
-                if (!log.allDay) {
-                    specifyTimeCheckbox.checked = true;
-                    timeInputContainer.classList.remove('time-input-hidden');
-                    document.getElementById('start_time').value = startDateTime.toTimeString().slice(0, 5);
-                    if(log.end){
-                        document.getElementById('end_time').value = new Date(log.end).toTimeString().slice(0, 5);
-                    } else {
-                        document.getElementById('end_time').value = '';
-                    }
-                } else {
-                    specifyTimeCheckbox.checked = false;
-                    timeInputContainer.classList.add('time-input-hidden');
+            eventClick: (info) => openModal({ event: info.event }),
+            dateClick: (info) => openModal({ dateStr: info.dateStr }),
+            eventContent: function(arg) {
+                let titleEl = document.createElement('div');
+                titleEl.innerHTML = arg.event.title;
+
+                let arrayOfDomNodes = [ titleEl ];
+
+                if (arg.event.extendedProps.plot_name) {
+                    let plotEl = document.createElement('i');
+                    plotEl.innerHTML = ` - ${arg.event.extendedProps.plot_name}`;
+                    arrayOfDomNodes.push(plotEl);
                 }
-                document.getElementById('activity_type').value = log.title;
-                document.getElementById('description').value = log.extendedProps.description || '';
-                document.getElementById('plot_name').value = log.extendedProps.plot_name || '';
-                modal.classList.add('modal-active');
-            },
-            events: (fetchInfo, s, f) => s([])
+                
+                return { domNodes: arrayOfDomNodes };
+            }
         });
         calendar.render();
-        loadEvents();
+        loadEventsAndParcels();
 
         const exportCsvBtn = document.getElementById('export-csv-btn');
         const exportPdfBtn = document.getElementById('export-pdf-btn');
