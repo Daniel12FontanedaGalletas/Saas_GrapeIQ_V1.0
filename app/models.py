@@ -116,3 +116,20 @@ class Product(Base):
     # NUEVAS COLUMNAS
     wine_lot_origin_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=True)
     stock_units = Column(Integer, default=0)
+    
+class Sale(Base):
+    __tablename__ = "sales"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+    sale_date = Column(DateTime(timezone=True), default=datetime.utcnow)
+    customer_name = Column(String, nullable=True) # Opcional: para registrar a quién se le vendió
+    total_amount = Column(Numeric(10, 2), nullable=False)
+    notes = Column(Text, nullable=True)
+
+class SaleDetail(Base):
+    __tablename__ = "sale_details"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    sale_id = Column(UUID(as_uuid=True), ForeignKey("sales.id"), nullable=False)
+    product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)
+    quantity = Column(Integer, nullable=False)
+    unit_price = Column(Numeric(10, 2), nullable=False) # Precio al momento de la venta

@@ -32,7 +32,7 @@
 
     <div class="mb-6 border-b border-stone-200">
       <nav class="flex space-x-8" aria-label="Tabs">
-        <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active" data-tab="performance">Análisis de Rendimiento</a>
+         <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active" data-tab="performance">Análisis de Rendimiento</a>
         <a href="forecast.html"   class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="forecast">Predicciones y Escenarios</a>
         <a href="catalog.html"     id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="catalog">Catálogo y Stock</a>
         <a href="daily-log.html"   id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="daily-log">Registro Diario</a>
@@ -53,42 +53,44 @@
           <h2 class="text-2xl font-bold text-stone-700 mb-4">Pulso del Negocio</h2>
           <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
             <div class="bg-white p-6 rounded-2xl shadow-lg">
-              <h3 class="font-semibold text-stone-500 mb-2">Ventas Totales</h3>
+              <h3 class="font-semibold text-stone-500 mb-2">Ingresos Totales</h3>
               <p id="kpi-total-sales" class="kpi-value text-stone-800">Cargando...</p>
               <p id="kpi-mom-change" class="font-semibold text-sm mt-1">Cargando...</p>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-lg">
-              <h3 class="font-semibold text-stone-500 mb-2">Unidades Transferidas</h3>
-              <p id="kpi-inventory-transfers" class="kpi-value text-stone-800">Cargando...</p>
-              <p class="text-sm text-stone-400 mt-1">Movimientos de inventario</p>
+              <h3 class="font-semibold text-stone-500 mb-2">Beneficio Bruto</h3>
+              <p id="kpi-total-profit" class="kpi-value text-green-700">Cargando...</p>
+              <p class="text-sm text-stone-400 mt-1">Ingresos - Costes</p>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-lg">
               <h3 class="font-semibold text-stone-500 mb-2">Margen Bruto</h3>
               <p id="kpi-gross-margin" class="kpi-value text-stone-800">Cargando...</p>
-              <p class="text-sm text-stone-400 mt-1">Beneficio sobre ventas</p>
+              <p class="text-sm text-stone-400 mt-1">Beneficio / Ingresos</p>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-lg">
-              <h3 class="font-semibold text-stone-500 mb-2">Margen Neto Real</h3>
-              <p class="kpi-value text-green-700">28.4%</p>
-              <p class="text-sm text-stone-400 mt-1">Beneficio real (estimado)</p>
+              <h3 class="font-semibold text-stone-500 mb-2">Botellas Vendidas</h3>
+              <p id="kpi-total-quantity" class="kpi-value text-stone-800">Cargando...</p>
+              <p class="text-sm text-stone-400 mt-1">Total unidades</p>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-lg">
-              <h3 class="font-semibold text-stone-500 mb-2">Rotación Inventario</h3>
-              <p class="kpi-value text-stone-800">4.2</p>
-              <p class="text-sm text-stone-400 mt-1">Veces al año (estimado)</p>
+              <h3 class="font-semibold text-stone-500 mb-2">Clientes Únicos</h3>
+               <p id="kpi-unique-customers" class="kpi-value text-stone-800">Cargando...</p>
+              <p class="text-sm text-stone-400 mt-1">Este año</p>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-lg">
-              <h3 class="font-semibold text-stone-500 mb-2">Coste Adquisición Cliente</h3>
-              <p class="kpi-value text-red-600">€12.50</p>
-              <p class="text-sm text-stone-400 mt-1">Coste medio (estimado)</p>
+              <h3 class="font-semibold text-stone-500 mb-2">Venta Media</h3>
+              <p id="kpi-avg-sale" class="kpi-value text-stone-800">Cargando...</p>
+              <p class="text-sm text-stone-400 mt-1">Por transacción</p>
             </div>
           </div>
           <div class="bg-white p-6 rounded-2xl shadow-lg mt-6">
             <h3 class="text-xl font-bold text-stone-800 mb-4">Buscar Ventas por SKU</h3>
-            <div class="flex items-center gap-2">
-              <input type="text" id="sku-search-input" placeholder="Introduce un SKU..." class="w-full max-w-sm px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
+            <div class="flex flex-wrap items-center gap-4">
+              <input type="text" id="sku-search-input" placeholder="Introduce un SKU..." class="flex-grow w-full sm:w-auto max-w-sm px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
+              <select id="month-filter-select" class="px-4 py-2 border border-stone-300 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
+                </select>
             </div>
-            <p id="sku-search-result" class="mt-2 text-lg font-semibold h-6"></p>
+            <p id="sku-search-result" class="mt-4 text-lg font-semibold h-6"></p>
           </div>
         </div>
 
@@ -103,7 +105,7 @@
               <div id="weekday-heatmap" class="grid grid-cols-7 gap-2 text-center"></div>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-lg">
-              <div id="salesByChannelChartContainer" class="h-80 w-full"><canvas id="salesByChannelChart"></canvas></div>
+               <div id="salesByChannelChartContainer" class="h-80 w-full"><canvas id="salesByChannelChart"></canvas></div>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-lg">
               <div id="topProductsByUnitsChartContainer" class="h-80 w-full"><canvas id="topProductsByUnitsChart"></canvas></div>
@@ -129,259 +131,221 @@
   </div>
 
   <script>
-    // --- Configuración y Autenticación Estandarizada ---
+    // --- Configuración y Autenticación ---
     const API_BASE_URL = 'http://127.0.0.1:8000';
-    const TOKEN_KEY = 'accessToken'; // Nombre estandarizado
-    const ROLE_KEY = 'userRole';     // Nombre estandarizado
+    const TOKEN_KEY = 'accessToken';
+    const ROLE_KEY = 'userRole';
 
-    function requireAuth(){ 
-        if(!localStorage.getItem(TOKEN_KEY)) window.location.href='login.html';
-    }
-    
+    function requireAuth(){ if(!localStorage.getItem(TOKEN_KEY)) window.location.href='login.html'; }
     function logout(){ 
         localStorage.removeItem(TOKEN_KEY); 
         localStorage.removeItem(ROLE_KEY);
         window.location.href='login.html'; 
     }
-    
     document.getElementById('logout-btn').addEventListener('click', logout);
 
     async function apiFetch(endpoint, options = {}) {
         const headers = { 'Content-Type': 'application/json' };
         const token = localStorage.getItem(TOKEN_KEY);
         if (token) headers['Authorization'] = `Bearer ${token}`;
-
-        if (options.body && options.body instanceof FormData) delete headers['Content-Type'];
         
         const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
         
-        if (resp.status === 401) { logout(); throw new Error('Sesión expirada o no autorizada.'); }
+        if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
         if (!resp.ok) {
-            let msg = 'Ocurrió un error en la API';
-            try { const j = await resp.json(); msg = j.detail || msg; } catch {}
-            throw new Error(msg);
+            const errData = await resp.json().catch(() => ({ detail: 'Error desconocido en la API.' }));
+            throw new Error(errData.detail);
         }
-        
-        const ct = resp.headers.get('content-type') || '';
-        return ct.includes('application/json') ? resp.json() : resp.text();
+        return resp.json();
     }
     
-    function updateUIVisibility() {
-        const role = localStorage.getItem(ROLE_KEY);
-        if (role === 'lector') {
-            const menuCatalogo = document.getElementById('menu-catalogo');
-            const menuRegistro = document.getElementById('menu-registro-diario');
-            if(menuCatalogo) menuCatalogo.style.display = 'none';
-            if(menuRegistro) menuRegistro.style.display = 'none';
-        }
-    }
-
-    // --- Utils & API (código original) ---
+    // --- Utils & Renderizado de Gráficos ---
     const charts = {};
-    function formatCurrency(v){ if (v===null || isNaN(v)) return '€0,00'; return `€${parseFloat(v).toLocaleString('es-ES',{minimumFractionDigits:2, maximumFractionDigits:2})}`; }
-    function renderChart(chartId, existing, type, data, options){
+    function formatCurrency(v){ return `€${(v || 0).toLocaleString('es-ES',{minimumFractionDigits:2, maximumFractionDigits:2})}`; }
+    function formatNumber(v){ return (v || 0).toLocaleString('es-ES'); }
+
+    function renderChart(chartId, existingChart, type, data, options){
       const container = document.getElementById(chartId+'Container');
       if (!container) return null;
-      if (!data || !data.datasets || data.datasets.some(ds=>!ds.data || ds.data.length===0)) {
-        if (existing) existing.destroy();
-        container.innerHTML = `<div class="flex items-center justify-center h-full text-stone-500 font-semibold"><canvas id="${chartId}" class="hidden"></canvas><p>No hay datos disponibles para mostrar.</p></div>`;
+      if (!data || !data.datasets || data.datasets.some(ds => !ds.data || ds.data.length === 0)) {
+        if (existingChart) existingChart.destroy();
+        container.innerHTML = `<div class="flex items-center justify-center h-full text-stone-500 font-semibold"><p>No hay datos disponibles.</p></div>`;
         return null;
       }
       container.innerHTML = `<canvas id="${chartId}"></canvas>`;
       const ctx = document.getElementById(chartId).getContext('2d');
-      if (existing) existing.destroy();
+      if (existingChart) existingChart.destroy();
       return new Chart(ctx, { type, data, options });
     }
 
-    // --- KPIs + Analytics (código original) ---
+    // --- Referencias al DOM ---
     const DOM = {
       kpiSales: document.getElementById('kpi-total-sales'),
-      kpiTransfers: document.getElementById('kpi-inventory-transfers'),
+      kpiProfit: document.getElementById('kpi-total-profit'),
       kpiGrossMargin: document.getElementById('kpi-gross-margin'),
+      kpiQuantity: document.getElementById('kpi-total-quantity'),
+      kpiUniqueCustomers: document.getElementById('kpi-unique-customers'),
+      kpiAvgSale: document.getElementById('kpi-avg-sale'),
       kpiMomChange: document.getElementById('kpi-mom-change'),
       skuSearchInput: document.getElementById('sku-search-input'),
       skuSearchResult: document.getElementById('sku-search-result'),
       weekdayHeatmap: document.getElementById('weekday-heatmap'),
+      monthFilterSelect: document.getElementById('month-filter-select'), // NUEVO
     };
 
     function updateMomChange(change){
       const el = DOM.kpiMomChange;
-      if (change===null || isNaN(change)) { el.innerHTML = '<span class="text-stone-400">Datos insuficientes</span>'; return; }
+      if (change === null || isNaN(change)) { el.innerHTML = '<span class="text-stone-400">Datos insuficientes</span>'; return; }
       const pos = change >= 0; const cls = pos ? 'kpi-trend-positive':'kpi-trend-negative'; const icon= pos?'▲':'▼';
       el.innerHTML = `<span class="${cls}">${icon} ${Math.abs(change).toFixed(1)}%</span> vs. mes anterior`;
     }
 
+    // --- Carga y Renderizado de Datos ---
     async function loadPerformanceData(){
-      try{
-        const kpis = await apiFetch('/api/data/kpis');
-        DOM.kpiSales.textContent = formatCurrency(kpis.total_sales);
-        DOM.kpiTransfers.textContent = (kpis.total_inventory_transfers||0).toLocaleString('es-ES');
-        DOM.kpiGrossMargin.textContent = `${(kpis.gross_profit_margin||0).toFixed(1)}%`;
-        updateMomChange(kpis.month_over_month_change);
+      try {
+        const kpis = await apiFetch('/api/analytics/kpis-summary');
+        DOM.kpiSales.textContent = formatCurrency(kpis.TotalSale);
+        DOM.kpiProfit.textContent = formatCurrency(kpis.Profit);
+        DOM.kpiGrossMargin.textContent = `${((kpis.Profit / kpis.TotalSale) * 100 || 0).toFixed(1)}%`;
+        DOM.kpiQuantity.textContent = formatNumber(kpis.Quantity);
+        DOM.kpiUniqueCustomers.textContent = formatNumber(kpis.UniqueCustomers);
+        DOM.kpiAvgSale.textContent = formatCurrency(kpis.AverageSaleValue);
+        updateMomChange(kpis.MonthOverMonthChange);
 
-        const [monthlySales, topProfit, topUnits, byWeekday, byChannel] = await Promise.all([
-          apiFetch('/api/data/analytics/monthly-sales'),
-          apiFetch('/api/data/analytics/top-profitable-products'),
-          apiFetch('/api/data/analytics/top-units-products'),
-          apiFetch('/api/data/analytics/sales-by-weekday'),
-          apiFetch('/api/data/analytics/sales-by-channel')
+        const [monthlySales, topProfit, topUnits, byWeekday, matrixData] = await Promise.all([
+          apiFetch('/api/analytics/monthly-sales'),
+          apiFetch('/api/analytics/top-profitable-products'),
+          apiFetch('/api/analytics/top-units-products'),
+          apiFetch('/api/analytics/sales-by-weekday'),
+          apiFetch('/api/analytics/product-performance-matrix'),
         ]);
+
         renderMonthlySalesChart(monthlySales);
         renderTopProfitableProductsChart(topProfit);
         renderTopProductsByUnitsChart(topUnits);
         renderWeekdayHeatmap(byWeekday);
-        renderSalesByChannelChart(byChannel);
-        renderProductPerformanceMatrixChart();
-      }catch(e){ console.error('Error al cargar datos de rendimiento:', e); }
-    }
+        renderSalesByChannelChart(null);
+        renderProductPerformanceMatrixChart(matrixData);
 
-    function renderMonthlySalesChart(data){
-      if (!Array.isArray(data) || data.length===0){
-        data = [
-          {month:"2024-01", monthly_sales:1200},{month:"2024-02",monthly_sales:1500},
-          {month:"2024-03", monthly_sales:1800},{month:"2024-04",monthly_sales:1700},
-          {month:"2024-05", monthly_sales:2100},{month:"2024-06",monthly_sales:1900},
-          {month:"2024-07", monthly_sales:2300}
-        ];
+      } catch(e) { 
+        console.error('Error al cargar datos de rendimiento:', e);
+        alert(`Error al cargar los datos del panel: ${e.message}`);
       }
-      const chartData = {
-        labels: data.map(d=> new Date(d.month+'-02').toLocaleString('es-ES',{month:'short',year:'2-digit'})),
-        datasets: [{ label:'Ventas Mensuales', data: data.map(d=>d.monthly_sales),
-          borderColor:'#5C1A33', backgroundColor:'rgba(92,26,51,0.1)', fill:true, tension:0.4 }]
-      };
-      charts.monthlySales = renderChart('monthlySalesChart', charts.monthlySales,'line', chartData, {
-        responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{display:false}, title:{display:true, text:'Evolución de Ventas Mensuales (€)', font:{size:18, weight:'bold'}} },
-        scales:{ y:{ beginAtZero:true } }
-      });
     }
-
-    function renderTopProfitableProductsChart(data){
-      if (!Array.isArray(data) || data.length===0){
-        data = [
-          { name:"BOOTLEG RED", total_profit:1200 },{name:"MOMENT DE PLAISIR", total_profit:950},
-          { name:"S SMITH CIDER", total_profit:800 },{name:"SCHLINK HAUS", total_profit:700},
-          { name:"SANTORINI GAVALA", total_profit:650 },{name:"RIOJA RESERVA", total_profit:600},
-          { name:"VERDEJO", total_profit:550 },{name:"CABERNET", total_profit:500},
-          { name:"MERLOT", total_profit:450 },{name:"PINOT NOIR", total_profit:400}
-        ];
-      }
-      const chartData = {
-        labels: data.map(p=>p.name),
-        datasets: [{ axis:'y', label:'Beneficio Total (€)', data: data.map(p=>p.total_profit),
-          backgroundColor:'rgba(22,163,74,0.7)', borderColor:'rgba(22,163,74,1)', borderWidth:1, borderRadius:6 }]
-      };
-      charts.topProfit = renderChart('topProfitableProductsChart', charts.topProfit,'bar', chartData, {
-        indexAxis:'y', responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{display:false}, title:{display:true, text:'Top 10 Productos Más Rentables', font:{size:18, weight:'bold'}} }
-      });
-    }
-
-    function renderTopProductsByUnitsChart(data){
-        // He añadido los datos que faltaban desde tu archivo original
-        if (!Array.isArray(data) || data.length === 0) {
-            data = [
-                { sku:"100009", total_units:320 },{ sku:"100024", total_units:290 },
-                { sku:"1001", total_units:250 },{ sku:"100145", total_units:210 },
-                { sku:"100293", total_units:180 },{ sku:"100500", total_units:160 },
-                { sku:"100600", total_units:140 },{ sku:"100700", total_units:120 },
-                { sku:"100800", total_units:100 },{ sku:"100900", total_units:90 }
-            ];
+    
+    // --- NUEVA FUNCIÓN para poblar el filtro de meses ---
+    async function populateMonthFilter() {
+        try {
+            const months = await apiFetch('/api/analytics/available-months');
+            const select = DOM.monthFilterSelect;
+            select.innerHTML = '<option value="all">Total Histórico</option>'; // Opción por defecto
+            months.forEach(month => {
+                // Formateamos la fecha para mostrarla en español
+                const date = new Date(month + '-02');
+                const formattedMonth = date.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+                select.innerHTML += `<option value="${month}">${formattedMonth.charAt(0).toUpperCase() + formattedMonth.slice(1)}</option>`;
+            });
+        } catch (e) {
+            console.error('Error al cargar los meses para el filtro:', e);
+            DOM.monthFilterSelect.innerHTML = '<option value="all">Error al cargar meses</option>';
         }
-      const chartData = {
-        labels: data.map(p=>p.sku),
-        datasets: [{ label:'Unidades Vendidas', data: data.map(p=>p.total_units),
-          backgroundColor:[
-            'rgba(59,130,246,0.7)','rgba(37,99,235,0.7)','rgba(96,165,250,0.7)','rgba(30,64,175,0.7)',
-            'rgba(147,197,253,0.7)','rgba(191,219,254,0.7)','rgba(59,130,246,0.5)','rgba(37,99,235,0.5)',
-            'rgba(96,165,250,0.5)','rgba(30,64,175,0.5)'
-          ],
-          borderColor:'rgba(59,130,246,1)', borderWidth:1, borderRadius:6 }]
-      };
-      charts.topUnits = renderChart('topProductsByUnitsChart', charts.topUnits,'bar', chartData, {
-        responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{display:false}, title:{display:true, text:'Top 10 Productos por Unidades Vendidas', font:{size:18, weight:'bold'}} },
-        scales:{ y:{ beginAtZero:true } }
-      });
     }
 
-    function renderWeekdayHeatmap(data){
-      const container = DOM.weekdayHeatmap; container.innerHTML='';
-      const weekdays = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-      const salesByDay = new Array(7).fill(0);
-      if (Array.isArray(data)) data.forEach(d=>{ salesByDay[(parseInt(d.weekday_num,10)||1)-1] = d.total_sales; });
-      const maxSales = Math.max(...salesByDay);
-      weekdays.forEach((day,i)=>{
-        const sales = salesByDay[i]; const intensity = maxSales>0?(sales/maxSales):0; const light=90-(intensity*50);
-        const bg = `hsl(340,65%,${light}%)`;
-        container.innerHTML += `<div class="p-2 rounded-lg" style="background-color:${bg};">
-          <p class="font-bold text-sm">${day.substring(0,3)}</p>
-          <p class="text-xs font-semibold text-stone-700">${formatCurrency(sales)}</p>
-        </div>`;
-      });
-    }
-
-    function renderSalesByChannelChart(data){
-      if (!Array.isArray(data) || data.length===0){
-        data = [{channel:'Online', total_sales:3200},{channel:'Tienda Física', total_sales:2100},{channel:'Distribuidor', total_sales:950}];
-      }
-      const chartData = {
-        labels: data.map(i=>i.channel),
-        datasets:[{ data: data.map(i=>i.total_sales), backgroundColor:['rgba(92,26,51,0.8)','rgba(140,43,79,0.8)','rgba(180,80,110,0.8)'], borderColor:'#FFFFFF', borderWidth:4 }]
-      };
-      charts.channel = renderChart('salesByChannelChart', charts.channel,'doughnut', chartData, {
-        responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{ position:'top', labels:{ font:{ weight:'bold'}} }, title:{ display:true, text:'Ventas por Canal', font:{ weight:'bold', size:18 }}}
-      });
-    }
-
+    // --- FUNCIÓN MODIFICADA para la búsqueda de SKU ---
     let skuSearchTimeout;
     async function handleSkuSearch(){
       const sku = DOM.skuSearchInput.value.trim();
-      if (!sku) { DOM.skuSearchResult.innerHTML=''; return; }
+      const selectedMonth = DOM.monthFilterSelect.value;
+      DOM.skuSearchResult.innerHTML = ''; // Limpiar resultado anterior
+      if (!sku) return;
+
+      let endpoint = `/api/analytics/sales/by_sku/${sku}`;
+      if (selectedMonth !== 'all') {
+          endpoint += `?month=${selectedMonth}`;
+      }
+
       try{
-        const data = await apiFetch(`/api/data/sales/by_sku/${sku}`);
-        DOM.skuSearchResult.innerHTML = `<span class="text-stone-600">${data.product_name}:</span> <span class="text-green-700 font-bold">${formatCurrency(data.total_sales)}</span>`;
-      }catch(err){
-        if (String(err.message).includes('404')) DOM.skuSearchResult.innerHTML = `<span class="text-red-600">SKU no encontrado</span>`;
-        else DOM.skuSearchResult.innerHTML = `<span class="text-red-600">Error</span>`;
+        const data = await apiFetch(endpoint);
+        const periodText = selectedMonth === 'all' 
+            ? ' (Total)' 
+            : ` (${DOM.monthFilterSelect.options[DOM.monthFilterSelect.selectedIndex].text})`;
+            
+        DOM.skuSearchResult.innerHTML = `<span class="text-stone-600">${data.product_name}${periodText}:</span> <span class="text-green-700 font-bold">${formatCurrency(data.total_sales)}</span>`;
+      } catch(err) {
+        DOM.skuSearchResult.innerHTML = `<span class="text-red-600">SKU no encontrado o sin ventas en este periodo.</span>`;
       }
     }
-    DOM.skuSearchInput.addEventListener('input', ()=>{
+    
+    // --- Event Listeners para la búsqueda ---
+    DOM.skuSearchInput.addEventListener('input', () => {
       clearTimeout(skuSearchTimeout);
       skuSearchTimeout = setTimeout(handleSkuSearch, 300);
     });
+    DOM.monthFilterSelect.addEventListener('change', handleSkuSearch);
 
-    function renderProductPerformanceMatrixChart(){
-      const productData = [
-        { name:'BOOTLEG RED', units:450, margin:8.5, profit:3825 },
-        { name:'MOMENT DE PLAISIR', units:380, margin:9.2, profit:3496 },
-        { name:'SANTORINI GAVALA', units:120, margin:12.5, profit:1500 },
-        { name:'VINO ESPECIAL ED.', units:50, margin:25.0, profit:1250 },
-        { name:'S SMITH CIDER', units:600, margin:3.5, profit:2100 },
-        { name:'VINO DE MESA TINTO', units:800, margin:2.0, profit:1600 },
-        { name:'SCHLINK HAUS', units:90, margin:4.1, profit:369 }
-      ];
-      const chartData = {
-        labels: productData.map(p=>p.name),
-        datasets: [
-          { label:'Unidades Vendidas', data: productData.map(p=>p.units), backgroundColor:'rgba(59,130,246,0.7)' },
-          { label:'Margen Neto (€)', data: productData.map(p=>p.margin), backgroundColor:'rgba(22,163,74,0.7)' },
-          { label:'Beneficio Total (€)', data: productData.map(p=>p.profit), backgroundColor:'rgba(92,26,51,0.7)' }
-        ]
-      };
-      charts.productMatrix = renderChart('productPerformanceMatrixChart', charts.productMatrix, 'bar', chartData, {
-        responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{ position:'top' }, title:{ display:true, text:'Rendimiento por Producto', font:{ size:18, weight:'bold'} }, tooltip:{ mode:'index', intersect:false }},
-        scales:{ x:{ stacked:false }, y:{ beginAtZero:true } }
-      });
+    // --- Funciones de renderizado de gráficos (sin cambios) ---
+    function renderMonthlySalesChart(data){
+        const chartData = {
+            labels: data.map(d => new Date(d.Month + '-02').toLocaleString('es-ES', { month: 'short', year: '2-digit' })),
+            datasets: [{ label: 'Ingresos Mensuales', data: data.map(d => d.TotalSale),
+            borderColor: '#5C1A33', backgroundColor: 'rgba(92,26,51,0.1)', fill: true, tension: 0.4 }]
+        };
+        charts.monthlySales = renderChart('monthlySalesChart', charts.monthlySales, 'line', chartData, { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Evolución de Ingresos Mensuales (€)', font: { size: 18, weight: 'bold' } } }, scales: { y: { beginAtZero: true } } });
     }
+    function renderTopProfitableProductsChart(data){
+        const chartData = {
+            labels: data.map(p => p.ProductName),
+            datasets: [{ axis: 'y', label: 'Beneficio Total (€)', data: data.map(p => p.Profit),
+            backgroundColor: 'rgba(22,163,74,0.7)', borderColor: 'rgba(22,163,74,1)', borderWidth: 1, borderRadius: 6 }]
+        };
+        charts.topProfit = renderChart('topProfitableProductsChart', charts.topProfit, 'bar', chartData, { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Top Productos Más Rentables', font: { size: 18, weight: 'bold' } } } });
+    }
+    function renderTopProductsByUnitsChart(data){
+        const chartData = {
+            labels: data.map(p => p.SKU),
+            datasets: [{ label: 'Unidades Vendidas', data: data.map(p => p.Quantity),
+            backgroundColor: 'rgba(59,130,246,0.7)', borderColor: 'rgba(59,130,246,1)', borderWidth: 1, borderRadius: 6 }]
+        };
+        charts.topUnits = renderChart('topProductsByUnitsChart', charts.topUnits, 'bar', chartData, { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Top Productos por Unidades Vendidas', font: { size: 18, weight: 'bold' } } }, scales: { y: { beginAtZero: true } } });
+    }
+    function renderWeekdayHeatmap(data){
+        const container = DOM.weekdayHeatmap; container.innerHTML='';
+        const weekdays = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+        const salesByDay = new Array(7).fill(0);
+        if (Array.isArray(data)) data.forEach(d => { salesByDay[d.weekday_num - 1] = d.total_sales; });
+        const maxSales = Math.max(...salesByDay, 1);
+        weekdays.forEach((day,i)=>{
+            const sales = salesByDay[i]; const intensity = sales / maxSales; const light = 90 - (intensity * 50);
+            const bg = `hsl(340, 65%, ${light}%)`;
+            container.innerHTML += `<div class="p-2 rounded-lg" style="background-color:${bg};"><p class="font-bold text-sm">${day.substring(0,3)}</p><p class="text-xs font-semibold text-stone-700">${formatCurrency(sales)}</p></div>`;
+        });
+    }
+    function renderSalesByChannelChart(data){
+        const dummyData = [{channel:'Distribuidor', total_sales: 85000},{channel:'Venta Directa', total_sales: 62000},{channel:'HORECA', total_sales: 38430}];
+        const chartData = {
+            labels: dummyData.map(i=>i.channel),
+            datasets:[{ data: dummyData.map(i=>i.total_sales), backgroundColor:['rgba(92,26,51,0.8)','rgba(140,43,79,0.8)','rgba(180,80,110,0.8)'], borderColor:'#FFFFFF', borderWidth:4 }]
+        };
+        charts.channel = renderChart('salesByChannelChart', charts.channel,'doughnut', chartData, { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'top', labels:{ font:{ weight:'bold'}} }, title:{ display:true, text:'Ventas por Canal (Simulado)', font:{ weight:'bold', size:18 }}}});
+    }
+    function renderProductPerformanceMatrixChart(data){
+        const chartData = {
+            labels: data.map(p => p.ProductName),
+            datasets: [
+            { label:'Beneficio Total (€)', data: data.map(p => p.Profit), backgroundColor:'rgba(92,26,51,0.7)', yAxisID: 'y' },
+            { label:'Unidades Vendidas', data: data.map(p => p.Quantity), backgroundColor:'rgba(59,130,246,0.7)', yAxisID: 'y1' }
+            ]
+        };
+        charts.productMatrix = renderChart('productPerformanceMatrixChart', charts.productMatrix, 'bar', chartData, { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'top' }, title:{ display:true, text:'Rendimiento por Producto (Beneficio vs Unidades)', font:{ size:18, weight:'bold'} }, tooltip:{ mode:'index', intersect:false }}, scales: { y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Beneficio (€)' } }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Unidades' } }, }});
+    }
+
 
     // --- Ejecución al Cargar la Página ---
     document.addEventListener('DOMContentLoaded', () => {
         requireAuth();
-        updateUIVisibility();
-        loadPerformanceData();
+        // Carga los datos principales y, en paralelo, llena el desplegable de meses
+        loadPerformanceData(); 
+        populateMonthFilter();
     });
   </script>
 </body>

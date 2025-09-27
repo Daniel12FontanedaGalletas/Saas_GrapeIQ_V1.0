@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # IMPORTA LAS FUNCIONES DE DATABASE Y LOS ROUTERS
 from .database import connect_to_db, close_db_connection
 # Se añade el nuevo router 'products'
-from .routers import auth, data, forecast, weather, users, field_log, traceability, cellar_management, ingest, products, parcels, financials
+from .routers import auth, data, forecast, weather, users, field_log, traceability, cellar_management, ingest, products, parcels, financials, sales, analytics
 
 app = FastAPI(
     title="GrapeIQ API",
@@ -54,3 +54,5 @@ app.include_router(traceability.router)
 app.include_router(cellar_management.router)
 app.include_router(parcels.router)
 app.include_router(financials.router)
+app.include_router(sales.router)
+app.include_router(analytics.router)

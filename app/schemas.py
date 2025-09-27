@@ -38,7 +38,7 @@ class UserUpdateResponse(UserInDB):
 class FieldLogBase(BaseModel):
     activity_type: str
     description: Optional[str] = None
-    parcel_id: Optional[uuid.UUID] = None # Modificado para usar el ID de la parcela
+    parcel_id: Optional[uuid.UUID] = None
 
 class FieldLogCreate(FieldLogBase):
     log_date: date
@@ -146,6 +146,18 @@ class BottlingCreate(BaseModel):
     source_container_ids: List[uuid.UUID]
     type: str = "Embotellado"
 
+# --- ESQUEMA MODIFICADO: Embotellado y Creación de Producto ---
+class BottlingToProductCreate(BaseModel):
+    lot_id: uuid.UUID
+    source_container_ids: List[uuid.UUID]
+    
+    # Datos del nuevo producto a crear
+    product_name: str
+    product_sku: str
+    product_price: float
+    bottles_produced: int
+    
+
 # --- NUEVOS ESQUEMAS PARA EL "CEREBRO" ---
 
 # Parcelas
@@ -209,5 +221,35 @@ class Product(ProductBase):
     id: uuid.UUID
     wine_lot_origin_id: Optional[uuid.UUID] = None
     stock_units: int = 0
+    class Config:
+        from_attributes = True
+
+# --- Esquemas para Ventas ---
+class SaleDetailBase(BaseModel):
+    product_id: uuid.UUID
+    quantity: int
+    unit_price: float
+
+class SaleDetailCreate(SaleDetailBase):
+    pass
+
+class SaleDetail(SaleDetailBase):
+    id: uuid.UUID
+    sale_id: uuid.UUID
+    class Config:
+        from_attributes = True
+
+class SaleBase(BaseModel):
+    customer_name: Optional[str] = None
+    notes: Optional[str] = None
+
+class SaleCreate(SaleBase):
+    details: List[SaleDetailCreate]
+
+class Sale(SaleBase):
+    id: uuid.UUID
+    sale_date: datetime
+    total_amount: float
+    details: List[SaleDetail] = []
     class Config:
         from_attributes = True

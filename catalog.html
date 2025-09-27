@@ -51,7 +51,7 @@
         </div>
         <button id="add-product-btn" class="wine-grad text-white px-5 py-2 rounded-full font-semibold hover:opacity-90 flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          Añadir Vino
+          Añadir Vino Manualmente
         </button>
       </section>
 
@@ -70,170 +70,143 @@
             <tbody id="product-table-body"></tbody>
           </table>
         </div>
-        <p id="catalog-placeholder" class="hidden text-center py-8 text-stone-500">Aún no has añadido ningún producto. ¡Añade el primero!</p>
+        <p id="catalog-placeholder" class="hidden text-center py-8 text-stone-500">No se encontraron productos.</p>
         <div id="catalog-pagination" class="flex justify-center items-center gap-4 mt-4"></div>
       </section>
     </main>
 
     <div id="add-product-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div class="bg-white text-stone-800 w-full max-w-4xl p-8 rounded-3xl shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8 relative">
-        <div>
-          <h2 class="text-2xl font-bold">Añadir Nuevo Vino al Catálogo</h2>
-          <p class="text-stone-500 text-sm mb-6">Completa los campos para añadir un nuevo producto.</p>
-          <form id="add-product-form" class="space-y-4">
-            <h3 class="font-bold text-lg border-b border-stone-200 pb-2">Datos del vino</h3>
-            <div><label class="block mb-1 text-sm font-semibold">Nombre del Vino <span class="text-red-500">*</span></label><input type="text" id="product-name" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-            <div><label class="block mb-1 text-sm font-semibold">SKU / Código <span class="text-red-500">*</span></label><input type="text" id="product-sku" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-            <div class="grid grid-cols-2 gap-4">
-              <div><label class="block mb-1 text-sm font-semibold">Precio (€) <span class="text-red-500">*</span></label><input type="number" step="0.01" id="product-price" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-              <div><label class="block mb-1 text-sm font-semibold">Tipo <span class="text-red-500">*</span></label>
-                <select id="product-type" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300">
-                  <option value="">Seleccionar</option><option value="Tinto">Tinto</option><option value="Blanco">Blanco</option><option value="Rosado">Rosado</option><option value="Espumoso">Espumoso</option><option value="Generoso">Generoso</option>
-                </select>
-              </div>
+        <div class="bg-white text-stone-800 w-full max-w-4xl p-8 rounded-3xl shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+            <div>
+                <h2 class="text-2xl font-bold">Añadir Nuevo Vino al Catálogo</h2>
+                <p class="text-stone-500 text-sm mb-6">Completa los campos para añadir un nuevo producto a la base de datos.</p>
+                <form id="add-product-form" class="space-y-4">
+                    <h3 class="font-bold text-lg border-b border-stone-200 pb-2">Datos del vino</h3>
+                    <div><label class="block mb-1 text-sm font-semibold">Nombre del Vino <span class="text-red-500">*</span></label><input type="text" id="product-name" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                    <div><label class="block mb-1 text-sm font-semibold">SKU / Código <span class="text-red-500">*</span></label><input type="text" id="product-sku" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block mb-1 text-sm font-semibold">Precio (€) <span class="text-red-500">*</span></label><input type="number" step="0.01" id="product-price" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                        <div>
+                            <label class="block mb-1 text-sm font-semibold">Lote de Origen (Opcional)</label>
+                            <select id="wine-lot-origin" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300">
+                                <option value="">Seleccionar lote...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block mb-1 text-sm font-semibold">Coste (€)</label><input type="number" step="0.01" id="product-cost" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                        <div><label class="block mb-1 text-sm font-semibold">Stock inicial</label><input type="number" id="product-quantity" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                    </div>
+                </form>
             </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div><label class="block mb-1 text-sm font-semibold">Coste (€)</label><input type="number" step="0.01" id="product-cost" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-              <div><label class="block mb-1 text-sm font-semibold">Stock inicial</label><input type="number" id="product-quantity" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+            <div class="bg-stone-50 p-6 rounded-2xl border border-stone-200">
+                <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg">Métricas en Tiempo Real</h3><button id="clear-metrics-btn" class="text-sm text-stone-500 hover:text-stone-800">Borrar</button></div>
+                <div class="grid grid-cols-2 gap-4 text-center">
+                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Precio</p><p id="metric-price" class="font-bold text-xl">-</p></div>
+                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Coste</p><p id="metric-cost" class="font-bold text-xl">-</p></div>
+                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Margen</p><p id="metric-margin-abs" class="font-bold text-xl">-</p></div>
+                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Margen %</p><p id="metric-margin-perc" class="font-bold text-xl">-</p></div>
+                    <div class="bg-white p-3 rounded-lg border col-span-2"><p class="text-stone-500 text-sm">Ingresos (estim.)</p><p id="metric-total-revenue" class="font-bold text-3xl text-green-600">-</p></div>
+                </div>
+                <p class="text-xs text-stone-500 mt-4 text-center">Las métricas se actualizan al escribir.</p>
             </div>
-          </form>
-        </div>
-        <div class="bg-stone-50 p-6 rounded-2xl border border-stone-200">
-          <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg">Métricas en Tiempo Real</h3><button id="clear-metrics-btn" class="text-sm text-stone-500 hover:text-stone-800">Borrar</button></div>
-            <div class="grid grid-cols-2 gap-4 text-center">
-              <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Precio</p><p id="metric-price" class="font-bold text-xl">-</p></div>
-              <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Coste</p><p id="metric-cost" class="font-bold text-xl">-</p></div>
-              <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Margen</p><p id="metric-margin-abs" class="font-bold text-xl">-</p></div>
-              <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Margen %</p><p id="metric-margin-perc" class="font-bold text-xl">-</p></div>
-              <div class="bg-white p-3 rounded-lg border col-span-2"><p class="text-stone-500 text-sm">Ingresos (estim.)</p><p id="metric-total-revenue" class="font-bold text-3xl text-green-600">-</p></div>
+            <div class="md:col-span-2 flex justify-end gap-4 mt-6">
+                <button id="cancel-product-btn" type="button" class="bg-stone-200 px-6 py-3 rounded-full font-bold hover:bg-stone-300">Cancelar</button>
+                <button id="save-product-btn" form="add-product-form" type="submit" class="wine-grad text-white px-6 py-3 rounded-full font-bold hover:opacity-90">Guardar Vino</button>
             </div>
-          <p class="text-xs text-stone-500 mt-4 text-center">Las métricas se actualizan al escribir.</p>
         </div>
-        <div class="md:col-span-2 flex justify-end gap-4 mt-6">
-          <button id="cancel-product-btn" type="button" class="bg-stone-200 px-6 py-3 rounded-full font-bold hover:bg-stone-300">Cancelar</button>
-          <button id="save-product-btn" form="add-product-form" type="submit" class="wine-grad text-white px-6 py-3 rounded-full font-bold hover:opacity-90">Guardar Vino</button>
-        </div>
-      </div>
     </div>
   </div>
 
   <script>
-    // --- Configuración y Autenticación Estandarizada ---
     const API_BASE_URL = 'http://127.0.0.1:8000';
     const TOKEN_KEY = 'accessToken';
     const ROLE_KEY = 'userRole';
 
-    function requireAuth() {
-        if (!localStorage.getItem(TOKEN_KEY)) {
-            window.location.href = 'login.html';
-        }
-    }
-
+    function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
     function logout() {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(ROLE_KEY);
         window.location.href = 'login.html';
     }
-
+    
     async function apiFetch(endpoint, options = {}) {
         const headers = { 'Content-Type': 'application/json' };
         const token = localStorage.getItem(TOKEN_KEY);
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-        if (options.body && options.body instanceof FormData) {
-            delete headers['Content-Type'];
-        }
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (options.body && options.body instanceof FormData) delete headers['Content-Type'];
+        
         const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-        if (resp.status === 401) {
-            logout();
-            throw new Error('Sesión expirada o no autorizada.');
-        }
+        
+        if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
+        if (resp.status === 204) return null;
         if (!resp.ok) {
-            let msg = 'Ocurrió un error en la API';
-            try {
-                const j = await resp.json();
-                msg = j.detail || msg;
-            } catch {}
-            throw new Error(msg);
+            const errData = await resp.json().catch(() => ({ detail: 'Error en la API.' }));
+            throw new Error(errData.detail);
         }
-        const ct = resp.headers.get('content-type') || '';
-        return ct.includes('application/json') ? resp.json() : resp.text();
+        return resp.json();
     }
 
     function updateUIVisibility() {
         const role = localStorage.getItem(ROLE_KEY);
         if (role === 'lector') {
-            const menuCatalogo = document.getElementById('menu-catalogo');
-            const menuRegistro = document.getElementById('menu-registro-diario');
-            if (menuCatalogo) menuCatalogo.style.display = 'none';
-            if (menuRegistro) menuRegistro.style.display = 'none';
-            
             const addProductBtn = document.getElementById('add-product-btn');
             if(addProductBtn) addProductBtn.style.display = 'none';
         }
     }
     
-    // --- Lógica específica de la página de Catálogo ---
-    function setupPageEventListeners() {
+    document.addEventListener('DOMContentLoaded', () => {
+        const logoutBtn = document.getElementById('logout-btn');
+        if(logoutBtn) logoutBtn.addEventListener('click', logout);
+        requireAuth();
+        updateUIVisibility();
+
+        // --- LÓGICA DE LA PÁGINA DE CATÁLOGO ---
         const catalog = {
-            addProductBtn: document.getElementById('add-product-btn'),
             tableBody: document.getElementById('product-table-body'),
             placeholder: document.getElementById('catalog-placeholder'),
             pagination: document.getElementById('catalog-pagination'),
             filterInput: document.getElementById('sku-filter-input'),
+            addProductBtn: document.getElementById('add-product-btn'),
             modal: {
                 container: document.getElementById('add-product-modal'),
                 form: document.getElementById('add-product-form'),
                 cancelBtn: document.getElementById('cancel-product-btn'),
                 clearMetricsBtn: document.getElementById('clear-metrics-btn'),
-                inputs: { 
-                    name: document.getElementById('product-name'), 
-                    sku: document.getElementById('product-sku'), 
-                    price: document.getElementById('product-price'), 
-                    type: document.getElementById('product-type'), 
-                    cost: document.getElementById('product-cost'), 
-                    quantity: document.getElementById('product-quantity') 
-                },
-                metrics: { 
-                    price: document.getElementById('metric-price'), 
-                    cost: document.getElementById('metric-cost'), 
-                    marginAbs: document.getElementById('metric-margin-abs'), 
-                    marginPerc: document.getElementById('metric-margin-perc'), 
-                    totalRevenue: document.getElementById('metric-total-revenue') 
-                }
+                wineLotSelect: document.getElementById('wine-lot-origin'),
+                inputs: { name: document.getElementById('product-name'), sku: document.getElementById('product-sku'), price: document.getElementById('product-price'), cost: document.getElementById('product-cost'), quantity: document.getElementById('product-quantity') },
+                metrics: { price: document.getElementById('metric-price'), cost: document.getElementById('metric-cost'), marginAbs: document.getElementById('metric-margin-abs'), marginPerc: document.getElementById('metric-margin-perc'), totalRevenue: document.getElementById('metric-total-revenue') }
             }
         };
-
+        
         let currentPage = 1; 
         const pageSize = 10; 
         let skuFilterTimeout;
-
-        catalog.addProductBtn.addEventListener('click', () => catalog.modal.container.classList.remove('hidden'));
-        catalog.modal.cancelBtn.addEventListener('click', () => {
-            catalog.modal.container.classList.add('hidden');
-            catalog.modal.form.reset();
-            updateMetrics();
-        });
-        catalog.modal.clearMetricsBtn.addEventListener('click', () => {
-            catalog.modal.form.reset();
-            updateMetrics();
-        });
-        Object.values(catalog.modal.inputs).forEach(i => i.addEventListener('input', updateMetrics));
-        catalog.modal.form.addEventListener('submit', handleSaveProduct);
-        catalog.filterInput.addEventListener('input', () => { clearTimeout(skuFilterTimeout); skuFilterTimeout=setTimeout(()=>loadProducts(1),500); });
 
         async function loadProducts(page = 1) {
             currentPage = page;
             const offset = (page - 1) * pageSize;
             const sku = catalog.filterInput.value || '';
+            
             try {
-                const products = await apiFetch(`/api/products/?limit=${pageSize}&offset=${offset}&sku=${encodeURIComponent(sku)}`);
+                // APUNTAMOS AL ENDPOINT HÍBRIDO
+                const products = await apiFetch(`/api/analytics/product-catalog?limit=${pageSize}&offset=${offset}&sku=${encodeURIComponent(sku)}`);
+                
                 catalog.tableBody.innerHTML = '';
+                
                 if (Array.isArray(products) && products.length > 0) {
                     catalog.placeholder.classList.add('hidden');
                     products.forEach(p => {
-                        catalog.tableBody.insertAdjacentHTML('beforeend', `<tr class="border-b border-stone-100"><td class="p-4 font-semibold">${p.name}</td><td class="p-4 text-stone-500">${p.sku}</td><td class="p-4">${p.price_per_unit ? `€${p.price_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.cost_per_unit ? `€${p.cost_per_unit.toFixed(2)}` : '-'}</td><td class="p-4">${p.stock_quantity != null ? p.stock_quantity : '-'}</td></tr>`);
+                        const stockColor = p.Stock < 50 ? 'text-red-600' : (p.Stock < 200 ? 'text-yellow-600' : 'text-green-700');
+                        catalog.tableBody.insertAdjacentHTML('beforeend', 
+                           `<tr class="border-b border-stone-100">
+                                <td class="p-4 font-semibold">${p.ProductName}</td>
+                                <td class="p-4 text-stone-500">${p.SKU}</td>
+                                <td class="p-4">€${(p.UnitPrice || 0).toFixed(2)}</td>
+                                <td class="p-4 text-stone-500">€${(p.UnitCost || 0).toFixed(2)}</td>
+                                <td class="p-4 font-bold ${stockColor}">${p.Stock != null ? p.Stock : '-'}</td>
+                            </tr>`
+                        );
                     });
                 } else {
                     if (page === 1) catalog.placeholder.classList.remove('hidden');
@@ -249,6 +222,35 @@
             document.getElementById('prev-page-btn').onclick = () => { if (page > 1) loadProducts(page - 1); };
             document.getElementById('next-page-btn').onclick = () => { if (hasNext) loadProducts(page + 1); };
         }
+        
+        catalog.filterInput.addEventListener('input', () => { 
+            clearTimeout(skuFilterTimeout); 
+            skuFilterTimeout = setTimeout(() => loadProducts(1), 500); 
+        });
+
+        // --- LÓGICA DEL MODAL PARA AÑADIR MANUALMENTE ---
+        catalog.addProductBtn.addEventListener('click', async () => {
+            catalog.modal.form.reset();
+            updateMetrics();
+            try {
+                const wineLots = await apiFetch('/api/traceability/wine-lots');
+                const select = catalog.modal.wineLotSelect;
+                select.innerHTML = '<option value="">(Ninguno)</option>';
+                wineLots.forEach(lot => {
+                    select.innerHTML += `<option value="${lot.id}">${lot.name}</option>`;
+                });
+            } catch (error) {
+                console.error("Error al cargar lotes para el modal:", error);
+            }
+            catalog.modal.container.classList.remove('hidden');
+        });
+
+        catalog.modal.cancelBtn.addEventListener('click', () => catalog.modal.container.classList.add('hidden'));
+        catalog.modal.clearMetricsBtn.addEventListener('click', () => {
+            catalog.modal.form.reset();
+            updateMetrics();
+        });
+        Object.values(catalog.modal.inputs).forEach(i => i.addEventListener('input', updateMetrics));
         
         function updateMetrics() {
             const {inputs, metrics} = catalog.modal;
@@ -270,39 +272,34 @@
             metrics.totalRevenue.textContent = (price > 0 && qty > 0) ? `€${(price * qty).toFixed(2)}` : '-';
         }
 
-        async function handleSaveProduct(e) {
+        catalog.modal.form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const { modal } = catalog;
+            const lotId = modal.wineLotSelect.value;
+            if (!lotId) {
+                alert("Para crear un producto, debes asociarlo a un lote de vino de origen.");
+                return;
+            }
+
             const productData = { 
                 name: modal.inputs.name.value, 
                 sku: modal.inputs.sku.value, 
-                price_per_unit: parseFloat(modal.inputs.price.value), 
-                product_type: modal.inputs.type.value, 
-                cost_per_unit: modal.inputs.cost.value ? parseFloat(modal.inputs.cost.value) : null, 
-                stock_quantity: modal.inputs.quantity.value ? parseInt(modal.inputs.quantity.value) : null 
+                price: parseFloat(modal.inputs.price.value),
+                wine_lot_origin_id: lotId,
+                stock_units: modal.inputs.quantity.value ? parseInt(modal.inputs.quantity.value) : 0 
             };
             try {
                 await apiFetch('/api/products/', { method: 'POST', body: JSON.stringify(productData) });
                 modal.container.classList.add('hidden');
-                modal.form.reset();
-                updateMetrics();
-                loadProducts(currentPage);
+                alert("Producto añadido a la base de datos.");
+                loadProducts(currentPage); // Recargar la tabla para mostrar el nuevo producto
             } catch (err) {
                 alert(`Error al guardar el producto: ${err.message}`);
             }
-        }
-        
-        loadProducts(1);
-    }
-    
-    // --- Ejecución al Cargar la Página ---
-    document.addEventListener('DOMContentLoaded', () => {
-        const logoutBtn = document.getElementById('logout-btn');
-        if(logoutBtn) logoutBtn.addEventListener('click', logout);
+        });
 
-        requireAuth();
-        updateUIVisibility();
-        setupPageEventListeners(); // Llama a la función que configura la lógica de esta página
+        // Carga inicial
+        loadProducts(1);
     });
   </script>
 </body>
