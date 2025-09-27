@@ -29,8 +29,7 @@ class FieldLog(Base):
     __tablename__ = "field_logs"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     # ... otros campos
-    # plot_name = Column(String) # <--- ELIMINAR O COMENTAR ESTA LÍNEA
-    parcel_id = Column(UUID(as_uuid=True), ForeignKey("parcels.id"), nullable=True) # <--- AÑADIR ESTA LÍNEA
+    parcel_id = Column(UUID(as_uuid=True), ForeignKey("parcels.id"), nullable=True)
     all_day = Column(Boolean, default=True)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
 
@@ -47,7 +46,6 @@ class WineLot(Base):
     total_liters = Column(Numeric(10, 2))
     liters_unassigned = Column(Numeric(10, 2))
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
-    # NUEVA COLUMNA
     origin_parcel_id = Column(UUID(as_uuid=True), ForeignKey("parcels.id"), nullable=True)
 
 class Container(Base):
@@ -91,6 +89,7 @@ class CostParameter(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
     parameter_name = Column(String, nullable=False, unique=True)
+    category = Column(String, nullable=False) # <--- NUEVA COLUMNA
     value = Column(Numeric(10, 2), nullable=False)
     unit = Column(String)
     last_updated = Column(DateTime(timezone=True), default=datetime.utcnow)
@@ -99,7 +98,8 @@ class Cost(Base):
     __tablename__ = "costs"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
-    related_lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=True)
+    related_lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=True) # <-- MODIFICADO
+    related_parcel_id = Column(UUID(as_uuid=True), ForeignKey("parcels.id"), nullable=True) # <-- NUEVA COLUMNA
     cost_type = Column(String, nullable=False)
     amount = Column(Numeric(10, 2), nullable=False)
     description = Column(Text)
@@ -113,7 +113,7 @@ class Product(Base):
     sku = Column(String, unique=True)
     description = Column(Text)
     price = Column(Numeric(10, 2))
-    # NUEVAS COLUMNAS
+    unit_cost = Column(Numeric(10, 4)) # <--- NUEVA COLUMNA
     wine_lot_origin_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=True)
     stock_units = Column(Integer, default=0)
     
@@ -122,7 +122,7 @@ class Sale(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
     sale_date = Column(DateTime(timezone=True), default=datetime.utcnow)
-    customer_name = Column(String, nullable=True) # Opcional: para registrar a quién se le vendió
+    customer_name = Column(String, nullable=True)
     total_amount = Column(Numeric(10, 2), nullable=False)
     notes = Column(Text, nullable=True)
 
@@ -132,4 +132,4 @@ class SaleDetail(Base):
     sale_id = Column(UUID(as_uuid=True), ForeignKey("sales.id"), nullable=False)
     product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)
     quantity = Column(Integer, nullable=False)
-    unit_price = Column(Numeric(10, 2), nullable=False) # Precio al momento de la venta
+    unit_price = Column(Numeric(10, 2), nullable=False)

@@ -1,6 +1,6 @@
 # Saas_GrapeIQ_V1.0/app/schemas.py
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List, Any
 import uuid
 from datetime import date, datetime
@@ -157,7 +157,6 @@ class BottlingToProductCreate(BaseModel):
     product_price: float
     bottles_produced: int
     
-
 # --- NUEVOS ESQUEMAS PARA EL "CEREBRO" ---
 
 # Parcelas
@@ -178,6 +177,7 @@ class Parcel(ParcelBase):
 # Parámetros de Coste
 class CostParameterBase(BaseModel):
     parameter_name: str
+    category: str
     value: float
     unit: Optional[str] = None
 
@@ -193,10 +193,11 @@ class CostParameter(CostParameterBase):
 # Costes
 class CostBase(BaseModel):
     related_lot_id: Optional[uuid.UUID] = None
+    related_parcel_id: Optional[uuid.UUID] = None
     cost_type: str
     amount: float
     description: Optional[str] = None
-    cost_date: date = date.today()
+    cost_date: date = Field(default_factory=date.today)
 
 class CostCreate(CostBase):
     pass
@@ -214,11 +215,12 @@ class ProductBase(BaseModel):
     price: Optional[float] = None
 
 class ProductCreate(ProductBase):
-    wine_lot_origin_id: uuid.UUID
-    stock_units: int
+    wine_lot_origin_id: Optional[uuid.UUID] = None
+    stock_units: int = 0
 
 class Product(ProductBase):
     id: uuid.UUID
+    unit_cost: Optional[float] = None
     wine_lot_origin_id: Optional[uuid.UUID] = None
     stock_units: int = 0
     class Config:
@@ -253,3 +255,12 @@ class Sale(SaleBase):
     details: List[SaleDetail] = []
     class Config:
         from_attributes = True
+        
+class CategorySummary(BaseModel):
+    category: str
+    total_amount: float
+    percentage: float
+
+class CostSummaryResponse(BaseModel):
+    grand_total: float
+    details: List[CategorySummary]

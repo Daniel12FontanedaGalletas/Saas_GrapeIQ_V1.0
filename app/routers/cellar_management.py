@@ -164,14 +164,39 @@ def bottling_and_create_product(
     current_user: schemas.UserInDB = Depends(security.get_current_active_user)
 ):
     """
-    Registra un embotellado Y crea un nuevo producto en el catálogo en una única transacción.
+    Registra un embotellado, calcula el coste unitario del producto, 
+    y crea el nuevo producto en el catálogo en una única transacción.
     """
     if not request.source_container_ids:
         raise HTTPException(status_code=400, detail="Se debe especificar al menos un contenedor de origen.")
+    if request.bottles_produced <= 0:
+        raise HTTPException(status_code=400, detail="El número de botellas producidas debe ser mayor que cero.")
 
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
+                # --- PASO 1: Obtener la parcela de origen del lote ---
+                cur.execute("SELECT origin_parcel_id FROM wine_lots WHERE id = %s", (str(request.lot_id),))
+                origin_parcel_record = cur.fetchone()
+                if not origin_parcel_record or not origin_parcel_record[0]:
+                    raise HTTPException(status_code=404, detail=f"Lote {request.lot_id} no encontrado o no tiene una parcela de origen asignada.")
+                origin_parcel_id = str(origin_parcel_record[0])
+
+                # --- PASO 2: Calcular el coste total acumulado ---
+                # Sumar costes asociados directamente al lote
+                cur.execute("SELECT COALESCE(SUM(amount), 0) FROM costs WHERE related_lot_id = %s", (str(request.lot_id),))
+                total_cost_lot = cur.fetchone()[0]
+                
+                # Sumar costes asociados directamente a la parcela de origen
+                cur.execute("SELECT COALESCE(SUM(amount), 0) FROM costs WHERE related_parcel_id = %s", (origin_parcel_id,))
+                total_cost_parcel = cur.fetchone()[0]
+
+                total_production_cost = total_cost_lot + total_cost_parcel
+                
+                # Calcular coste unitario
+                unit_cost = total_production_cost / request.bottles_produced
+
+                # --- PASO 3: Lógica de embotellado ---
                 total_bottled_volume = 0
                 for source_id in request.source_container_ids:
                     cur.execute("SELECT current_volume FROM containers WHERE id = %s AND tenant_id = %s", (str(source_id), str(current_user.tenant_id)))
@@ -193,12 +218,12 @@ def bottling_and_create_product(
                 if remaining_volume < 0.01:
                     cur.execute("UPDATE wine_lots SET status = 'Embotellado' WHERE id = %s", (str(request.lot_id),))
 
-                # --- Lógica de Creación de Producto (MODIFICADA) ---
+                # --- PASO 4: Creación del Producto con su coste ---
                 new_product_id = uuid.uuid4()
                 cur.execute(
                     """
-                    INSERT INTO products (id, tenant_id, name, sku, price, wine_lot_origin_id, stock_units)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO products (id, tenant_id, name, sku, price, unit_cost, wine_lot_origin_id, stock_units)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     """,
                     (
                         str(new_product_id),
@@ -206,6 +231,7 @@ def bottling_and_create_product(
                         request.product_name,
                         request.product_sku,
                         request.product_price,
+                        unit_cost, # <-- Guardamos el coste calculado
                         str(request.lot_id),
                         request.bottles_produced
                     )
@@ -213,11 +239,16 @@ def bottling_and_create_product(
                 conn.commit()
 
     except (Exception, psycopg2.Error) as error:
+        if isinstance(error, HTTPException):
+            raise error
         if "duplicate key" in str(error).lower():
             raise HTTPException(status_code=409, detail=f"El SKU '{request.product_sku}' ya existe.")
         raise HTTPException(status_code=500, detail=f"Error en la transacción de base de datos: {error}")
 
-    return {"message": f"Embotellado de {total_bottled_volume}L completado. Producto '{request.product_name}' creado con {request.bottles_produced} unidades."}
+    return {
+        "message": f"Embotellado completado. Producto '{request.product_name}' creado con {request.bottles_produced} unidades.",
+        "calculated_unit_cost": f"{unit_cost:.4f}"
+    }
 
 @router.post("/movements/bulk-transfer", status_code=201)
 def record_bulk_transfer(
