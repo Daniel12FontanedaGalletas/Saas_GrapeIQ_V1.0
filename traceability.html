@@ -8,161 +8,322 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        body { font-family:'Montserrat',sans-serif; background:#F8F7F4; }
-        .tab-active{ border-color:#5C1A33; color:#5C1A33; font-weight:700; }
-        .kanban-column { min-height: 400px; }
+        /* --- Sistema de Temas --- */
+        :root { /* Tema Blanco por Defecto */
+            --bg-color: #F8F7F4;
+            --text-color: #1c1917; /* stone-900 */
+            --text-secondary-color: #57534e; /* stone-600 */
+            --header-bg-color: #292524; /* stone-800 */
+            --tab-active-color: #5C1A33;
+            --cta-button-bg: #16a34a; /* green-600 */
+            --secondary-button-bg: #dc2626; /* red-600 */
+            --accent-color: #C98C32;
+            --border-color: #e5e7eb;
+            --kanban-bg: rgba(255, 255, 255, 0.8);
+            --modal-input-bg: #FFFFFF;
+            /* Colores originales de los botones de acción */
+            --btn-green: #16a34a;
+            --btn-yellow: #ca8a04;
+            --btn-purple: #9333ea;
+        }
+
+        body.theme-warm { /* 🍂 Tema Otoñal Cálido */
+            --bg-color: #F2E2C4;
+            --text-color: #5C4033;
+            --text-secondary-color: #8C8C88;
+            --header-bg-color: #5C4033;
+            --tab-active-color: #C98C32;
+            --cta-button-bg: #D96C06;
+            --secondary-button-bg: #A23E48;
+            --border-color: rgba(92, 64, 51, 0.2);
+            --kanban-bg: rgba(255, 255, 255, 0.6);
+            --modal-input-bg: rgba(92, 64, 51, 0.05);
+            /* Colores otoñales para los botones de acción */
+            --btn-green: #6B705C; /* Verde olivo */
+            --btn-yellow: #C98C32; /* Ocre dorado */
+            --btn-purple: #A23E48; /* Rojo arcilla */
+        }
+        
+        /* --- Estilos Generales con Variables --- */
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .tab-active { 
+            border-color: var(--tab-active-color) !important; 
+            color: var(--tab-active-color) !important; 
+            font-weight: 700; 
+        }
+        .text-secondary { color: var(--text-secondary-color); }
+        .bg-dark { background-color: var(--header-bg-color); }
+        .border-accent { border-color: var(--border-color); }
+        .cta-button { background-color: var(--cta-button-bg); color: white; }
+        .secondary-button { background-color: var(--secondary-button-bg); color: white; }
+        
+        .kanban-column { min-height: 400px; background-color: var(--kanban-bg); }
         .modal { display: none; }
         .modal-active { display: flex; }
+        .modal-input { background-color: var(--modal-input-bg); border-color: var(--border-color); }
+
+        /* Estilos para botones de acción del Kanban con variables */
+        .action-btn-green { background-color: var(--btn-green); }
+        .action-btn-yellow { background-color: var(--btn-yellow); }
+        .action-btn-purple { background-color: var(--btn-purple); }
+
+        /* --- CSS DE LA ANTORCHA DE MINECRAFT (AJUSTADO) --- */
+        .torch-container input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+        .torch-container {
+            position: absolute; /* Clave para no afectar el layout */
+            right: 220px; /* Más a la izquierda */
+            top: -35px; /* Más abajo */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transform: scale(0.45); /* Antorcha más grande */
+        }
+        .torch { display: flex; justify-content: center; height: 150px; }
+        .head, .stick { position: absolute; width: 30px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); }
+        .stick { position: relative; height: 120px; }
+        .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000000; }
+        .top { transform: rotateX(90deg) translateZ(15px); }
+        .left { transform: rotateY(-90deg) translateZ(15px); }
+        .right { transform: rotateY(0deg) translateZ(15px); }
+        .top div, .left div, .right div { width: 102%; height: 102%; }
+        .top div:nth-child(1), .left div:nth-child(3), .right div:nth-child(3) { background-color: #ffff9760; }
+        .top div:nth-child(2), .left div:nth-child(1), .right div:nth-child(1) { background-color: #ffd80060; }
+        .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; }
+        .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; }
+        .side { position: absolute; width: 30px; height: 120px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: repeat(8, 12.5%); cursor: pointer; translate: 0 12px; }
+        .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); }
+        .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); }
+        .side-left div, .side-right div { width: 103%; height: 103%; }
+        .side div:nth-child(1) { background-color: #443622; }
+        .side div:nth-child(2) { background-color: #2e2517; }
+        .side div:nth-child(3), .side div:nth-child(5) { background-color: #4b3b23; }
+        .side div:nth-child(4), .side div:nth-child(10) { background-color: #251e12; }
+        .side div:nth-child(6) { background-color: #292115; }
+        .side div:nth-child(7) { background-color: #4b3c26; }
+        .side div:nth-child(8) { background-color: #292115; }
+        .side div:nth-child(9) { background-color: #4b3a21; }
+        .side div:nth-child(11), .side div:nth-child(15) { background-color: #3d311d; }
+        .side div:nth-child(12) { background-color: #2c2315; }
+        .side div:nth-child(13) { background-color: #493a22; }
+        .side div:nth-child(14) { background-color: #2b2114; }
+        .side div:nth-child(16) { background-color: #271e10; }
+        .torch-container input:checked ~ .torch .face { filter: drop-shadow(0px 0px 2px rgb(255, 255, 255)) drop-shadow(0px 0px 10px rgba(255, 237, 156, 0.7)) drop-shadow(0px 0px 25px rgba(255, 227, 101, 0.4)); }
+        .torch-container input:checked ~ .torch .top div:nth-child(1), .torch-container input:checked ~ .torch .left div:nth-child(3), .torch-container input:checked ~ .torch .right div:nth-child(3) { background-color: #ffff97; }
+        .torch-container input:checked ~ .torch .top div:nth-child(2), .torch-container input:checked ~ .torch .left div:nth-child(1), .torch-container input:checked ~ .torch .right div:nth-child(1) { background-color: #ffd800; }
+        .torch-container input:checked ~ .torch .top div:nth-child(3), .torch-container input:checked ~ .torch .left div:nth-child(4), .torch-container input:checked ~ .torch .right div:nth-child(4) { background-color: #ffffff; }
+        .torch-container input:checked ~ .torch .top div:nth-child(4), .torch-container input:checked ~ .torch .left div:nth-child(2), .torch-container input:checked ~ .torch .right div:nth-child(2) { background-color: #ff8f00; }
+        .torch-container input:checked ~ .torch .side div:nth-child(1) { background-color: #7c623e; }
+        .torch-container input:checked ~ .torch .side div:nth-child(2) { background-color: #4c3d26; }
+        .torch-container input:checked ~ .torch .side div:nth-child(3), .torch-container input:checked ~ .torch .side div:nth-child(5) { background-color: #937344; }
+        .torch-container input:checked ~ .torch .side div:nth-child(4), .torch-container input:checked ~ .torch .side div:nth-child(10) { background-color: #3c2f1c; }
+        .torch-container input:checked ~ .torch .side div:nth-child(6) { background-color: #423522; }
+        .torch-container input:checked ~ .torch .side div:nth-child(7) { background-color: #9f7f50; }
+        .torch-container input:checked ~ .torch .side div:nth-child(8) { background-color: #403320; }
+        .torch-container input:checked ~ .torch .side div:nth-child(9) { background-color: #977748; }
+        .torch-container input:checked ~ .torch .side div:nth-child(11), .torch-container input:checked ~ .torch .side div:nth-child(15) { background-color: #675231; }
+        .torch-container input:checked ~ .torch .side div:nth-child(12) { background-color: #3d301d; }
+        .torch-container input:checked ~ .torch .side div:nth-child(13) { background-color: #987849; }
+        .torch-container input:checked ~ .torch .side div:nth-child(14) { background-color: #3b2e1b; }
+        .torch-container input:checked ~ .torch .side div:nth-child(16) { background-color: #372a17; }
     </style>
 </head>
-<body class="text-stone-800">
+<body>
     <div class="p-4 sm:p-8">
-        <header class="flex justify-between items-center mb-6">
-             <a href="performance.html" class="flex items-center gap-4">
+        <header class="flex justify-between items-center mb-6 relative"> <a href="performance.html" class="flex items-center gap-4">
                  <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
-                 <span class="text-3xl font-light text-stone-400">|</span>
-                 <h1 class="text-3xl font-semibold text-stone-700">Trazabilidad del Vino</h1>
+                 <span class="text-3xl font-light text-secondary">|</span>
+                 <h1 class="text-3xl font-semibold">Trazabilidad del Vino</h1>
              </a>
-             <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
+             <div class="flex items-center gap-4">
+                <label class="torch-container">
+                    <input id="theme-toggle" type="checkbox" />
+                    <div class="torch">
+                        <div class="head">
+                            <div class="face top"><div></div><div></div><div></div><div></div></div>
+                            <div class="face left"><div></div><div></div><div></div><div></div></div>
+                            <div class="face right"><div></div><div></div><div></div><div></div></div>
+                        </div>
+                        <div class="stick">
+                            <div class="side side-left"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                            <div class="side side-right"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+                    </div>
+                </label>
+                <button id="logout-btn" class="bg-dark text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
+             </div>
         </header>
-        <div class="mb-8 border-b border-stone-200">
+        <div class="mb-8 border-b border-accent">
              <nav class="flex space-x-8 overflow-x-auto pb-2">
-                <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Análisis de Rendimiento</a>
-                <a href="forecast.html"   class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Predicciones y Escenarios</a>
-                <a href="catalog.html"     id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Catálogo y Stock</a>
-                <a href="daily-log.html"   id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</a>
-                <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Finanzas</a>
-                <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Cuaderno de Campo</a>
+                <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Análisis de Rendimiento</a>
+                <a href="forecast.html"   class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Predicciones y Escenarios</a>
+                <a href="catalog.html"     id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Catálogo y Stock</a>
+                <a href="daily-log.html"   id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Registro Diario</a>
+                <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Finanzas</a>
+                <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Cuaderno de Campo</a>
                 <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Trazabilidad</a>
-                <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Gestión de Bodega</a>
-                <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Parcelas</a>
-                <a href="weather.html"     class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Clima</a>
-                <a href="settings.html"    class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Configuración</a>
+                <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Gestión de Bodega</a>
+                <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Parcelas</a>
+                <a href="weather.html"     class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Clima</a>
+                <a href="settings.html"    class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Configuración</a>
              </nav>
         </div>
 
         <div class="flex justify-end mb-6">
-            <button id="add-lot-btn" class="bg-green-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-green-700">
+            <button id="add-lot-btn" class="cta-button px-5 py-2 rounded-full font-semibold hover:opacity-90">
                 <i class="fas fa-plus mr-2"></i>Crear Lote de Vino
             </button>
         </div>
 
         <main class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
-            <section class="bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg">
-                <h2 class="text-lg font-bold text-stone-700 mb-4 text-center">🍇 Cosechado</h2>
-                <div id="harvested-list" class="space-y-3 kanban-column"></div>
+            <section class="p-4 rounded-2xl shadow-lg kanban-column">
+                <h2 class="text-lg font-bold mb-4 text-center">🍇 Cosechado</h2>
+                <div id="harvested-list" class="space-y-3"></div>
             </section>
             
-            <section class="bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg">
-                <h2 class="text-lg font-bold text-stone-700 mb-4 text-center">🌡️ En Fermentación</h2>
-                <div id="fermenting-list" class="space-y-3 kanban-column"></div>
+            <section class="p-4 rounded-2xl shadow-lg kanban-column">
+                <h2 class="text-lg font-bold mb-4 text-center">🌡️ En Fermentación</h2>
+                <div id="fermenting-list" class="space-y-3"></div>
             </section>
 
-            <section class="bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg">
-                <h2 class="text-lg font-bold text-stone-700 mb-4 text-center">📦 En Crianza</h2>
-                <div id="aging-list" class="space-y-3 kanban-column"></div>
+            <section class="p-4 rounded-2xl shadow-lg kanban-column">
+                <h2 class="text-lg font-bold mb-4 text-center">📦 En Crianza</h2>
+                <div id="aging-list" class="space-y-3"></div>
             </section>
             
-            <section class="bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg">
-                <h2 class="text-lg font-bold text-stone-700 mb-4 text-center">🧪 Listo para Embotellar</h2>
-                <div id="ready_to_bottle-list" class="space-y-3 kanban-column"></div>
+            <section class="p-4 rounded-2xl shadow-lg kanban-column">
+                <h2 class="text-lg font-bold mb-4 text-center">🧪 Listo para Embotellar</h2>
+                <div id="ready_to_bottle-list" class="space-y-3"></div>
             </section>
 
-            <section class="bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg">
-                <h2 class="text-lg font-bold text-stone-700 mb-4 text-center">🍾 Embotellado</h2>
-                <div id="bottled-list" class="space-y-3 kanban-column"></div>
+            <section class="p-4 rounded-2xl shadow-lg kanban-column">
+                <h2 class="text-lg font-bold mb-4 text-center">🍾 Embotellado</h2>
+                <div id="bottled-list" class="space-y-3"></div>
             </section>
         </main>
     </div>
 
     <div id="lot-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50">
         <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md m-4">
-            <h3 id="modal-title" class="text-2xl font-bold text-stone-800 mb-6"></h3>
+            <h3 id="modal-title" class="text-2xl font-bold mb-6 text-chestnut-brown"></h3>
             <form id="modal-form" class="space-y-4">
                 <input type="hidden" id="lot-id" name="id">
                 <div>
                     <label class="block text-sm">Nombre del Lote</label>
-                    <input type="text" id="lot-name" name="name" required class="w-full mt-1 p-2 border rounded">
+                    <input type="text" id="lot-name" name="name" required class="w-full mt-1 p-2 rounded modal-input">
                 </div>
                 <div>
                     <label class="block text-sm">Parcela de Origen</label>
-                    <select name="origin_parcel_id" id="lot-origin_parcel_id" required class="w-full mt-1 p-2 border rounded"></select>
+                    <select name="origin_parcel_id" id="lot-origin_parcel_id" required class="w-full mt-1 p-2 rounded modal-input"></select>
                 </div>
                 <div>
                     <label class="block text-sm">Kilos de Uva (kg)</label>
-                    <input type="number" step="0.1" id="lot-initial_grape_kg" name="initial_grape_kg" required class="w-full mt-1 p-2 border rounded">
-                    <p class="text-xs text-stone-500 mt-1">Se calcularán aprox. <span id="calculated-liters" class="font-bold">0</span> litros de vino.</p>
+                    <input type="number" step="0.1" id="lot-initial_grape_kg" name="initial_grape_kg" required class="w-full mt-1 p-2 rounded modal-input">
+                    <p class="text-xs text-secondary mt-1">Se calcularán aprox. <span id="calculated-liters" class="font-bold">0</span> litros de vino.</p>
                 </div>
                 <div>
                     <label class="block text-sm">Variedad de Uva</label>
-                    <input type="text" id="lot-grape_variety" name="grape_variety" class="w-full mt-1 p-2 border rounded">
+                    <input type="text" id="lot-grape_variety" name="grape_variety" class="w-full mt-1 p-2 rounded modal-input">
                 </div>
                 <div>
                     <label class="block text-sm">Año de Cosecha</label>
-                    <input type="number" id="lot-vintage_year" name="vintage_year" class="w-full mt-1 p-2 border rounded">
+                    <input type="number" id="lot-vintage_year" name="vintage_year" class="w-full mt-1 p-2 rounded modal-input">
                 </div>
             </form>
             <div class="flex justify-end gap-4 mt-8">
-                <button type="button" id="close-modal-btn" class="bg-stone-200 text-stone-800 px-5 py-2 rounded-full font-semibold">Cancelar</button>
-                <button type="submit" form="modal-form" class="bg-[#5C1A33] text-white px-5 py-2 rounded-full font-semibold">Guardar</button>
+                <button type="button" id="close-modal-btn" class="bg-stone-200 text-chestnut-brown px-5 py-2 rounded-full font-semibold">Cancelar</button>
+                <button type="submit" form="modal-form" class="cta-button px-5 py-2 rounded-full font-semibold">Guardar</button>
             </div>
         </div>
     </div>
     
     <div id="bottling-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50">
         <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl m-4">
-            <h3 class="text-2xl font-bold text-stone-800 mb-2">Embotellar y Crear Producto</h3>
-            <p class="text-stone-500 text-sm mb-6">Lote: <strong id="bottling-modal-lot-name" class="text-stone-700"></strong></p>
+            <h3 class="text-2xl font-bold mb-2 text-chestnut-brown">Embotellar y Crear Producto</h3>
+            <p class="text-secondary text-sm mb-6">Lote: <strong id="bottling-modal-lot-name" class="text-chestnut-brown"></strong></p>
             <form id="bottling-form" class="space-y-4">
                 <input type="hidden" id="bottling-modal-lot-id">
                 <div>
-                    <h4 class="font-bold text-lg border-b border-stone-200 pb-2 mb-2">1. Seleccionar Contenedores</h4>
-                    <div id="bottling-modal-containers-list" class="space-y-2 max-h-32 overflow-y-auto p-2 bg-stone-50 rounded-lg"></div>
+                    <h4 class="font-bold text-lg border-b border-accent pb-2 mb-2">1. Seleccionar Contenedores</h4>
+                    <div id="bottling-modal-containers-list" class="space-y-2 max-h-32 overflow-y-auto p-2 rounded-lg modal-input"></div>
                 </div>
                 <div>
-                    <h4 class="font-bold text-lg border-b border-stone-200 pb-2 mb-2">2. Datos del Nuevo Producto</h4>
+                    <h4 class="font-bold text-lg border-b border-accent pb-2 mb-2">2. Datos del Nuevo Producto</h4>
                     <div>
                         <label class="block text-sm">Nombre del Producto <span class="text-red-500">*</span></label>
-                        <input type="text" id="product-name" required class="w-full mt-1 p-2 border rounded">
+                        <input type="text" id="product-name" required class="w-full mt-1 p-2 rounded modal-input">
                     </div>
                     <div class="grid grid-cols-2 gap-4 mt-4">
                         <div>
                             <label class="block text-sm">SKU / Código <span class="text-red-500">*</span></label>
-                            <input type="text" id="product-sku" required class="w-full mt-1 p-2 border rounded">
+                            <input type="text" id="product-sku" required class="w-full mt-1 p-2 rounded modal-input">
                         </div>
                         <div>
                             <label class="block text-sm">Precio Venta (€) <span class="text-red-500">*</span></label>
-                            <input type="number" step="0.01" id="product-price" required class="w-full mt-1 p-2 border rounded">
+                            <input type="number" step="0.01" id="product-price" required class="w-full mt-1 p-2 rounded modal-input">
                         </div>
                     </div>
                      <div class="mt-4">
                         <label class="block text-sm">Nº de Botellas <span class="text-red-500">*</span></label>
-                        <input type="number" id="bottles-produced" required class="w-full mt-1 p-2 border rounded">
+                        <input type="number" id="bottles-produced" required class="w-full mt-1 p-2 rounded modal-input">
                     </div>
                 </div>
             </form>
             <div class="flex justify-end gap-4 mt-8">
-                <button type="button" id="close-bottling-modal-btn" class="bg-stone-200 text-stone-800 px-5 py-2 rounded-full font-semibold">Cancelar</button>
-                <button type="submit" form="bottling-form" class="bg-green-600 text-white px-5 py-2 rounded-full font-semibold">Confirmar Embotellado</button>
+                <button type="button" id="close-bottling-modal-btn" class="bg-stone-200 text-chestnut-brown px-5 py-2 rounded-full font-semibold">Cancelar</button>
+                <button type="submit" form="bottling-form" class="cta-button px-5 py-2 rounded-full font-semibold">Confirmar Embotellado</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- Configuración y Autenticación ---
         const API_BASE_URL = 'http://127.0.0.1:8000';
         const TOKEN_KEY = 'accessToken';
+
+        // --- LÓGICA DEL TEMA ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'warm') {
+            body.classList.add('theme-warm');
+            themeToggle.checked = true;
+        } else {
+            themeToggle.checked = false;
+        }
+        
+        themeToggle.addEventListener('change', () => {
+            if (themeToggle.checked) {
+                body.classList.add('theme-warm');
+                localStorage.setItem('theme', 'warm');
+            } else {
+                body.classList.remove('theme-warm');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+        
         function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
-        function logout() { localStorage.removeItem(TOKEN_KEY); window.location.href = 'login.html'; }
+        function logout() { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem('theme'); window.location.href = 'login.html'; }
         
         async function apiFetch(endpoint, options = {}) {
+            if (!endpoint.endsWith('/')) { endpoint += '/'; }
             const headers = { 'Content-Type': 'application/json', ...options.headers };
             const token = localStorage.getItem(TOKEN_KEY);
             if (token) headers['Authorization'] = `Bearer ${token}`;
             if (options.body && typeof options.body !== 'string') options.body = JSON.stringify(options.body);
-            
             const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-            
             if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
             if (resp.status === 204) return null;
             if (!resp.ok) {
@@ -175,7 +336,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             requireAuth();
             document.getElementById('logout-btn').addEventListener('click', logout);
-
+            // ... resto de tu script de trazabilidad (sin cambios)
             const lists = {
                 harvested: document.getElementById('harvested-list'),
                 fermenting: document.getElementById('fermenting-list'),
@@ -192,50 +353,41 @@
             const bottlingModal = document.getElementById('bottling-modal');
             const bottlingModalForm = document.getElementById('bottling-form');
             const closeBottlingModalBtn = document.getElementById('close-bottling-modal-btn');
-            
             let traceabilityData = {};
-
-            // --- Funciones de Renderizado ---
             const renderLotCard = (lot) => {
-                const volumeInfo = lot.total_liters ? `<p class="text-sm text-blue-700 font-semibold">${parseFloat(lot.total_liters).toFixed(0)} L</p>` : '';
-                return `<div class="border rounded-lg p-3 bg-white shadow"><div class="flex justify-between items-start"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">${lot.grape_variety || 'N/A'} - ${lot.vintage_year || 'N/A'}</p>${volumeInfo}</div><div class="flex gap-2 text-stone-500"><i class="fas fa-pencil-alt cursor-pointer edit-lot-btn" data-id="${lot.id}"></i><i class="fas fa-trash-alt cursor-pointer delete-lot-btn" data-id="${lot.id}"></i></div></div></div>`;
+                const volumeInfo = lot.total_liters ? `<p class="text-sm" style="color: var(--clay-red);">${parseFloat(lot.total_liters).toFixed(0)} L</p>` : '';
+                return `<div class="border-accent border rounded-lg p-3 bg-white/80 shadow-sm"><div class="flex justify-between items-start"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-secondary">${lot.grape_variety || 'N/A'} - ${lot.vintage_year || 'N/A'}</p>${volumeInfo}</div><div class="flex gap-2 text-secondary"><i class="fas fa-pencil-alt cursor-pointer hover:text-chestnut-brown edit-lot-btn" data-id="${lot.id}"></i><i class="fas fa-trash-alt cursor-pointer hover:text-chestnut-brown delete-lot-btn" data-id="${lot.id}"></i></div></div></div>`;
             };
-
             const renderLotInContainerCard = (lot, actionButtonHtml = '') => {
-                const containersHtml = lot.containers.length ? `<ul class="text-xs text-stone-500 mt-1 pl-4 list-disc">${lot.containers.map(c => `<li>${c.name} (${parseFloat(c.current_volume).toFixed(0)} L)</li>`).join('')}</ul>` : '<p class="text-xs text-orange-600 mt-1">⚠️ Esperando asignación en Bodega...</p>';
-                const cardContent = `<div class="flex justify-between items-start"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">${lot.grape_variety || 'N/A'} - ${lot.vintage_year || 'N/A'}</p></div><div class="flex gap-2 text-stone-500"><i class="fas fa-pencil-alt cursor-pointer edit-lot-btn" data-id="${lot.id}"></i><i class="fas fa-trash-alt cursor-pointer delete-lot-btn" data-id="${lot.id}"></i></div></div>${containersHtml}`;
-                return `<div class="border rounded-lg p-3 bg-white shadow">${cardContent}${actionButtonHtml}</div>`;
+                const containersHtml = lot.containers && lot.containers.length ? `<ul class="text-xs text-secondary mt-1 pl-4 list-disc">${lot.containers.map(c => `<li>${c.name} (${parseFloat(c.current_volume).toFixed(0)} L)</li>`).join('')}</ul>` : `<p class="text-xs mt-1" style="color: var(--pumpkin-orange);">⚠️ Esperando asignación en Bodega...</p>`;
+                const cardContent = `<div class="flex justify-between items-start"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-secondary">${lot.grape_variety || 'N/A'} - ${lot.vintage_year || 'N/A'}</p></div><div class="flex gap-2 text-secondary"><i class="fas fa-pencil-alt cursor-pointer hover:text-chestnut-brown edit-lot-btn" data-id="${lot.id}"></i><i class="fas fa-trash-alt cursor-pointer hover:text-chestnut-brown delete-lot-btn" data-id="${lot.id}"></i></div></div>${containersHtml}`;
+                return `<div class="border-accent border rounded-lg p-3 bg-white/80 shadow-sm">${cardContent}${actionButtonHtml}</div>`;
             };
-
             async function loadTraceabilityView() {
                 try {
-                    const view = await apiFetch('/api/traceability/');
+                    const view = await apiFetch('/api/traceability/kanban-view/');
                     traceabilityData = view;
-                    const emptyListHtml = '<p class="text-xs text-center text-stone-400">No hay lotes.</p>';
-                    
-                    lists.harvested.innerHTML = view.harvested.map(lot => renderLotCard(lot) + `<button data-id="${lot.id}" data-action="ferment" class="action-btn mt-2 w-full text-xs bg-green-600 text-white px-2 py-1 rounded-full hover:bg-green-700">Iniciar Fermentación</button>`).join('') || emptyListHtml;
-                    lists.fermenting.innerHTML = view.fermenting.map(lot => renderLotInContainerCard(lot, `<button data-id="${lot.id}" data-action="age" class="action-btn mt-2 w-full text-xs bg-yellow-600 text-white px-2 py-1 rounded-full hover:bg-yellow-700">Llevar a Crianza</button>`)).join('') || emptyListHtml;
-                    lists.aging.innerHTML = view.aging.map(lot => renderLotInContainerCard(lot, `<button data-id="${lot.id}" data-action="bottle" class="action-btn mt-2 w-full text-xs bg-purple-600 text-white px-2 py-1 rounded-full hover:bg-purple-700">Preparar para Embotellar</button>`)).join('') || emptyListHtml;
-                    
+                    const emptyListHtml = '<p class="text-xs text-center text-secondary">No hay lotes.</p>';
+                    lists.harvested.innerHTML = view.harvested.map(lot => renderLotCard(lot) + `<button data-id="${lot.id}" data-action="ferment" class="action-btn action-btn-green mt-2 w-full text-xs text-white px-2 py-1 rounded-full hover:opacity-90">Iniciar Fermentación</button>`).join('') || emptyListHtml;
+                    lists.fermenting.innerHTML = view.fermenting.map(lot => renderLotInContainerCard(lot, `<button data-id="${lot.id}" data-action="age" class="action-btn action-btn-yellow mt-2 w-full text-xs text-white px-2 py-1 rounded-full hover:opacity-90">Llevar a Crianza</button>`)).join('') || emptyListHtml;
+                    lists.aging.innerHTML = view.aging.map(lot => renderLotInContainerCard(lot, `<button data-id="${lot.id}" data-action="bottle" class="action-btn action-btn-purple mt-2 w-full text-xs text-white px-2 py-1 rounded-full hover:opacity-90">Preparar para Embotellar</button>`)).join('') || emptyListHtml;
                     lists.ready_to_bottle.innerHTML = view.ready_to_bottle.map(lot => {
                          let bottlingButtonHtml = '';
                          if (lot.containers && lot.containers.length > 0) {
                              const containersJson = JSON.stringify(lot.containers);
-                             bottlingButtonHtml = `<button data-id="${lot.id}" data-name="${lot.name}" data-containers='${containersJson}' class="open-bottling-modal-btn mt-2 w-full text-xs bg-green-600 text-white px-2 py-1 rounded-full hover:bg-green-700">Embotellar y Crear Producto</button>`;
+                             bottlingButtonHtml = `<button data-id="${lot.id}" data-name="${lot.name}" data-containers='${containersJson}' class="open-bottling-modal-btn mt-2 w-full text-xs cta-button px-2 py-1 rounded-full hover:opacity-90">Embotellar y Crear Producto</button>`;
                          }
                          return renderLotInContainerCard(lot, bottlingButtonHtml);
                     }).join('') || emptyListHtml;
-                    
                     lists.bottled.innerHTML = view.bottled.map(lot => renderLotCard(lot)).join('') || emptyListHtml;
                 } catch (error) { console.error("Error al cargar la vista de trazabilidad:", error); alert(error.message); }
             }
-            
             async function openLotModal(lot = null) {
                 lotModalForm.reset();
                 document.getElementById('calculated-liters').textContent = '0';
                 try {
                     const parcels = await apiFetch('/api/parcels/');
-                    lotOriginParcelIdSelect.innerHTML = parcels.length ? parcels.map(p => `<option value="${p.id}">${p.name}</option>`).join('') : '<option value="">No hay parcelas</option>';
+                    lotOriginParcelIdSelect.innerHTML = parcels && parcels.length ? parcels.map(p => `<option value="${p.id}">${p.name}</option>`).join('') : '<option value="">No hay parcelas</option>';
                 } catch(e) { lotOriginParcelIdSelect.innerHTML = `<option value="">Error al cargar</option>`; }
                 if (lot) {
                     lotModalTitle.textContent = 'Editar Lote de Vino';
@@ -253,7 +405,6 @@
             addLotBtn.addEventListener('click', () => openLotModal());
             closeLotModalBtn.addEventListener('click', closeLotModal);
             closeBottlingModalBtn.addEventListener('click', () => bottlingModal.classList.remove('modal-active'));
-            
             document.body.addEventListener('click', async (e) => {
                 const actionTarget = e.target.closest('.action-btn');
                 if (actionTarget) {
@@ -273,17 +424,22 @@
                         } catch (error) { alert(`Error: ${error.message}`); }
                     }
                 }
-                
                 const editTarget = e.target.closest('.edit-lot-btn');
                 if (editTarget) {
                     const allLots = [...traceabilityData.harvested, ...traceabilityData.fermenting, ...traceabilityData.aging, ...traceabilityData.bottled, ...traceabilityData.ready_to_bottle];
                     const lotData = allLots.find(l => l.id === editTarget.dataset.id);
                     if(lotData) openLotModal(lotData);
                 }
-
                 const deleteTarget = e.target.closest('.delete-lot-btn');
-                if (deleteTarget) { /* ...código de borrado original... */ }
-
+                if (deleteTarget) {
+                    const lotId = deleteTarget.dataset.id;
+                     if(confirm('¿Seguro que quieres eliminar este lote? Esta acción no se puede deshacer.')) {
+                        try {
+                            await apiFetch(`/api/traceability/wine-lots/${lotId}`, { method: 'DELETE' });
+                            await loadTraceabilityView();
+                        } catch (error) { alert(`Error: ${error.message}`); }
+                     }
+                }
                 const openBottlingTarget = e.target.closest('.open-bottling-modal-btn');
                 if (openBottlingTarget) {
                     const { id, name, containers } = openBottlingTarget.dataset;
@@ -293,15 +449,14 @@
                     const containerList = document.getElementById('bottling-modal-containers-list');
                     const parsedContainers = JSON.parse(containers);
                     containerList.innerHTML = parsedContainers.length ? parsedContainers.map(c => `
-                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-stone-100">
-                            <input type="checkbox" name="source_containers" value="${c.id}" class="h-5 w-5 rounded text-[#5C1A33] focus:ring-[#5C1A33]">
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-warm-beige/30">
+                            <input type="checkbox" name="source_containers" value="${c.id}" class="h-5 w-5 rounded" style="color: var(--clay-red); accent-color: var(--clay-red);">
                             <span class="font-semibold">${c.name}</span>
-                            <span class="text-sm text-stone-500 ml-auto">(${parseFloat(c.current_volume).toFixed(0)} L)</span>
-                        </label>`).join('') : '<p class="text-sm text-stone-500">No hay contenedores.</p>';
+                            <span class="text-sm text-secondary ml-auto">(${parseFloat(c.current_volume).toFixed(0)} L)</span>
+                        </label>`).join('') : '<p class="text-sm text-secondary">No hay contenedores.</p>';
                     bottlingModal.classList.add('modal-active');
                 }
             });
-
             lotModalForm.addEventListener('submit', async (e) => {
                  e.preventDefault();
                  const id = document.getElementById('lot-id').value;
@@ -314,19 +469,17 @@
                  };
                  if (!body.origin_parcel_id || !body.initial_grape_kg) { alert("Parcela y Kilos son obligatorios."); return; }
                  try {
-                     const endpoint = id ? `/api/traceability/wine-lots/${id}` : '/api/traceability/wine-lots';
+                     const endpoint = id ? `/api/traceability/wine-lots/${id}` : '/api/traceability/wine-lots/';
                      const method = id ? 'PUT' : 'POST';
                      await apiFetch(endpoint, { method, body });
                      closeLotModal();
                      await loadTraceabilityView();
                  } catch (error) { alert(`Error al guardar: ${error.message}`); }
             });
-
             bottlingModalForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const selectedContainers = Array.from(document.querySelectorAll('input[name="source_containers"]:checked')).map(cb => cb.value);
                 if (selectedContainers.length === 0) return alert('Debes seleccionar al menos un contenedor.');
-                
                 const payload = {
                     lot_id: document.getElementById('bottling-modal-lot-id').value,
                     source_container_ids: selectedContainers,
@@ -335,7 +488,6 @@
                     product_price: parseFloat(document.getElementById('product-price').value),
                     bottles_produced: parseInt(document.getElementById('bottles-produced').value)
                 };
-
                 try {
                     const response = await apiFetch('/api/cellar/movements/bottling-and-create-product', {
                         method: 'POST',
@@ -348,12 +500,10 @@
                     alert(`Error: ${error.message}`);
                 }
             });
-
             document.getElementById('lot-initial_grape_kg').addEventListener('input', (e) => {
                 const kg = parseFloat(e.target.value) || 0;
                 document.getElementById('calculated-liters').textContent = Math.floor(kg / 1.6);
             });
-
             loadTraceabilityView();
         });
     </script>

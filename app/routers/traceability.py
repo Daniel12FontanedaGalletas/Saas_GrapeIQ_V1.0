@@ -2,9 +2,8 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
-from contextlib import closing
 import uuid
-import psycopg2
+from psycopg2.extras import RealDictCursor
 
 from .. import schemas
 from ..services import security
@@ -12,171 +11,127 @@ from ..database import get_db_connection
 
 router = APIRouter(
     prefix="/api/traceability",
-    tags=["Traceability"],
+    tags=["Trazabilidad"],
+    dependencies=[Depends(security.get_current_active_user)]
 )
 
-@router.get("/", response_model=schemas.TraceabilityView)
-def get_traceability_view(current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
+@router.get("/kanban-view/", response_model=schemas.TraceabilityView)
+def get_traceability_kanban_view(current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
     """
     Obtiene todos los lotes de vino y los agrupa por su estado actual para la vista Kanban.
     """
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT id, name, grape_variety, vintage_year, status, initial_grape_kg, total_liters, liters_unassigned FROM wine_lots WHERE tenant_id = %s", 
-                (str(current_user.tenant_id),)
-            )
-            all_lots_recs = cur.fetchall()
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("SELECT id, name FROM parcels WHERE tenant_id = %s", (str(current_user.tenant_id),))
+                parcels = {str(p['id']): p['name'] for p in cur.fetchall()}
+
+                cur.execute("SELECT * FROM wine_lots WHERE tenant_id = %s", (str(current_user.tenant_id),))
+                all_lots_recs = cur.fetchall()
+                
+                cur.execute("""
+                    SELECT id, name, type, capacity_liters, material, location, status, current_volume, current_lot_id
+                    FROM containers
+                    WHERE tenant_id = %s AND current_lot_id IS NOT NULL
+                """, (str(current_user.tenant_id),))
+                containers_recs = cur.fetchall()
+
+        containers_by_lot_id = {}
+        for cont in containers_recs:
+            lot_id = str(cont['current_lot_id'])
+            if lot_id not in containers_by_lot_id:
+                containers_by_lot_id[lot_id] = []
+            containers_by_lot_id[lot_id].append(schemas.Container(**cont))
+
+        view = schemas.TraceabilityView(harvested=[], fermenting=[], aging=[], ready_to_bottle=[], bottled=[])
+        
+        for lot_rec in all_lots_recs:
+            lot_rec['origin_parcel_name'] = parcels.get(str(lot_rec.get('origin_parcel_id')))
+            lot_id_str = str(lot_rec['id'])
             
-            cur.execute("""
-                SELECT c.id, c.name, c.type, c.capacity_liters, c.material, c.location, c.status, c.current_volume, c.current_lot_id
-                FROM containers c
-                WHERE c.tenant_id = %s AND c.current_lot_id IS NOT NULL
-            """, (str(current_user.tenant_id),))
-            containers_recs = cur.fetchall()
+            status = lot_rec['status']
+            if status == 'Cosechado':
+                view.harvested.append(schemas.WineLot(**lot_rec))
+            elif status in ['En Fermentación', 'En Crianza', 'Listo para Embotellar']:
+                lot_with_containers = schemas.WineLotInContainer(
+                    **lot_rec, 
+                    containers=containers_by_lot_id.get(lot_id_str, [])
+                )
+                if status == 'En Fermentación':
+                    view.fermenting.append(lot_with_containers)
+                elif status == 'En Crianza':
+                    view.aging.append(lot_with_containers)
+                else:
+                    view.ready_to_bottle.append(lot_with_containers)
+            elif status == 'Embotellado':
+                view.bottled.append(schemas.WineLot(**lot_rec))
+                
+        return view
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de base de datos en Trazabilidad: {e}")
 
-    all_lots = [
-        schemas.WineLot(id=r[0], name=r[1], grape_variety=r[2], vintage_year=r[3], status=r[4], initial_grape_kg=r[5], total_liters=r[6], liters_unassigned=r[7]) 
-        for r in all_lots_recs
-    ]
-    containers = [
-        schemas.Container(id=r[0], name=r[1], type=r[2], capacity_liters=r[3], material=r[4], location=r[5], status=r[6], current_volume=r[7], current_lot_id=r[8]) 
-        for r in containers_recs
-    ]
 
-    view = schemas.TraceabilityView(harvested=[], fermenting=[], aging=[], ready_to_bottle=[], bottled=[])
-    for lot in all_lots:
-        lot_in_container = schemas.WineLotInContainer(**lot.model_dump(), containers=[c for c in containers if c.current_lot_id == lot.id])
-        if lot.status == 'Cosechado':
-            view.harvested.append(lot)
-        elif lot.status == 'En Fermentación':
-            view.fermenting.append(lot_in_container)
-        elif lot.status == 'En Crianza':
-            view.aging.append(lot_in_container)
-        elif lot.status == 'Listo para Embotellar':
-            view.ready_to_bottle.append(lot_in_container)
-        elif lot.status == 'Embotellado':
-            view.bottled.append(lot)
-            
-    return view
-
-@router.post("/wine-lots", response_model=schemas.WineLot, status_code=201)
-def create_wine_lot(lot: schemas.WineLotCreate, current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
-    """ 
-    Crea un nuevo lote de vino a partir de los KG de uva, calculando los litros resultantes.
-    """
-    total_liters = int(lot.initial_grape_kg // 1.6)
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            query = """
-                INSERT INTO wine_lots (name, grape_variety, vintage_year, tenant_id, status, initial_grape_kg, total_liters, liters_unassigned) 
-                VALUES (%s, %s, %s, %s, 'Cosechado', %s, %s, %s) 
-                RETURNING id, name, grape_variety, vintage_year, status, initial_grape_kg, total_liters, liters_unassigned
-            """
-            cur.execute(query, (lot.name, lot.grape_variety, lot.vintage_year, str(current_user.tenant_id), lot.initial_grape_kg, total_liters, total_liters))
-            rec = cur.fetchone()
-            conn.commit()
-    return schemas.WineLot(id=rec[0], name=rec[1], grape_variety=rec[2], vintage_year=rec[3], status=rec[4], initial_grape_kg=rec[5], total_liters=rec[6], liters_unassigned=rec[7])
-
+# --- CORRECCIÓN AQUÍ ---
+# El método debe ser GET, no POST, para que la interfaz pueda solicitar la lista de vinos.
 @router.get("/wine-lots", response_model=List[schemas.WineLot])
 def get_all_wine_lots(current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
-    """ Obtiene la lista completa de todos los lotes de vino con sus datos de volumen. """
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT id, name, grape_variety, vintage_year, status, initial_grape_kg, total_liters, liters_unassigned FROM wine_lots WHERE tenant_id = %s ORDER BY vintage_year DESC, name",
-                (str(current_user.tenant_id),)
-            )
-            recs = cur.fetchall()
-    return [schemas.WineLot(id=r[0], name=r[1], grape_variety=r[2], vintage_year=r[3], status=r[4], initial_grape_kg=r[5], total_liters=r[6], liters_unassigned=r[7]) for r in recs]
+    query = "SELECT * FROM wine_lots WHERE tenant_id = %s ORDER BY vintage_year DESC, name"
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(query, (str(current_user.tenant_id),))
+                lots = cur.fetchall()
+                return lots
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de base de datos: {e}")
 
-@router.put("/wine-lots/{lot_id}", response_model=schemas.WineLot)
-def update_wine_lot(
-    lot_id: uuid.UUID,
-    lot_update: schemas.WineLotUpdate,
-    current_user: schemas.UserInDB = Depends(security.get_current_active_user)
-):
-    """ Actualiza los detalles de un lote y recalcula litros si los kg cambian. """
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT initial_grape_kg FROM wine_lots WHERE id = %s", (str(lot_id),))
-            current_kg_tuple = cur.fetchone()
-            if not current_kg_tuple:
-                raise HTTPException(status_code=404, detail="Lote de vino no encontrado.")
-            current_kg = current_kg_tuple[0]
+@router.post("/wine-lots/", response_model=schemas.WineLot, status_code=201)
+def create_wine_lot(lot: schemas.WineLotCreate, current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
+    total_liters = lot.initial_grape_kg / 1.6
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                query = """
+                    INSERT INTO wine_lots (id, name, grape_variety, vintage_year, tenant_id, status, initial_grape_kg, total_liters, liters_unassigned, origin_parcel_id) 
+                    VALUES (%s, %s, %s, %s, %s, 'Cosechado', %s, %s, %s, %s) RETURNING *
+                """
+                cur.execute(query, (str(uuid.uuid4()), lot.name, lot.grape_variety, lot.vintage_year, str(current_user.tenant_id), lot.initial_grape_kg, total_liters, total_liters, lot.origin_parcel_id))
+                new_lot = cur.fetchone()
+                conn.commit()
+                return new_lot
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al crear el lote: {e}")
 
-            new_liters = None
-            if lot_update.initial_grape_kg is not None and lot_update.initial_grape_kg != float(current_kg):
-                new_liters = int(lot_update.initial_grape_kg // 1.6)
-
-            if new_liters is not None:
-                cur.execute(
-                    """
-                    UPDATE wine_lots SET name = %s, grape_variety = %s, vintage_year = %s, initial_grape_kg = %s, total_liters = %s, liters_unassigned = %s
-                    WHERE id = %s AND tenant_id = %s
-                    RETURNING id, name, grape_variety, vintage_year, status, initial_grape_kg, total_liters, liters_unassigned
-                    """,
-                    (lot_update.name, lot_update.grape_variety, lot_update.vintage_year, lot_update.initial_grape_kg, new_liters, new_liters, str(lot_id), str(current_user.tenant_id))
-                )
-            else:
-                cur.execute(
-                    """
-                    UPDATE wine_lots SET name = %s, grape_variety = %s, vintage_year = %s 
-                    WHERE id = %s AND tenant_id = %s
-                    RETURNING id, name, grape_variety, vintage_year, status, initial_grape_kg, total_liters, liters_unassigned
-                    """,
-                    (lot_update.name, lot_update.grape_variety, lot_update.vintage_year, str(lot_id), str(current_user.tenant_id))
-                )
-            
-            rec = cur.fetchone()
-            conn.commit()
-
-    if not rec:
-        raise HTTPException(status_code=404, detail="Lote de vino no encontrado durante la actualización.")
-    return schemas.WineLot(id=rec[0], name=rec[1], grape_variety=rec[2], vintage_year=rec[3], status=rec[4], initial_grape_kg=rec[5], total_liters=rec[6], liters_unassigned=rec[7])
 
 @router.put("/wine-lots/{lot_id}/status", response_model=schemas.WineLot)
-def update_wine_lot_status(
-    lot_id: uuid.UUID,
-    status_update: schemas.WineLotStatusUpdate,
-    current_user: schemas.UserInDB = Depends(security.get_current_active_user),
-):
-    """ Actualiza el estado de un lote de vino. """
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "UPDATE wine_lots SET status = %s WHERE id = %s AND tenant_id = %s RETURNING id, name, grape_variety, vintage_year, status",
-                (status_update.new_status, str(lot_id), str(current_user.tenant_id))
-            )
-            rec = cur.fetchone()
-            conn.commit()
-    if not rec:
-        raise HTTPException(status_code=404, detail="Lote de vino no encontrado.")
-    return schemas.WineLot(id=rec[0], name=rec[1], grape_variety=rec[2], vintage_year=rec[3], status=rec[4])
+def update_wine_lot_status(lot_id: uuid.UUID, status_update: schemas.WineLotStatusUpdate, current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("UPDATE wine_lots SET status = %s WHERE id = %s AND tenant_id = %s RETURNING *",
+                            (status_update.new_status, str(lot_id), str(current_user.tenant_id)))
+                updated_lot = cur.fetchone()
+                conn.commit()
+                if not updated_lot:
+                    raise HTTPException(status_code=404, detail="Lote no encontrado.")
+                return updated_lot
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al actualizar estado: {e}")
 
-# --- ¡FUNCIÓN AÑADIDA QUE SOLUCIONA EL ERROR 405! ---
+
 @router.delete("/wine-lots/{lot_id}", status_code=204)
-def delete_wine_lot(
-    lot_id: uuid.UUID,
-    current_user: schemas.UserInDB = Depends(security.get_current_active_user)
-):
-    """ Elimina un lote de vino. """
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            # Primero, desasociar el lote de cualquier contenedor para evitar errores de clave foránea.
-            cur.execute(
-                "UPDATE containers SET current_lot_id = NULL, status = 'vacío', current_volume = 0 WHERE current_lot_id = %s AND tenant_id = %s",
-                (str(lot_id), str(current_user.tenant_id))
-            )
-            # Luego, eliminar cualquier registro de movimiento asociado a este lote.
-            cur.execute(
-                "DELETE FROM movements WHERE lot_id = %s AND tenant_id = %s",
-                (str(lot_id), str(current_user.tenant_id))
-            )
-            # Finalmente, eliminar el lote de vino.
-            cur.execute(
-                "DELETE FROM wine_lots WHERE id = %s AND tenant_id = %s",
-                (str(lot_id), str(current_user.tenant_id))
-            )
-            conn.commit()
-    return
+def delete_wine_lot(lot_id: uuid.UUID, current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("UPDATE products SET wine_lot_origin_id = NULL WHERE wine_lot_origin_id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
+                cur.execute("DELETE FROM movements WHERE lot_id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
+                cur.execute("DELETE FROM wine_lots WHERE id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
+                if cur.rowcount == 0:
+                    raise HTTPException(status_code=404, detail="Lote no encontrado para eliminar.")
+                conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al eliminar lote: {e}")

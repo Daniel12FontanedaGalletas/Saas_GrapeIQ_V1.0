@@ -12,51 +12,134 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
     <style>
-        body { font-family:'Montserrat',sans-serif; background:#F8F7F4; }
+        /* --- Sistema de Temas --- */
+        :root { /* Tema Blanco por Defecto */
+            --bg-color: #F8F7F4;
+            --text-color: #1c1917; /* stone-900 */
+            --text-secondary-color: #57534e; /* stone-600 */
+            --header-bg-color: #292524; /* stone-800 */
+            --tab-active-color: #5C1A33;
+            --cta-button-bg: #5C1A33;
+            --secondary-button-bg: #e5e7eb; /* gray-200 */
+            --border-color: #e5e7eb;
+            --card-bg: #FFFFFF;
+            --modal-input-bg: #FFFFFF;
+            --map-polygon-fill: #5C1A33;
+            --map-polygon-stroke: #441122;
+        }
+
+        body.theme-warm { /* 🍂 Tema Otoñal Cálido */
+            --bg-color: #F2E2C4;
+            --text-color: #5C4033;
+            --text-secondary-color: #8C8C88;
+            --header-bg-color: #5C4033;
+            --tab-active-color: #C98C32;
+            --cta-button-bg: #D96C06;
+            --secondary-button-bg: #A23E48;
+            --border-color: rgba(92, 64, 51, 0.2);
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --modal-input-bg: rgba(92, 64, 51, 0.05);
+            --map-polygon-fill: #D96C06;
+            --map-polygon-stroke: #5C4033;
+        }
+        
+        /* --- Estilos Generales con Variables --- */
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .tab-active { 
+            border-color: var(--tab-active-color) !important; 
+            color: var(--tab-active-color) !important; 
+            font-weight: 700; 
+        }
+        .text-secondary { color: var(--text-secondary-color); }
+        .bg-dark { background-color: var(--header-bg-color); }
+        .border-accent { border-color: var(--border-color); }
+        .cta-button { background-color: var(--cta-button-bg); color: white; }
+        .secondary-button { background-color: var(--secondary-button-bg); color: var(--text-color); }
+        .section-card { background-color: var(--card-bg); border: 1px solid var(--border-color); }
+        .modal-input { background-color: var(--modal-input-bg); border-color: var(--border-color); }
+        
         #map { height: 60vh; width: 100%; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 10; }
         .modal { display: none; z-index: 50; }
         .modal-active { display: flex; }
-        /* Estilos para la lista de parcelas interactiva */
         .parcel-item { cursor: pointer; transition: background-color 0.2s; }
-        .parcel-item:hover { background-color: #f3f4f6; }
+        .parcel-item:hover { background-color: rgba(0,0,0,0.05); }
+
+        /* --- CSS DE LA ANTORCHA (AJUSTADO) --- */
+        .torch-container { position: absolute; right: 220px; top: -35px; display: flex; align-items: center; cursor: pointer; user-select: none; transform: scale(0.45); }
+        .torch-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+        .torch { display: flex; justify-content: center; height: 150px; }
+        .head, .stick { position: absolute; width: 30px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); }
+        .stick { position: relative; height: 120px; }
+        .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000000; }
+        .top { transform: rotateX(90deg) translateZ(15px); } .left { transform: rotateY(-90deg) translateZ(15px); } .right { transform: rotateY(0deg) translateZ(15px); }
+        .top div, .left div, .right div { width: 102%; height: 102%; }
+        .top div:nth-child(1), .left div:nth-child(3), .right div:nth-child(3) { background-color: #ffff9760; } .top div:nth-child(2), .left div:nth-child(1), .right div:nth-child(1) { background-color: #ffd80060; } .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; } .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; }
+        .side { position: absolute; width: 30px; height: 120px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: repeat(8, 12.5%); cursor: pointer; translate: 0 12px; }
+        .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); } .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); }
+        .side-left div, .side-right div { width: 103%; height: 103%; }
+        .side div:nth-child(1) { background-color: #443622; } .side div:nth-child(2) { background-color: #2e2517; } .side div:nth-child(3), .side div:nth-child(5) { background-color: #4b3b23; } .side div:nth-child(4), .side div:nth-child(10) { background-color: #251e12; } .side div:nth-child(6) { background-color: #292115; } .side div:nth-child(7) { background-color: #4b3c26; } .side div:nth-child(8) { background-color: #292115; } .side div:nth-child(9) { background-color: #4b3a21; } .side div:nth-child(11), .side div:nth-child(15) { background-color: #3d311d; } .side div:nth-child(12) { background-color: #2c2315; } .side div:nth-child(13) { background-color: #493a22; } .side div:nth-child(14) { background-color: #2b2114; } .side div:nth-child(16) { background-color: #271e10; }
+        .torch-container input:checked ~ .torch .face { filter: drop-shadow(0px 0px 2px #fff) drop-shadow(0px 0px 10px rgba(255, 237, 156, 0.7)) drop-shadow(0px 0px 25px rgba(255, 227, 101, 0.4)); }
+        .torch-container input:checked ~ .torch .top div:nth-child(1), .torch-container input:checked ~ .torch .left div:nth-child(3), .torch-container input:checked ~ .torch .right div:nth-child(3) { background-color: #ffff97; } .torch-container input:checked ~ .torch .top div:nth-child(2), .torch-container input:checked ~ .torch .left div:nth-child(1), .torch-container input:checked ~ .torch .right div:nth-child(1) { background-color: #ffd800; } .torch-container input:checked ~ .torch .top div:nth-child(3), .torch-container input:checked ~ .torch .left div:nth-child(4), .torch-container input:checked ~ .torch .right div:nth-child(4) { background-color: #fff; } .torch-container input:checked ~ .torch .top div:nth-child(4), .torch-container input:checked ~ .torch .left div:nth-child(2), .torch-container input:checked ~ .torch .right div:nth-child(2) { background-color: #ff8f00; } .torch-container input:checked ~ .torch .side div:nth-child(1) { background-color: #7c623e; } .torch-container input:checked ~ .torch .side div:nth-child(2) { background-color: #4c3d26; } .torch-container input:checked ~ .torch .side div:nth-child(3), .torch-container input:checked ~ .torch .side div:nth-child(5) { background-color: #937344; } .torch-container input:checked ~ .torch .side div:nth-child(4), .torch-container input:checked ~ .torch .side div:nth-child(10) { background-color: #3c2f1c; } .torch-container input:checked ~ .torch .side div:nth-child(6) { background-color: #423522; } .torch-container input:checked ~ .torch .side div:nth-child(7) { background-color: #9f7f50; } .torch-container input:checked ~ .torch .side div:nth-child(8) { background-color: #403320; } .torch-container input:checked ~ .torch .side div:nth-child(9) { background-color: #977748; } .torch-container input:checked ~ .torch .side div:nth-child(11), .torch-container input:checked ~ .torch .side div:nth-child(15) { background-color: #675231; } .torch-container input:checked ~ .torch .side div:nth-child(12) { background-color: #3d301d; } .torch-container input:checked ~ .torch .side div:nth-child(13) { background-color: #987849; } .torch-container input:checked ~ .torch .side div:nth-child(14) { background-color: #3b2e1b; } .torch-container input:checked ~ .torch .side div:nth-child(16) { background-color: #372a17; }
     </style>
 </head>
-<body class="text-stone-800">
+<body>
     <div class="p-4 sm:p-8">
-        <header class="flex justify-between items-center mb-6">
+        <header class="flex justify-between items-center mb-6 relative">
             <a href="performance.html" class="flex items-center gap-4">
                 <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
-                <span class="text-3xl font-light text-stone-400">|</span>
-                <h1 class="text-3xl font-semibold text-stone-700">Gestión de Parcelas</h1>
+                <span class="text-3xl font-light text-secondary">|</span>
+                <h1 class="text-3xl font-semibold">Gestión de Parcelas</h1>
             </a>
-            <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
+            <div class="flex items-center gap-4">
+                <label class="torch-container">
+                    <input id="theme-toggle" type="checkbox" />
+                    <div class="torch">
+                        <div class="head">
+                            <div class="face top"><div></div><div></div><div></div><div></div></div>
+                            <div class="face left"><div></div><div></div><div></div><div></div></div>
+                            <div class="face right"><div></div><div></div><div></div><div></div></div>
+                        </div>
+                        <div class="stick">
+                            <div class="side side-left"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                            <div class="side side-right"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+                    </div>
+                </label>
+                <button id="logout-btn" class="bg-dark text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
+            </div>
         </header>
-        <div class="mb-8 border-b border-stone-200">
+
+        <div class="mb-8 border-b border-accent">
             <nav class="flex space-x-8 overflow-x-auto pb-2">
-                <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Análisis de Rendimiento</a>
-                <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Predicciones y Escenarios</a>
-                <a href="catalog.html" id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Catálogo y Stock</a>
-                <a href="daily-log.html" id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</a>
-                <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Finanzas</a>
-                <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Cuaderno de Campo</a>
-                <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Trazabilidad</a>
-                <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Gestión de Bodega</a>
-                <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Parcelas</a>
-                <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Clima</a>
-                <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Configuración</a>
+                <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Análisis de Rendimiento</a>
+                <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Predicciones</a>
+                <a href="catalog.html" id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Catálogo y Stock</a>
+                <a href="daily-log.html" id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Registro Diario</a>
+                <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Finanzas</a>
+                <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Cuaderno de Campo</a>
+                <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Trazabilidad</a>
+                <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Gestión de Bodega</a>
+                <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg tab-active">Parcelas</a>
+                <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Clima</a>
+                <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Configuración</a>
             </nav>
         </div>
 
         <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2 space-y-4">
-                <div class="bg-white p-6 rounded-2xl shadow-lg">
-                    <h2 class="text-2xl font-bold text-stone-700 mb-4">Mapa de Explotación</h2>
+                <div class="section-card p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold mb-4">Mapa de Explotación</h2>
                     <div id="map"></div>
                 </div>
             </div>
             <div class="space-y-4">
-                <div class="bg-white p-6 rounded-2xl shadow-lg">
-                    <h2 class="text-2xl font-bold text-stone-700 mb-4">Listado de Parcelas</h2>
+                <div class="section-card p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold mb-4">Listado de Parcelas</h2>
                     <div id="parcels-list" class="space-y-3 max-h-96 overflow-y-auto"></div>
                 </div>
             </div>
@@ -65,15 +148,15 @@
 
     <div id="parcel-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center">
         <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md m-4">
-            <h3 id="modal-title" class="text-2xl font-bold text-stone-800 mb-6">Guardar Nueva Parcela</h3>
+            <h3 id="modal-title" class="text-2xl font-bold mb-6">Guardar Nueva Parcela</h3>
             <form id="modal-form" class="space-y-4">
-                <div><label class="block text-sm">Nombre de la Parcela</label><input type="text" name="name" required class="w-full mt-1 p-2 border rounded"></div>
-                <div><label class="block text-sm">Variedad Principal</label><input type="text" name="variety" class="w-full mt-1 p-2 border rounded"></div>
-                <div><label class="block text-sm">Superficie (hectáreas)</label><input type="number" step="0.01" name="area_hectares" class="w-full mt-1 p-2 border rounded"></div>
+                <div><label class="block text-sm font-semibold text-secondary">Nombre de la Parcela</label><input type="text" name="name" required class="w-full mt-1 p-2 border rounded-md modal-input"></div>
+                <div><label class="block text-sm font-semibold text-secondary">Variedad Principal</label><input type="text" name="variety" class="w-full mt-1 p-2 border rounded-md modal-input"></div>
+                <div><label class="block text-sm font-semibold text-secondary">Superficie (hectáreas)</label><input type="number" step="0.01" name="area_hectares" class="w-full mt-1 p-2 border rounded-md modal-input"></div>
             </form>
             <div class="flex justify-end gap-4 mt-8">
-                <button type="button" id="close-modal-btn" class="bg-stone-200 text-stone-800 px-5 py-2 rounded-full font-semibold">Cancelar</button>
-                <button type="submit" form="modal-form" class="bg-[#5C1A33] text-white px-5 py-2 rounded-full font-semibold">Guardar Parcela</button>
+                <button type="button" id="close-modal-btn" class="secondary-button px-5 py-2 rounded-full font-semibold hover:opacity-90">Cancelar</button>
+                <button type="submit" form="modal-form" class="cta-button px-5 py-2 rounded-full font-semibold hover:opacity-90">Guardar Parcela</button>
             </div>
         </div>
     </div>
@@ -81,8 +164,29 @@
     <script>
         const API_BASE_URL = 'http://127.0.0.1:8000';
         const TOKEN_KEY = 'accessToken';
+        
+        // --- LÓGICA DEL TEMA ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'warm') {
+            body.classList.add('theme-warm');
+            themeToggle.checked = true;
+        } else {
+            themeToggle.checked = false;
+        }
+        themeToggle.addEventListener('change', () => {
+            if (themeToggle.checked) {
+                body.classList.add('theme-warm');
+                localStorage.setItem('theme', 'warm');
+            } else {
+                body.classList.remove('theme-warm');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
         function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
-        function logout() { localStorage.removeItem(TOKEN_KEY); window.location.href = 'login.html'; }
+        function logout() { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem('theme'); window.location.href = 'login.html'; }
         
         async function apiFetch(endpoint, options = {}) {
             if (!endpoint.endsWith('/')) { endpoint += '/'; }
@@ -90,14 +194,19 @@
             const token = localStorage.getItem(TOKEN_KEY);
             if (token) headers['Authorization'] = `Bearer ${token}`;
             if (options.body && typeof options.body !== 'string') options.body = JSON.stringify(options.body);
-            const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-            if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
-            if (resp.status === 204) return null;
-            if (!resp.ok) {
-                const data = await resp.json().catch(() => ({ detail: 'Error en la petición.' }));
-                throw new Error(data.detail);
+            try {
+                const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+                if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
+                if (resp.status === 204) return null;
+                if (!resp.ok) {
+                    const data = await resp.json().catch(() => ({ detail: `Error HTTP ${resp.status}` }));
+                    throw new Error(data.detail);
+                }
+                return resp.json();
+            } catch (error) {
+                console.error(`Error en apiFetch a ${endpoint}:`, error);
+                throw error;
             }
-            return resp.json();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -109,7 +218,7 @@
             const closeModalBtn = document.getElementById('close-modal-btn');
             const parcelsList = document.getElementById('parcels-list');
             let drawnLayer = null;
-            let parcelLayers = {}; // Objeto para mapear IDs de parcelas a sus capas en el mapa
+            let parcelLayers = {};
 
             const map = L.map('map').setView([42.5987, -5.5671], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -121,7 +230,7 @@
 
             const drawControl = new L.Control.Draw({
                 draw: {
-                    polygon: { shapeOptions: { color: '#5C1A33' } },
+                    polygon: { shapeOptions: { color: 'var(--map-polygon-stroke)' } },
                     polyline: false, marker: false, circle: false, rectangle: false, circlemarker: false
                 },
                 edit: { featureGroup: drawnItems, remove: false }
@@ -146,10 +255,8 @@
             modalForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!drawnLayer) return;
-
                 const formData = new FormData(e.target);
                 const data = Object.fromEntries(formData.entries());
-                
                 const body = {
                     name: data.name,
                     variety: data.variety,
@@ -173,26 +280,25 @@
                     const parcels = await apiFetch('/api/parcels');
                     drawnItems.clearLayers();
                     parcelsList.innerHTML = '';
-                    parcelLayers = {}; // Resetear el mapa de capas
+                    parcelLayers = {};
 
-                    if(parcels.length === 0) {
-                        parcelsList.innerHTML = '<p class="text-center text-stone-500">Aún no has dibujado ninguna parcela.</p>';
+                    if(!parcels || parcels.length === 0) {
+                        parcelsList.innerHTML = `<p class="text-center text-secondary">Aún no has dibujado ninguna parcela.</p>`;
                         return;
                     }
 
                     parcels.forEach(p => {
                         const geoJsonLayer = L.geoJSON(p.geojson_coordinates, {
-                            style: { color: '#5C1A33', weight: 2 }
+                            style: { color: 'var(--map-polygon-stroke)', weight: 2, fillColor: 'var(--map-polygon-fill)', fillOpacity: 0.5 }
                         }).bindPopup(`<b>${p.name}</b><br>${p.variety || 'Sin variedad'}<br>${p.area_hectares || '?'} ha`).addTo(drawnItems);
                         
-                        // Guardar la referencia de la capa
                         parcelLayers[p.id] = geoJsonLayer;
 
                         parcelsList.innerHTML += `
-                            <div class="parcel-item border rounded-lg p-3 flex justify-between items-center" data-parcel-id="${p.id}">
+                            <div class="parcel-item border rounded-lg p-3 flex justify-between items-center border-accent" data-parcel-id="${p.id}">
                                 <div>
                                     <p class="font-bold">${p.name}</p>
-                                    <p class="text-sm text-stone-600">${p.variety || 'N/A'}</p>
+                                    <p class="text-sm text-secondary">${p.variety || 'N/A'}</p>
                                 </div>
                                 <button class="delete-parcel-btn text-red-500 hover:text-red-700" data-parcel-id="${p.id}">
                                     <i class="fas fa-trash-alt"></i>
@@ -207,7 +313,6 @@
                 }
             }
 
-            // --- NUEVOS EVENT LISTENERS PARA INTERACTIVIDAD ---
             parcelsList.addEventListener('click', async (e) => {
                 const deleteBtn = e.target.closest('.delete-parcel-btn');
                 const parcelItem = e.target.closest('.parcel-item');
@@ -217,7 +322,7 @@
                     if (confirm('¿Estás seguro de que quieres eliminar esta parcela? Esta acción no se puede deshacer.')) {
                         try {
                             await apiFetch(`/api/parcels/${parcelId}`, { method: 'DELETE' });
-                            await loadParcels(); // Recargar todo para actualizar la vista
+                            await loadParcels();
                         } catch (error) {
                             alert(`Error al eliminar: ${error.message}`);
                         }
@@ -227,6 +332,7 @@
                     const layer = parcelLayers[parcelId];
                     if (layer) {
                         map.fitBounds(layer.getBounds().pad(0.1));
+                        layer.openPopup();
                     }
                 }
             });

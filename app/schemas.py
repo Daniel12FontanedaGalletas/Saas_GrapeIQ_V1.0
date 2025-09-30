@@ -5,7 +5,7 @@ from typing import Optional, List, Any
 import uuid
 from datetime import date, datetime
 
-# --- Esquemas de Autenticación y Usuarios ---
+# --- Esquemas de Autenticación y Usuarios (Estructura Original Restaurada) ---
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -86,7 +86,7 @@ class ContainerBase(BaseModel):
     material: Optional[str] = None
     location: Optional[str] = None
 
-class ContainerCreate(ContainerBase):
+class ContainerCreate(ContainerBase): # <--- ¡ESTA ES LA CLASE QUE FALTABA!
     pass
 
 class ContainerUpdate(ContainerBase):
@@ -264,3 +264,45 @@ class CategorySummary(BaseModel):
 class CostSummaryResponse(BaseModel):
     grand_total: float
     details: List[CategorySummary]
+    
+class WineLotInContainer(WineLot):
+    """Representa un lote de vino e incluye la lista de contenedores donde se encuentra."""
+    containers: List[Container] = []
+
+class TraceabilityKanbanView(BaseModel):
+    """Define la estructura de datos para la vista Kanban de Trazabilidad."""
+    harvested: List[WineLot]
+    fermenting: List[WineLotInContainer]
+    aging: List[WineLotInContainer]
+    ready_to_bottle: List[WineLotInContainer]
+    bottled: List[WineLot]
+
+# El antiguo TraceabilityView sigue aquí por si otra parte del código lo usa
+class TraceabilityView(BaseModel):
+    harvested: List[WineLot]
+    fermenting: List[WineLotInContainer]
+    aging: List[WineLotInContainer]
+    ready_to_bottle: List[WineLotInContainer]
+    bottled: List[WineLot]
+
+# -- CLASE AÑADIDA PARA CORREGIR EL ERROR --
+class LotStatusUpdate(BaseModel):
+    new_status: str
+    
+class CostRecord(BaseModel):
+    id: uuid.UUID
+    cost_type: str
+    amount: float
+    description: str
+    cost_date: date
+    related_lot_id: uuid.UUID | None = None
+
+    class Config:
+        from_attributes = True
+        
+class PaginatedCostRecordResponse(BaseModel):
+    records: list[CostRecord]
+    total_records: int
+    page: int
+    page_size: int
+    total_pages: int

@@ -10,11 +10,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family:'Montserrat',sans-serif; background:#F8F7F4; }
-    .wine-grad{ background-image:linear-gradient(to right,#5C1A33,#8C2B4F); }
+    /* Paleta de Colores Otoñales */
+    :root {
+      --naranja-calabaza: #D96C06;
+      --rojo-arcilla: #A23E48;
+      --ocre-dorado: #C98C32;
+      --verde-olivo: #6B705C;
+      --marron-castana: #5C4033;
+      --beige-calido: #F2E2C4;
+    }
+    body { font-family:'Montserrat',sans-serif; background-color: var(--beige-calido); }
     .kpi-value{ font-size:2.25rem; line-height:2.5rem; font-weight:700; }
     .kpi-trend-positive{ color:#16a34a; } .kpi-trend-negative{ color:#dc2626; }
-    .tab-active{ border-color:#5C1A33; color:#5C1A33; font-weight:700; }
+    .tab-active{ border-color: var(--marron-castana); color: var(--marron-castana); font-weight:700; }
+    .header-title { color: var(--marron-castana); }
+    .section-card { background-color: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05); }
+    .section-title { color: var(--marron-castana); border-bottom: 1px solid var(--ocre-dorado); }
   </style>
 </head>
 <body class="text-stone-800">
@@ -24,25 +35,25 @@
         <a href="performance.html" class="flex items-center gap-4">
           <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
           <span class="text-3xl font-light text-stone-400">|</span>
-          <h1 class="text-3xl font-semibold text-stone-700">Análisis de Rendimiento</h1>
+          <h1 class="text-3xl font-semibold header-title">Análisis de Rendimiento</h1>
         </a>
       </div>
-      <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
+      <button id="logout-btn" style="background-color: var(--marron-castana);" class="text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
     </header>
 
-    <div class="mb-6 border-b border-stone-200">
-      <nav class="flex space-x-8" aria-label="Tabs">
-         <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active" data-tab="performance">Análisis de Rendimiento</a>
-        <a href="forecast.html"   class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="forecast">Predicciones y Escenarios</a>
-        <a href="catalog.html"     id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="catalog">Catálogo y Stock</a>
-        <a href="daily-log.html"   id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="daily-log">Registro Diario</a>
-        <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Finanzas</a>
-        <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Cuaderno de Campo</a>
-        <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Trazabilidad</a>
-        <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Gestión de Bodega</a>
-        <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Parcelas</a>
-        <a href="weather.html"     class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="weather">Clima</a>
-        <a href="settings.html"    class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="settings">Configuración</a>
+    <div class="mb-6 border-b border-stone-300">
+        <nav class="flex space-x-8 overflow-x-auto pb-2" aria-label="Tabs">
+           <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg tab-active" data-tab="performance">Análisis de Rendimiento</a>
+           <a href="forecast.html"   class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="forecast">Predicciones y Escenarios</a>
+           <a href="catalog.html"     id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="catalog">Catálogo y Stock</a>
+           <a href="daily-log.html"   id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="daily-log">Registro Diario</a>
+           <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Finanzas</a>
+           <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Cuaderno de Campo</a>
+           <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Trazabilidad</a>
+           <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Gestión de Bodega</a>
+           <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Parcelas</a>
+           <a href="weather.html"     class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="weather">Clima</a>
+           <a href="settings.html"    class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="settings">Configuración</a>
       </nav>
     </div>
 
@@ -50,77 +61,77 @@
       <div class="space-y-10">
 
         <div>
-          <h2 class="text-2xl font-bold text-stone-700 mb-4">Pulso del Negocio</h2>
+          <h2 class="text-2xl font-bold section-title pb-2 mb-4">Pulso del Negocio</h2>
           <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-lg">
+            <div class="section-card p-6 rounded-2xl shadow-lg">
               <h3 class="font-semibold text-stone-500 mb-2">Ingresos Totales</h3>
               <p id="kpi-total-sales" class="kpi-value text-stone-800">Cargando...</p>
               <p id="kpi-mom-change" class="font-semibold text-sm mt-1">Cargando...</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-lg">
+            <div class="section-card p-6 rounded-2xl shadow-lg">
               <h3 class="font-semibold text-stone-500 mb-2">Beneficio Bruto</h3>
-              <p id="kpi-total-profit" class="kpi-value text-green-700">Cargando...</p>
+              <p id="kpi-total-profit" class="kpi-value" style="color: var(--verde-olivo);">Cargando...</p>
               <p class="text-sm text-stone-400 mt-1">Ingresos - Costes</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-lg">
+            <div class="section-card p-6 rounded-2xl shadow-lg">
               <h3 class="font-semibold text-stone-500 mb-2">Margen Bruto</h3>
               <p id="kpi-gross-margin" class="kpi-value text-stone-800">Cargando...</p>
               <p class="text-sm text-stone-400 mt-1">Beneficio / Ingresos</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-lg">
+            <div class="section-card p-6 rounded-2xl shadow-lg">
               <h3 class="font-semibold text-stone-500 mb-2">Botellas Vendidas</h3>
               <p id="kpi-total-quantity" class="kpi-value text-stone-800">Cargando...</p>
               <p class="text-sm text-stone-400 mt-1">Total unidades</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-lg">
+            <div class="section-card p-6 rounded-2xl shadow-lg">
               <h3 class="font-semibold text-stone-500 mb-2">Clientes Únicos</h3>
-               <p id="kpi-unique-customers" class="kpi-value text-stone-800">Cargando...</p>
+                <p id="kpi-unique-customers" class="kpi-value text-stone-800">Cargando...</p>
               <p class="text-sm text-stone-400 mt-1">Este año</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-lg">
+            <div class="section-card p-6 rounded-2xl shadow-lg">
               <h3 class="font-semibold text-stone-500 mb-2">Venta Media</h3>
               <p id="kpi-avg-sale" class="kpi-value text-stone-800">Cargando...</p>
               <p class="text-sm text-stone-400 mt-1">Por transacción</p>
             </div>
           </div>
-          <div class="bg-white p-6 rounded-2xl shadow-lg mt-6">
-            <h3 class="text-xl font-bold text-stone-800 mb-4">Buscar Ventas por SKU</h3>
+          <div class="section-card p-6 rounded-2xl shadow-lg mt-6">
+            <h3 class="text-xl font-bold header-title mb-4">Buscar Ventas por SKU</h3>
             <div class="flex flex-wrap items-center gap-4">
-              <input type="text" id="sku-search-input" placeholder="Introduce un SKU..." class="flex-grow w-full sm:w-auto max-w-sm px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
-              <select id="month-filter-select" class="px-4 py-2 border border-stone-300 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-[#5C1A33]">
-                </select>
+              <input type="text" id="sku-search-input" placeholder="Introduce un SKU..." class="flex-grow w-full sm:w-auto max-w-sm px-4 py-2 border border-stone-300 rounded-full focus:outline-none focus:ring-2" style="border-color: var(--ocre-dorado);">
+              <select id="month-filter-select" class="px-4 py-2 border border-stone-300 rounded-full bg-white focus:outline-none focus:ring-2" style="border-color: var(--ocre-dorado);">
+              </select>
             </div>
             <p id="sku-search-result" class="mt-4 text-lg font-semibold h-6"></p>
           </div>
         </div>
 
         <div>
-          <h2 class="text-2xl font-bold text-stone-700 mb-4">Análisis Táctico y Operativo</h2>
-          <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
+          <h2 class="text-2xl font-bold section-title pb-2 mb-4">Análisis Táctico y Operativo</h2>
+          <div class="section-card p-6 rounded-2xl shadow-lg mb-6">
             <div id="monthlySalesChartContainer" class="h-80 w-full"><canvas id="monthlySalesChart"></canvas></div>
           </div>
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-lg">
-              <h3 class="text-xl font-bold text-stone-800 mb-4">Ventas por Día de la Semana</h3>
+            <div class="section-card p-6 rounded-2xl shadow-lg">
+              <h3 class="text-xl font-bold header-title mb-4">Ventas por Día de la Semana</h3>
               <div id="weekday-heatmap" class="grid grid-cols-7 gap-2 text-center"></div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-lg">
-               <div id="salesByChannelChartContainer" class="h-80 w-full"><canvas id="salesByChannelChart"></canvas></div>
+            <div class="section-card p-6 rounded-2xl shadow-lg">
+                <div id="salesByChannelChartContainer" class="h-80 w-full"><canvas id="salesByChannelChart"></canvas></div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-lg">
+            <div class="section-card p-6 rounded-2xl shadow-lg">
               <div id="topProductsByUnitsChartContainer" class="h-80 w-full"><canvas id="topProductsByUnitsChart"></canvas></div>
             </div>
           </div>
         </div>
 
         <div>
-          <h2 class="text-2xl font-bold text-stone-700 mb-4">Análisis Estratégico</h2>
+          <h2 class="text-2xl font-bold section-title pb-2 mb-4">Análisis Estratégico</h2>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div class="bg-white p-6 rounded-2xl shadow-lg">
-              <h3 class="text-xl font-bold text-stone-800 mb-4">Matriz de Rendimiento de Producto</h3>
+            <div class="section-card p-6 rounded-2xl shadow-lg">
+              <h3 class="text-xl font-bold header-title mb-4">Matriz de Rendimiento de Producto</h3>
               <div id="productPerformanceMatrixContainer" class="h-96 w-full"><canvas id="productPerformanceMatrixChart"></canvas></div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-lg">
+            <div class="section-card p-6 rounded-2xl shadow-lg">
               <div id="topProfitableProductsChartContainer" class="h-96 w-full"><canvas id="topProfitableProductsChart"></canvas></div>
             </div>
           </div>
@@ -135,6 +146,16 @@
     const API_BASE_URL = 'http://127.0.0.1:8000';
     const TOKEN_KEY = 'accessToken';
     const ROLE_KEY = 'userRole';
+
+    // Paleta de Colores Otoñal para Gráficas
+    const chartColors = {
+        naranja: 'rgba(217, 108, 6, 0.8)',
+        rojo: 'rgba(162, 62, 72, 0.8)',
+        ocre: 'rgba(201, 140, 50, 0.8)',
+        verde: 'rgba(107, 112, 92, 0.8)',
+        marron: 'rgba(92, 64, 51, 0.8)',
+        beige: 'rgba(242, 226, 196, 0.8)'
+    };
 
     function requireAuth(){ if(!localStorage.getItem(TOKEN_KEY)) window.location.href='login.html'; }
     function logout(){ 
@@ -190,7 +211,7 @@
       skuSearchInput: document.getElementById('sku-search-input'),
       skuSearchResult: document.getElementById('sku-search-result'),
       weekdayHeatmap: document.getElementById('weekday-heatmap'),
-      monthFilterSelect: document.getElementById('month-filter-select'), // NUEVO
+      monthFilterSelect: document.getElementById('month-filter-select'),
     };
 
     function updateMomChange(change){
@@ -233,14 +254,12 @@
       }
     }
     
-    // --- NUEVA FUNCIÓN para poblar el filtro de meses ---
     async function populateMonthFilter() {
         try {
             const months = await apiFetch('/api/analytics/available-months');
             const select = DOM.monthFilterSelect;
-            select.innerHTML = '<option value="all">Total Histórico</option>'; // Opción por defecto
+            select.innerHTML = '<option value="all">Total Histórico</option>';
             months.forEach(month => {
-                // Formateamos la fecha para mostrarla en español
                 const date = new Date(month + '-02');
                 const formattedMonth = date.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
                 select.innerHTML += `<option value="${month}">${formattedMonth.charAt(0).toUpperCase() + formattedMonth.slice(1)}</option>`;
@@ -251,12 +270,11 @@
         }
     }
 
-    // --- FUNCIÓN MODIFICADA para la búsqueda de SKU ---
     let skuSearchTimeout;
     async function handleSkuSearch(){
       const sku = DOM.skuSearchInput.value.trim();
       const selectedMonth = DOM.monthFilterSelect.value;
-      DOM.skuSearchResult.innerHTML = ''; // Limpiar resultado anterior
+      DOM.skuSearchResult.innerHTML = '';
       if (!sku) return;
 
       let endpoint = `/api/analytics/sales/by_sku/${sku}`;
@@ -270,25 +288,23 @@
             ? ' (Total)' 
             : ` (${DOM.monthFilterSelect.options[DOM.monthFilterSelect.selectedIndex].text})`;
             
-        DOM.skuSearchResult.innerHTML = `<span class="text-stone-600">${data.product_name}${periodText}:</span> <span class="text-green-700 font-bold">${formatCurrency(data.total_sales)}</span>`;
+        DOM.skuSearchResult.innerHTML = `<span class="text-stone-600">${data.product_name}${periodText}:</span> <span style="color: var(--verde-olivo); font-weight: bold;">${formatCurrency(data.total_sales)}</span>`;
       } catch(err) {
-        DOM.skuSearchResult.innerHTML = `<span class="text-red-600">SKU no encontrado o sin ventas en este periodo.</span>`;
+        DOM.skuSearchResult.innerHTML = `<span style="color: var(--rojo-arcilla);">SKU no encontrado o sin ventas en este periodo.</span>`;
       }
     }
     
-    // --- Event Listeners para la búsqueda ---
     DOM.skuSearchInput.addEventListener('input', () => {
       clearTimeout(skuSearchTimeout);
       skuSearchTimeout = setTimeout(handleSkuSearch, 300);
     });
     DOM.monthFilterSelect.addEventListener('change', handleSkuSearch);
 
-    // --- Funciones de renderizado de gráficos (sin cambios) ---
     function renderMonthlySalesChart(data){
         const chartData = {
             labels: data.map(d => new Date(d.Month + '-02').toLocaleString('es-ES', { month: 'short', year: '2-digit' })),
             datasets: [{ label: 'Ingresos Mensuales', data: data.map(d => d.TotalSale),
-            borderColor: '#5C1A33', backgroundColor: 'rgba(92,26,51,0.1)', fill: true, tension: 0.4 }]
+            borderColor: chartColors.marron, backgroundColor: 'rgba(92, 64, 51, 0.1)', fill: true, tension: 0.4 }]
         };
         charts.monthlySales = renderChart('monthlySalesChart', charts.monthlySales, 'line', chartData, { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Evolución de Ingresos Mensuales (€)', font: { size: 18, weight: 'bold' } } }, scales: { y: { beginAtZero: true } } });
     }
@@ -296,7 +312,7 @@
         const chartData = {
             labels: data.map(p => p.ProductName),
             datasets: [{ axis: 'y', label: 'Beneficio Total (€)', data: data.map(p => p.Profit),
-            backgroundColor: 'rgba(22,163,74,0.7)', borderColor: 'rgba(22,163,74,1)', borderWidth: 1, borderRadius: 6 }]
+            backgroundColor: chartColors.verde, borderColor: chartColors.verde, borderWidth: 1, borderRadius: 6 }]
         };
         charts.topProfit = renderChart('topProfitableProductsChart', charts.topProfit, 'bar', chartData, { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Top Productos Más Rentables', font: { size: 18, weight: 'bold' } } } });
     }
@@ -304,7 +320,7 @@
         const chartData = {
             labels: data.map(p => p.SKU),
             datasets: [{ label: 'Unidades Vendidas', data: data.map(p => p.Quantity),
-            backgroundColor: 'rgba(59,130,246,0.7)', borderColor: 'rgba(59,130,246,1)', borderWidth: 1, borderRadius: 6 }]
+            backgroundColor: chartColors.naranja, borderColor: chartColors.naranja, borderWidth: 1, borderRadius: 6 }]
         };
         charts.topUnits = renderChart('topProductsByUnitsChart', charts.topUnits, 'bar', chartData, { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Top Productos por Unidades Vendidas', font: { size: 18, weight: 'bold' } } }, scales: { y: { beginAtZero: true } } });
     }
@@ -315,16 +331,16 @@
         if (Array.isArray(data)) data.forEach(d => { salesByDay[d.weekday_num - 1] = d.total_sales; });
         const maxSales = Math.max(...salesByDay, 1);
         weekdays.forEach((day,i)=>{
-            const sales = salesByDay[i]; const intensity = sales / maxSales; const light = 90 - (intensity * 50);
-            const bg = `hsl(340, 65%, ${light}%)`;
-            container.innerHTML += `<div class="p-2 rounded-lg" style="background-color:${bg};"><p class="font-bold text-sm">${day.substring(0,3)}</p><p class="text-xs font-semibold text-stone-700">${formatCurrency(sales)}</p></div>`;
+            const sales = salesByDay[i]; const intensity = Math.sqrt(sales / maxSales);
+            const bgColor = `rgba(217, 108, 6, ${intensity})`; // Usando Naranja Calabaza
+            container.innerHTML += `<div class="p-2 rounded-lg" style="background-color:${bgColor}; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.4);"><p class="font-bold text-sm">${day.substring(0,3)}</p><p class="text-xs font-semibold">${formatCurrency(sales)}</p></div>`;
         });
     }
     function renderSalesByChannelChart(data){
         const dummyData = [{channel:'Distribuidor', total_sales: 85000},{channel:'Venta Directa', total_sales: 62000},{channel:'HORECA', total_sales: 38430}];
         const chartData = {
             labels: dummyData.map(i=>i.channel),
-            datasets:[{ data: dummyData.map(i=>i.total_sales), backgroundColor:['rgba(92,26,51,0.8)','rgba(140,43,79,0.8)','rgba(180,80,110,0.8)'], borderColor:'#FFFFFF', borderWidth:4 }]
+            datasets:[{ data: dummyData.map(i=>i.total_sales), backgroundColor:[chartColors.marron, chartColors.verde, chartColors.rojo], borderColor: 'var(--beige-calido)', borderWidth:4 }]
         };
         charts.channel = renderChart('salesByChannelChart', charts.channel,'doughnut', chartData, { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'top', labels:{ font:{ weight:'bold'}} }, title:{ display:true, text:'Ventas por Canal (Simulado)', font:{ weight:'bold', size:18 }}}});
     }
@@ -332,18 +348,16 @@
         const chartData = {
             labels: data.map(p => p.ProductName),
             datasets: [
-            { label:'Beneficio Total (€)', data: data.map(p => p.Profit), backgroundColor:'rgba(92,26,51,0.7)', yAxisID: 'y' },
-            { label:'Unidades Vendidas', data: data.map(p => p.Quantity), backgroundColor:'rgba(59,130,246,0.7)', yAxisID: 'y1' }
+            { label:'Beneficio Total (€)', data: data.map(p => p.Profit), backgroundColor: chartColors.verde, yAxisID: 'y' },
+            { label:'Unidades Vendidas', data: data.map(p => p.Quantity), backgroundColor: chartColors.naranja, yAxisID: 'y1' }
             ]
         };
         charts.productMatrix = renderChart('productPerformanceMatrixChart', charts.productMatrix, 'bar', chartData, { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'top' }, title:{ display:true, text:'Rendimiento por Producto (Beneficio vs Unidades)', font:{ size:18, weight:'bold'} }, tooltip:{ mode:'index', intersect:false }}, scales: { y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Beneficio (€)' } }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Unidades' } }, }});
     }
 
-
     // --- Ejecución al Cargar la Página ---
     document.addEventListener('DOMContentLoaded', () => {
         requireAuth();
-        // Carga los datos principales y, en paralelo, llena el desplegable de meses
         loadPerformanceData(); 
         populateMonthFilter();
     });

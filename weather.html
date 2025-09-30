@@ -1,243 +1,307 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>GrapeIQ · Clima</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <style>
-    :root{ --wine-1:#5C1A33; --wine-2:#8C2B4F; --bg:#F8F7F4; }
-    body{font-family:'Montserrat',sans-serif;background:var(--bg);}
-    .tab-active{border-color:var(--wine-1);color:var(--wine-1);font-weight:700}
-    .wine-grad{background-image:linear-gradient(90deg,var(--wine-1),var(--wine-2))}
-    .card{background:rgba(255,255,255,.92);backdrop-filter:saturate(115%) blur(4px); border-radius:1rem; box-shadow:0 10px 24px rgba(0,0,0,.06);}
-    .pill{border-radius:9999px}
-    .suggestion-item:hover{background:#F3F2EE}
-    #map{height:340px;border-radius:1rem;box-shadow:0 10px 24px rgba(0,0,0,.06)}
-    .cloud-legend{position:absolute;right:.75rem;bottom:.75rem;background:rgba(255,255,255,.92); border-radius:.75rem;padding:.35rem .6rem;font-size:.72rem;color:#444;box-shadow:0 8px 18px rgba(0,0,0,.06)}
-    .shimmer{background:linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(255,255,255,.5) 50%, rgba(0,0,0,0) 100%); background-size:200% 100%;animation:sh 1.6s infinite}
-    @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
-  </style>
-</head>
-<body class="text-stone-800">
-  <div class="p-4 sm:p-8">
-    <header class="flex justify-between items-center mb-6">
-      <div class="flex items-center gap-4">
-        <a href="performance.html" class="flex items-center gap-4">
-            <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
-            <span class="text-3xl font-light text-stone-400">|</span>
-            <h1 class="text-3xl font-semibold text-stone-700">Clima</h1>
-        </a>
-      </div>
-      <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
-    </header>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>GrapeIQ · Clima</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        /* --- Sistema de Temas --- */
+        :root { /* Tema Blanco por Defecto */
+            --bg-color: #F8F7F4;
+            --text-color: #1c1917;
+            --text-secondary-color: #57534e;
+            --header-bg-color: #292524;
+            --tab-active-color: #5C1A33;
+            --cta-button-bg: #5C1A33;
+            --secondary-button-bg: #e5e7eb;
+            --secondary-button-text: #1c1917; /* Color de texto para botón secundario */
+            --border-color: #e5e7eb;
+            --card-bg: rgba(255, 255, 255, .92);
+            --modal-input-bg: #f9fafb;
+            --chart-color: #5C1A33;
+        }
 
-    <div class="mb-6 border-b border-stone-200">
-      <nav class="flex space-x-8" aria-label="Tabs">
-        <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active" data-tab="performance">Análisis de Rendimiento</a>
-        <a href="forecast.html"   class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="forecast">Predicciones y Escenarios</a>
-        <a href="catalog.html"     id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="catalog">Catálogo y Stock</a>
-        <a href="daily-log.html"   id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="daily-log">Registro Diario</a>
-        <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Finanzas</a>
-        <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Cuaderno de Campo</a>
-        <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Trazabilidad</a>
-        <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Gestión de Bodega</a>
-        <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Parcelas</a>
-        <a href="weather.html"     class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="weather">Clima</a>
-        <a href="settings.html"    class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="settings">Configuración</a>
-      </nav>
+        body.theme-warm { /* 🍂 Tema Otoñal Cálido */
+            --bg-color: #F2E2C4;
+            --text-color: #5C4033;
+            --text-secondary-color: #8C8C88;
+            --header-bg-color: #5C4033;
+            --tab-active-color: #C98C32;
+            --cta-button-bg: #D96C06;
+            --secondary-button-bg: #A23E48;
+            --secondary-button-text: #FFFFFF; /* Color de texto para botón secundario en modo cálido */
+            --border-color: rgba(92, 64, 51, 0.2);
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --modal-input-bg: rgba(92, 64, 51, 0.05);
+            --chart-color: #A23E48;
+        }
+
+        /* --- Estilos Generales con Variables --- */
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s, color 0.3s; }
+        .tab-active { border-color: var(--tab-active-color) !important; color: var(--tab-active-color) !important; font-weight: 700; }
+        .text-secondary { color: var(--text-secondary-color); }
+        .bg-dark { background-color: var(--header-bg-color); }
+        .border-accent { border-color: var(--border-color); }
+        .cta-button { background-color: var(--cta-button-bg); color: white; }
+        .secondary-button { background-color: var(--secondary-button-bg); color: var(--secondary-button-text); }
+        .card { background: var(--card-bg); backdrop-filter: saturate(115%) blur(4px); border-radius: 1rem; box-shadow: 0 10px 24px rgba(0,0,0,.06); }
+        .modal-input { background-color: var(--modal-input-bg); border-color: var(--border-color); }
+        .pill { border-radius: 9999px; }
+        .suggestion-item:hover { background-color: rgba(0,0,0,0.04); }
+        #map { height: 340px; border-radius: 1rem; box-shadow: 0 10px 24px rgba(0,0,0,.06); }
+        .cloud-legend { position: absolute; right: .75rem; bottom: .75rem; background: rgba(255,255,255,.92); border-radius: .75rem; padding: .35rem .6rem; font-size: .72rem; color: #444; box-shadow: 0 8px 18px rgba(0,0,0,.06); }
+        .shimmer { background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(255,255,255,.5) 50%, rgba(0,0,0,0) 100%); background-size: 200% 100%; animation: sh 1.6s infinite; }
+        @keyframes sh { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+        
+        /* --- CSS DE LA ANTORCHA --- */
+        .torch-container { position: absolute; right: 220px; top: -35px; display: flex; align-items: center; cursor: pointer; user-select: none; transform: scale(0.45); }
+        .torch-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+        .torch { display: flex; justify-content: center; height: 150px; }
+        .head, .stick { position: absolute; width: 30px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); }
+        .stick { position: relative; height: 120px; }
+        .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000; }
+        .top { transform: rotateX(90deg) translateZ(15px); } .left { transform: rotateY(-90deg) translateZ(15px); } .right { transform: rotateY(0deg) translateZ(15px); }
+        .top div, .left div, .right div { width: 102%; height: 102%; }
+        .top div:nth-child(1), .left div:nth-child(3), .right div:nth-child(3) { background-color: #ffff9760; } .top div:nth-child(2), .left div:nth-child(1), .right div:nth-child(1) { background-color: #ffd80060; } .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; } .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; }
+        .side { position: absolute; width: 30px; height: 120px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: repeat(8, 12.5%); cursor: pointer; translate: 0 12px; }
+        .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); } .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); }
+        .side-left div, .side-right div { width: 103%; height: 103%; }
+        .side div:nth-child(1) { background-color: #443622; } .side div:nth-child(2) { background-color: #2e2517; } .side div:nth-child(3), .side div:nth-child(5) { background-color: #4b3b23; } .side div:nth-child(4), .side div:nth-child(10) { background-color: #251e12; } .side div:nth-child(6) { background-color: #292115; } .side div:nth-child(7) { background-color: #4b3c26; } .side div:nth-child(8) { background-color: #292115; } .side div:nth-child(9) { background-color: #4b3a21; } .side div:nth-child(11), .side div:nth-child(15) { background-color: #3d311d; } .side div:nth-child(12) { background-color: #2c2315; } .side div:nth-child(13) { background-color: #493a22; } .side div:nth-child(14) { background-color: #2b2114; } .side div:nth-child(16) { background-color: #271e10; }
+        .torch-container input:checked ~ .torch .face { filter: drop-shadow(0px 0px 2px #fff) drop-shadow(0px 0px 10px rgba(255, 237, 156, 0.7)) drop-shadow(0px 0px 25px rgba(255, 227, 101, 0.4)); }
+        .torch-container input:checked ~ .torch .top div:nth-child(1), .torch-container input:checked ~ .torch .left div:nth-child(3), .torch-container input:checked ~ .torch .right div:nth-child(3) { background-color: #ffff97; } .torch-container input:checked ~ .torch .top div:nth-child(2), .torch-container input:checked ~ .torch .left div:nth-child(1), .torch-container input:checked ~ .torch .right div:nth-child(1) { background-color: #ffd800; } .torch-container input:checked ~ .torch .top div:nth-child(3), .torch-container input:checked ~ .torch .left div:nth-child(4), .torch-container input:checked ~ .torch .right div:nth-child(4) { background-color: #fff; } .torch-container input:checked ~ .torch .top div:nth-child(4), .torch-container input:checked ~ .torch .left div:nth-child(2), .torch-container input:checked ~ .torch .right div:nth-child(2) { background-color: #ff8f00; } .torch-container input:checked ~ .torch .side div:nth-child(1) { background-color: #7c623e; } .torch-container input:checked ~ .torch .side div:nth-child(2) { background-color: #4c3d26; } .torch-container input:checked ~ .torch .side div:nth-child(3), .torch-container input:checked ~ .torch .side div:nth-child(5) { background-color: #937344; } .torch-container input:checked ~ .torch .side div:nth-child(4), .torch-container input:checked ~ .torch .side div:nth-child(10) { background-color: #3c2f1c; } .torch-container input:checked ~ .torch .side div:nth-child(6) { background-color: #423522; } .torch-container input:checked ~ .torch .side div:nth-child(7) { background-color: #9f7f50; } .torch-container input:checked ~ .torch .side div:nth-child(8) { background-color: #403320; } .torch-container input:checked ~ .torch .side div:nth-child(9) { background-color: #977748; } .torch-container input:checked ~ .torch .side div:nth-child(11), .torch-container input:checked ~ .torch .side div:nth-child(15) { background-color: #675231; } .torch-container input:checked ~ .torch .side div:nth-child(12) { background-color: #3d301d; } .torch-container input:checked ~ .torch .side div:nth-child(13) { background-color: #987849; } .torch-container input:checked ~ .torch .side div:nth-child(14) { background-color: #3b2e1b; } .torch-container input:checked ~ .torch .side div:nth-child(16) { background-color: #372a17; }
+    </style>
+</head>
+<body>
+    <div class="p-4 sm:p-8">
+        <header class="flex justify-between items-center mb-6 relative">
+            <div class="flex items-center gap-4">
+                <a href="performance.html" class="flex items-center gap-4">
+                    <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+                    <span class="text-3xl font-light text-secondary">|</span>
+                    <h1 class="text-3xl font-semibold">Clima</h1>
+                </a>
+            </div>
+            <div class="flex items-center gap-4">
+                <label class="torch-container">
+                    <input id="theme-toggle" type="checkbox" />
+                    <div class="torch">
+                        <div class="head">
+                            <div class="face top"><div></div><div></div><div></div><div></div></div>
+                            <div class="face left"><div></div><div></div><div></div><div></div></div>
+                            <div class="face right"><div></div><div></div><div></div><div></div></div>
+                        </div>
+                        <div class="stick">
+                            <div class="side side-left"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                            <div class="side side-right"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                        </div>
+                    </div>
+                </label>
+                <button id="logout-btn" class="bg-dark text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <div class="mb-6 border-b border-accent">
+            <nav class="flex space-x-8" aria-label="Tabs">
+                <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Análisis de Rendimiento</a>
+                <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Predicciones</a>
+                <a href="catalog.html" id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Catálogo y Stock</a>
+                <a href="daily-log.html" id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Registro Diario</a>
+                <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Finanzas</a>
+                <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Cuaderno de Campo</a>
+                <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Trazabilidad</a>
+                <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Gestión de Bodega</a>
+                <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Parcelas</a>
+                <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg tab-active">Clima</a>
+                <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Configuración</a>
+            </nav>
+        </div>
+
+        <main class="space-y-6">
+            <section class="card p-6 overflow-visible">
+                <div class="flex flex-col lg:flex-row lg:items-end lg:gap-6">
+                    <div class="w-full lg:max-w-xl">
+                        <label class="block text-sm font-semibold mb-1">Buscar ciudad</label>
+                        <div>
+                            <div class="relative">
+                                <input id="city-input" type="text" placeholder="Ej: Madrid, Barcelona, Mendoza..." class="w-full p-3 pr-12 rounded-xl border focus:outline-none focus:ring-2 modal-input" style="--tw-ring-color: var(--tab-active-color);">
+                                <button id="clear-input" class="absolute right-2 top-1/2 -translate-y-1/2 text-secondary hover:text-text-color p-1 rounded">✕</button>
+                            </div>
+                            <div id="suggestions" class="mt-2 bg-white border border-accent rounded-xl overflow-auto max-h-80 shadow-xl hidden"></div>
+                        </div>
+                        <p id="search-hint" class="text-xs text-secondary mt-2">Escribe al menos 2 caracteres para ver sugerencias.</p>
+                    </div>
+                    <div class="flex gap-3 mt-4 lg:mt-0">
+                        <button id="search-btn" class="cta-button px-6 py-3 rounded-full font-semibold hover:opacity-90">Buscar</button>
+                        <button id="geo-btn" class="secondary-button px-6 py-3 rounded-full font-semibold hover:opacity-90">Usar mi ubicación</button>
+                    </div>
+                </div>
+                <p id="error-msg" class="text-red-600 text-sm font-semibold mt-3 h-5"></p>
+            </section>
+
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-0">
+                <div class="card p-6 relative overflow-hidden">
+                    <p class="text-secondary font-semibold text-sm">Ubicación</p>
+                    <h2 id="loc-name" class="text-2xl font-bold mt-1">—</h2>
+                    <p id="loc-coords" class="text-secondary text-sm mt-1">—</p>
+                    <p id="updated-at" class="text-secondary text-xs mt-4">—</p>
+                </div>
+                <div class="card p-6 text-center">
+                    <p class="text-secondary font-semibold text-sm">Temperatura</p>
+                    <div class="flex items-center justify-center gap-3 mt-2">
+                        <span class="text-5xl font-bold" id="temp-val">—</span>
+                        <span class="text-xl text-secondary">°C</span>
+                    </div>
+                    <div class="mt-4 h-16"><canvas id="tempSpark"></canvas></div>
+                </div>
+                <div class="card p-6 text-center">
+                    <p class="text-secondary font-semibold text-sm">Humedad relativa</p>
+                    <div class="flex items-center justify-center gap-3 mt-2">
+                        <span class="text-5xl font-bold" id="hum-val">—</span>
+                        <span class="text-xl text-secondary">%</span>
+                    </div>
+                    <div class="mt-4 text-sm">
+                        <span id="cloud-chip" class="inline-block pill px-3 py-1 modal-input text-secondary">Nubosidad: —</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="relative">
+                <div id="map" class="w-full"></div>
+                <div class="cloud-legend">Opacidad = % de nubosidad</div>
+            </section>
+
+            <section class="card p-4">
+                <p class="text-sm font-semibold mb-2">Búsquedas recientes</p>
+                <div id="recent-tags" class="flex flex-wrap gap-2"></div>
+            </section>
+        </main>
     </div>
 
-    <main class="space-y-6">
-      <section class="card p-6 overflow-visible">
-        <div class="flex flex-col lg:flex-row lg:items-end lg:gap-6">
-          <div class="w-full lg:max-w-xl">
-            <label class="block text-sm font-semibold mb-1">Buscar ciudad</label>
-            <div>
-              <div class="relative">
-                <input id="city-input" type="text" placeholder="Ej: Madrid, Barcelona, Mendoza..."
-                       class="w-full bg-stone-50 p-3 pr-12 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[var(--wine-1)]">
-                <button id="clear-input" class="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 p-1 rounded">✕</button>
-              </div>
-              <div id="suggestions" class="mt-2 bg-white border border-stone-200 rounded-xl overflow-auto max-h-80 shadow-xl hidden"></div>
-            </div>
-            <p id="search-hint" class="text-xs text-stone-500 mt-2">Escribe al menos 2 caracteres para ver sugerencias.</p>
-          </div>
-          <div class="flex gap-3 mt-4 lg:mt-0">
-            <button id="search-btn" class="wine-grad text-white px-6 py-3 rounded-full font-semibold hover:opacity-90">Buscar</button>
-            <button id="geo-btn" class="bg-stone-200 text-stone-800 px-6 py-3 rounded-full font-semibold hover:bg-stone-300">Usar mi ubicación</button>
-          </div>
-        </div>
-        <p id="error-msg" class="text-red-600 text-sm font-semibold mt-3 h-5"></p>
-      </section>
-
-      <section class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-0">
-        <div class="card p-6 relative overflow-hidden">
-          <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full wine-grad opacity-10"></div>
-          <p class="text-stone-500 font-semibold text-sm">Ubicación</p>
-          <h2 id="loc-name" class="text-2xl font-bold mt-1">—</h2>
-          <p id="loc-coords" class="text-stone-400 text-sm mt-1">—</p>
-          <p id="updated-at" class="text-stone-400 text-xs mt-4">—</p>
-        </div>
-        <div class="card p-6 text-center">
-          <p class="text-stone-500 font-semibold text-sm">Temperatura</p>
-          <div class="flex items-center justify-center gap-3 mt-2">
-            <span class="text-5xl font-bold" id="temp-val">—</span>
-            <span class="text-xl text-stone-500">°C</span>
-          </div>
-          <div class="mt-4 h-16"><canvas id="tempSpark"></canvas></div>
-        </div>
-        <div class="card p-6 text-center">
-          <p class="text-stone-500 font-semibold text-sm">Humedad relativa</p>
-          <div class="flex items-center justify-center gap-3 mt-2">
-            <span class="text-5xl font-bold" id="hum-val">—</span>
-            <span class="text-xl text-stone-500">%</span>
-          </div>
-          <div class="mt-4 text-sm">
-            <span id="cloud-chip" class="inline-block pill px-3 py-1 bg-stone-100 text-stone-600">Nubosidad: —</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="relative">
-        <div id="map" class="w-full"></div>
-        <div class="cloud-legend">Opacidad = % de nubosidad</div>
-      </section>
-
-      <section class="card p-4">
-        <p class="text-sm font-semibold text-stone-700 mb-2">Búsquedas recientes</p>
-        <div id="recent-tags" class="flex flex-wrap gap-2"></div>
-      </section>
-    </main>
-  </div>
-
-  <script>
-    // --- Configuración y Autenticación Estandarizada ---
-    const API_BASE_URL = 'http://127.0.0.1:8000';
-    const TOKEN_KEY = 'accessToken';
-    const ROLE_KEY = 'userRole';
-
-    function requireAuth() {
-        if (!localStorage.getItem(TOKEN_KEY)) {
-            window.location.href = 'login.html';
+    <script>
+        // --- LÓGICA DEL TEMA ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'warm') {
+            body.classList.add('theme-warm');
+            themeToggle.checked = true;
+        } else {
+            themeToggle.checked = false;
         }
-    }
+        themeToggle.addEventListener('change', () => {
+            if (themeToggle.checked) {
+                body.classList.add('theme-warm');
+                localStorage.setItem('theme', 'warm');
+            } else {
+                body.classList.remove('theme-warm');
+                localStorage.setItem('theme', 'light');
+            }
+            window.updateChartTheme?.();
+        });
 
-    function logout() {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(ROLE_KEY);
-        window.location.href = 'login.html';
-    }
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        const TOKEN_KEY = 'accessToken';
+        const ROLE_KEY = 'userRole';
 
-    async function apiFetch(endpoint, options = {}) {
-        const headers = { 'Content-Type': 'application/json' };
-        const token = localStorage.getItem(TOKEN_KEY);
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
+        function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
+        function logout() { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(ROLE_KEY); localStorage.removeItem('theme'); window.location.href = 'login.html'; }
+        async function apiFetch(endpoint, options = {}) {
+            const headers = { 'Content-Type': 'application/json' };
+            const token = localStorage.getItem(TOKEN_KEY);
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+            if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
+            if (!resp.ok) { let msg = 'Error en la API'; try { const j = await resp.json(); msg = j.detail || msg; } catch {} throw new Error(msg); }
+            const ct = resp.headers.get('content-type') || '';
+            return ct.includes('application/json') ? resp.json() : resp.text();
         }
-        if (options.body && options.body instanceof FormData) {
-            delete headers['Content-Type'];
+        function updateUIVisibility() {
+            const role = localStorage.getItem(ROLE_KEY);
+            if (role === 'lector') {
+                document.querySelectorAll('#menu-catalogo, #menu-registro-diario').forEach(el => el && (el.style.display = 'none'));
+            }
         }
-        const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-        if (resp.status === 401) {
-            logout();
-            throw new Error('Sesión expirada o no autorizada.');
-        }
-        if (!resp.ok) {
-            let msg = 'Ocurrió un error en la API';
-            try {
-                const j = await resp.json();
-                msg = j.detail || msg;
-            } catch {}
-            throw new Error(msg);
-        }
-        const ct = resp.headers.get('content-type') || '';
-        return ct.includes('application/json') ? resp.json() : resp.text();
-    }
 
-    function updateUIVisibility() {
-        const role = localStorage.getItem(ROLE_KEY);
-        if (role === 'lector') {
-            const menuCatalogo = document.getElementById('menu-catalogo');
-            const menuRegistro = document.getElementById('menu-registro-diario');
-            if (menuCatalogo) menuCatalogo.style.display = 'none';
-            if (menuRegistro) menuRegistro.style.display = 'none';
-        }
-    }
+        function setupPageEventListeners() {
+            const input = document.getElementById('city-input'), clearBtn = document.getElementById('clear-input'), searchBtn = document.getElementById('search-btn'), geoBtn = document.getElementById('geo-btn'), suggestions = document.getElementById('suggestions'), errorMsg = document.getElementById('error-msg'), recentTags = document.getElementById('recent-tags'), locName = document.getElementById('loc-name'), locCoords = document.getElementById('loc-coords'), updatedAt = document.getElementById('updated-at'), tempVal = document.getElementById('temp-val'), humVal = document.getElementById('hum-val'), cloudChip = document.getElementById('cloud-chip');
+            let sparkChart=null, map = L.map('map', { zoomControl:true, scrollWheelZoom:true }).setView([40.4,-3.7], 8), marker=null, cloudCircle=null;
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'&copy; OpenStreetMap'}).addTo(map);
 
-    // --- Lógica específica de la página de Clima ---
-    function setupPageEventListeners() {
-        const input = document.getElementById('city-input'), clearBtn = document.getElementById('clear-input'), searchBtn = document.getElementById('search-btn'), geoBtn = document.getElementById('geo-btn'), suggestions = document.getElementById('suggestions'), errorMsg = document.getElementById('error-msg'), recentTags = document.getElementById('recent-tags'), locName = document.getElementById('loc-name'), locCoords = document.getElementById('loc-coords'), updatedAt = document.getElementById('updated-at'), tempVal = document.getElementById('temp-val'), humVal = document.getElementById('hum-val'), cloudChip = document.getElementById('cloud-chip');
-        let debounceTimer=null, sparkChart=null, map = L.map('map', { zoomControl:true, scrollWheelZoom:true }).setView([40.4,-3.7], 8), marker=null, cloudCircle=null;
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'&copy; OpenStreetMap'}).addTo(map);
+            function setCloudOverlay(lat, lon, cloudPct){ const radius=12000, opacity=Math.max(0.08, Math.min(0.7, (cloudPct||0)/100*0.7)); if (cloudCircle) map.removeLayer(cloudCircle); cloudCircle=L.circle([lat,lon],{ radius, color:'rgba(92,26,51,0.35)', weight:1, fillColor:'#ffffff', fillOpacity:opacity }).addTo(map); }
+            const fmtTime = iso => { try{return new Date(iso).toLocaleString('es-ES',{dateStyle:'medium',timeStyle:'short'})}catch{return iso} };
+            function saveRecent(city){ const max=6, list=JSON.parse(localStorage.getItem('weather_recent')||'[]'), newList=[city, ...list.filter(x=>x.id!==city.id)].slice(0,max); localStorage.setItem('weather_recent', JSON.stringify(newList)); renderRecents(); }
+            function renderRecents(){
+                const list=JSON.parse(localStorage.getItem('weather_recent')||'[]');
+                recentTags.innerHTML='';
+                if(!list.length){ recentTags.innerHTML='<span class="text-secondary text-sm">Sin búsquedas aún.</span>'; return; }
+                list.forEach(c=>{ const b=document.createElement('button'); b.className='px-3 py-1 pill modal-input hover:opacity-80 text-sm'; b.textContent=`${c.name}, ${c.country_code||c.country||''}`.replace(/, $/,''); b.addEventListener('click',()=>selectCity(c)); recentTags.appendChild(b); });
+            }
+            async function geocode(q){ const url=`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=es&format=json`, r=await fetch(url); if(!r.ok) throw new Error('No se pudo buscar la ciudad.'); const data=await r.json(); return (data.results||[]).map(x=>({id:`${x.id}`,name:x.name,country:x.country,country_code:x.country_code,latitude:x.latitude,longitude:x.longitude,admin1:x.admin1})); }
+            async function fetchCurrent(lat,lon){ const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,cloud_cover&hourly=temperature_2m&forecast_days=2&timezone=auto`, r=await fetch(url); if(!r.ok) throw new Error('No se pudo obtener el clima.'); return r.json(); }
+            function renderSuggestions(items){
+                suggestions.innerHTML=''; if(!items || !items.length){ suggestions.classList.add('hidden'); return; }
+                items.forEach(c=>{ const div=document.createElement('div'); div.className='suggestion-item px-3 py-2 cursor-pointer'; const region=c.admin1?` · ${c.admin1}`:''; div.innerHTML=`<span class="font-semibold">${c.name}</span><span class="text-secondary">, ${c.country}${region}</span>`; div.addEventListener('click',()=>{ selectCity(c); suggestions.classList.add('hidden'); }); suggestions.appendChild(div); });
+                suggestions.classList.remove('hidden');
+            }
+            function renderSparkline(hourly){
+                if(!hourly?.time || !hourly?.temperature_2m) return;
+                const now=Date.now(), pts=[];
+                for(let i=0;i<hourly.time.length;i++){ const t=new Date(hourly.time[i]).getTime(); if(t>=now-24*3600*1000 && t<=now+6*3600*1000){ pts.push({x:t,y:hourly.temperature_2m[i]}); } }
+                const ctx=document.getElementById('tempSpark').getContext('2d');
+                if(sparkChart) sparkChart.destroy();
+                const currentTheme = getComputedStyle(document.documentElement);
+                const chartColor = currentTheme.getPropertyValue('--chart-color').trim();
+                sparkChart=new Chart(ctx,{ type:'line', data:{datasets:[{data:pts,borderColor:chartColor,backgroundColor:chartColor+'20',tension:.35,fill:true,pointRadius:0}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}} });
+                window.updateChartTheme = () => {
+                    const newTheme = getComputedStyle(document.documentElement);
+                    const newChartColor = newTheme.getPropertyValue('--chart-color').trim();
+                    sparkChart.data.datasets[0].borderColor = newChartColor;
+                    sparkChart.data.datasets[0].backgroundColor = newChartColor + '20';
+                    sparkChart.update('none');
+                }
+            }
+            async function selectCity(city){
+                errorMsg.textContent=''; input.value=`${city.name}, ${city.country_code||city.country||''}`.replace(/, $/,'');
+                tempVal.textContent='—'; humVal.textContent='—'; updatedAt.textContent='Cargando…'; updatedAt.classList.add('shimmer');
+                try{
+                    const data=await fetchCurrent(city.latitude,city.longitude), t=data.current?.temperature_2m, h=data.current?.relative_humidity_2m, cc=data.current?.cloud_cover, time=data.current?.time;
+                    locName.textContent=`${city.name}${city.country?', '+city.country:''}`;
+                    locCoords.textContent=`Lat ${city.latitude.toFixed(2)}, Lon ${city.longitude.toFixed(2)}`;
+                    updatedAt.textContent=`Actualizado: ${fmtTime(time)}`; updatedAt.classList.remove('shimmer');
+                    tempVal.textContent=(typeof t==='number')?t.toFixed(1):'—'; humVal.textContent =(typeof h==='number')?h.toFixed(0):'—';
+                    cloudChip.textContent =`Nubosidad: ${typeof cc==='number'?cc.toFixed(0)+'%':'—'}`;
+                    renderSparkline(data.hourly);
+                    const lat=city.latitude, lon=city.longitude;
+                    if(marker) map.removeLayer(marker); marker=L.marker([lat,lon]).addTo(map).bindPopup(`<b>${city.name}</b><br>${city.country||''}`).openPopup();
+                    map.setView([lat,lon], 11); setCloudOverlay(lat,lon,(typeof cc==='number')?cc:0);
+                    saveRecent(city);
+                }catch(e){ updatedAt.classList.remove('shimmer'); errorMsg.textContent=e.message; }
+            }
+            let inputDebounce;
+            input.addEventListener('input', ()=>{ errorMsg.textContent=''; clearTimeout(inputDebounce); const q=input.value.trim(); if(q.length<2){ suggestions.classList.add('hidden'); return; } inputDebounce=setTimeout(async()=>{ try{ renderSuggestions(await geocode(q)); } catch(e){ suggestions.classList.add('hidden'); errorMsg.textContent=e.message; } },300); });
+            input.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); searchBtn.click(); }});
+            document.addEventListener('click',(e)=>{ if (!e.target.closest('#city-input') && !e.target.closest('#suggestions')) { suggestions.classList.add('hidden'); } });
+            clearBtn.addEventListener('click',(e)=>{ e.preventDefault(); input.value=''; suggestions.classList.add('hidden'); errorMsg.textContent=''; });
+            searchBtn.addEventListener('click', async (e)=>{ e.preventDefault(); const q=input.value.trim(); if(q.length<2){ errorMsg.textContent='Introduce al menos 2 caracteres.'; return; } try{ const items=await geocode(q); if(!items.length){ errorMsg.textContent='No se encontraron resultados.'; return; } selectCity(items[0]); suggestions.classList.add('hidden'); }catch(err){ errorMsg.textContent=err.message; } });
+            geoBtn.addEventListener('click',(e)=>{ e.preventDefault(); errorMsg.textContent=''; if(!navigator.geolocation){ errorMsg.textContent='Geolocalización no soportada.'; return; } navigator.geolocation.getCurrentPosition(async pos=>{ const {latitude,longitude}=pos.coords; try{ const url=`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=es&format=json`, r=await fetch(url), data=await r.json(), res=(data.results&&data.results[0])||{name:'Mi ubicación',country:'',country_code:''}; selectCity({id:`geo-${Date.now()}`,name:res.name||'Mi ubicación',country:res.country||'',country_code:res.country_code||'',latitude,longitude,admin1:res.admin1||''}); }catch{ selectCity({id:`geo-${Date.now()}`,name:'Mi ubicación',country:'',country_code:'',latitude,longitude}); } }, ()=>{ errorMsg.textContent='No se pudo obtener tu ubicación.'; }, {enableHighAccuracy:true,timeout:8000}); });
+            renderRecents();
+            (async()=>{ try{ const items=await geocode('León'); if(items.length) selectCity(items[0]); }catch{} })();
+        }
 
-        function setCloudOverlay(lat, lon, cloudPct){ const radius=12000, opacity=Math.max(0.08, Math.min(0.7, (cloudPct||0)/100*0.7)); if (cloudCircle) map.removeLayer(cloudCircle); cloudCircle=L.circle([lat,lon],{ radius, color:'rgba(92,26,51,0.35)', weight:1, fillColor:'#ffffff', fillOpacity:opacity }).addTo(map); }
-        const fmtTime = iso => { try{return new Date(iso).toLocaleString('es-ES',{dateStyle:'medium',timeStyle:'short'})}catch{return iso} };
-        function saveRecent(city){ const max=6, list=JSON.parse(localStorage.getItem('weather_recent')||'[]'), newList=[city, ...list.filter(x=>x.id!==city.id)].slice(0,max); localStorage.setItem('weather_recent', JSON.stringify(newList)); renderRecents(); }
-        function renderRecents(){
-            const list=JSON.parse(localStorage.getItem('weather_recent')||'[]');
-            recentTags.innerHTML='';
-            if(!list.length){ recentTags.innerHTML='<span class="text-stone-400 text-sm">Sin búsquedas aún.</span>'; return; }
-            list.forEach(c=>{ const b=document.createElement('button'); b.className='px-3 py-1 pill bg-stone-100 hover:bg-stone-200 text-sm'; b.textContent=`${c.name}, ${c.country_code||c.country||''}`.replace(/, $/,''); b.addEventListener('click',()=>selectCity(c)); recentTags.appendChild(b); });
-        }
-        async function geocode(q){ const url=`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=es&format=json`, r=await fetch(url); if(!r.ok) throw new Error('No se pudo buscar la ciudad.'); const data=await r.json(); return (data.results||[]).map(x=>({id:`${x.id}`,name:x.name,country:x.country,country_code:x.country_code,latitude:x.latitude,longitude:x.longitude,admin1:x.admin1})); }
-        async function fetchCurrent(lat,lon){ const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,cloud_cover&hourly=temperature_2m&forecast_days=2&timezone=auto`, r=await fetch(url); if(!r.ok) throw new Error('No se pudo obtener el clima.'); return r.json(); }
-        function renderSuggestions(items){
-            suggestions.innerHTML=''; if(!items || !items.length){ suggestions.classList.add('hidden'); return; }
-            items.forEach(c=>{ const div=document.createElement('div'); div.className='suggestion-item px-3 py-2 cursor-pointer'; const region=c.admin1?` · ${c.admin1}`:''; div.innerHTML=`<span class="font-semibold">${c.name}</span><span class="text-stone-500">, ${c.country}${region}</span>`; div.addEventListener('click',()=>{ selectCity(c); suggestions.classList.add('hidden'); }); suggestions.appendChild(div); });
-            suggestions.classList.remove('hidden');
-        }
-        function renderSparkline(hourly){
-            if(!hourly?.time || !hourly?.temperature_2m) return;
-            const now=Date.now(), pts=[];
-            for(let i=0;i<hourly.time.length;i++){ const t=new Date(hourly.time[i]).getTime(); if(t>=now-24*3600*1000 && t<=now+6*3600*1000){ pts.push({x:t,y:hourly.temperature_2m[i]}); } }
-            const ctx=document.getElementById('tempSpark').getContext('2d');
-            if(sparkChart) sparkChart.destroy();
-            sparkChart=new Chart(ctx,{ type:'line', data:{datasets:[{data:pts,borderColor:'#5C1A33',backgroundColor:'rgba(92,26,51,.12)',tension:.35,fill:true,pointRadius:0}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}} });
-        }
-        async function selectCity(city){
-            errorMsg.textContent=''; input.value=`${city.name}, ${city.country_code||city.country||''}`.replace(/, $/,'');
-            tempVal.textContent='—'; humVal.textContent='—'; updatedAt.textContent='Cargando…'; updatedAt.classList.add('shimmer');
-            try{
-                const data=await fetchCurrent(city.latitude,city.longitude), t=data.current?.temperature_2m, h=data.current?.relative_humidity_2m, cc=data.current?.cloud_cover, time=data.current?.time;
-                locName.textContent=`${city.name}${city.country?', '+city.country:''}`;
-                locCoords.textContent=`Lat ${city.latitude.toFixed(2)}, Lon ${city.longitude.toFixed(2)}`;
-                updatedAt.textContent=`Actualizado: ${fmtTime(time)}`; updatedAt.classList.remove('shimmer');
-                tempVal.textContent=(typeof t==='number')?t.toFixed(1):'—'; humVal.textContent =(typeof h==='number')?h.toFixed(0):'—';
-                cloudChip.textContent =`Nubosidad: ${typeof cc==='number'?cc.toFixed(0)+'%':'—'}`;
-                renderSparkline(data.hourly);
-                const lat=city.latitude, lon=city.longitude;
-                if(marker) map.removeLayer(marker); marker=L.marker([lat,lon]).addTo(map).bindPopup(`<b>${city.name}</b><br>${city.country||''}`).openPopup();
-                map.setView([lat,lon], 11); setCloudOverlay(lat,lon,(typeof cc==='number')?cc:0);
-                saveRecent(city);
-            }catch(e){ updatedAt.classList.remove('shimmer'); errorMsg.textContent=e.message; }
-        }
-        let inputDebounce;
-        input.addEventListener('input', ()=>{ errorMsg.textContent=''; clearTimeout(inputDebounce); const q=input.value.trim(); if(q.length<2){ suggestions.classList.add('hidden'); return; } inputDebounce=setTimeout(async()=>{ try{ renderSuggestions(await geocode(q)); } catch(e){ suggestions.classList.add('hidden'); errorMsg.textContent=e.message; } },300); });
-        input.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); searchBtn.click(); }});
-        document.addEventListener('click',(e)=>{ if (!e.target.closest('#city-input') && !e.target.closest('#suggestions')) { suggestions.classList.add('hidden'); } });
-        clearBtn.addEventListener('click',(e)=>{ e.preventDefault(); input.value=''; suggestions.classList.add('hidden'); errorMsg.textContent=''; });
-        searchBtn.addEventListener('click', async (e)=>{ e.preventDefault(); const q=input.value.trim(); if(q.length<2){ errorMsg.textContent='Introduce al menos 2 caracteres.'; return; } try{ const items=await geocode(q); if(!items.length){ errorMsg.textContent='No se encontraron resultados.'; return; } selectCity(items[0]); suggestions.classList.add('hidden'); }catch(err){ errorMsg.textContent=err.message; } });
-        geoBtn.addEventListener('click',(e)=>{ e.preventDefault(); errorMsg.textContent=''; if(!navigator.geolocation){ errorMsg.textContent='Geolocalización no soportada.'; return; } navigator.geolocation.getCurrentPosition(async pos=>{ const {latitude,longitude}=pos.coords; try{ const url=`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=es&format=json`, r=await fetch(url), data=await r.json(), res=(data.results&&data.results[0])||{name:'Mi ubicación',country:'',country_code:''}; selectCity({id:`geo-${Date.now()}`,name:res.name||'Mi ubicación',country:res.country||'',country_code:res.country_code||'',latitude,longitude,admin1:res.admin1||''}); }catch{ selectCity({id:`geo-${Date.now()}`,name:'Mi ubicación',country:'',country_code:'',latitude,longitude}); } }, ()=>{ errorMsg.textContent='No se pudo obtener tu ubicación.'; }, {enableHighAccuracy:true,timeout:8000}); });
-        renderRecents();
-        (async()=>{ try{ const items=await geocode('Madrid'); if(items.length) selectCity(items[0]); }catch{} })();
-    }
-
-    // --- Ejecución al Cargar la Página ---
-    document.addEventListener('DOMContentLoaded', () => {
-        const logoutBtn = document.getElementById('logout-btn');
-        if(logoutBtn) logoutBtn.addEventListener('click', logout);
-
-        requireAuth();
-        updateUIVisibility();
-        setupPageEventListeners(); // Llama a la función que configura la lógica de esta página
-    });
-  </script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const logoutBtn = document.getElementById('logout-btn');
+            if(logoutBtn) logoutBtn.addEventListener('click', logout);
+            requireAuth();
+            updateUIVisibility();
+            setupPageEventListeners();
+        });
+    </script>
 </body>
 </html>

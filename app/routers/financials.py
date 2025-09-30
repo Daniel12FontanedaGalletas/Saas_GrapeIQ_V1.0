@@ -3,11 +3,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Dict
 import uuid
+import math
 from collections import defaultdict
 
 from .. import schemas
 from ..services import security
 from ..database import get_db_connection
+from ..services.security import get_current_active_user
+from contextlib import closing
 
 router = APIRouter(
     prefix="/api/financials",
@@ -139,6 +142,71 @@ def delete_cost_parameter(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en la base de datos: {e}")
     return
+
+# Al final de app/routers/financials.py
+
+@router.get("/costs-by-parameter/{parameter_name}", response_model=schemas.PaginatedCostRecordResponse)
+def get_cost_records_by_parameter(
+    parameter_name: str,
+    page: int = 1,
+    page_size: int = 5, # Por defecto, 5 registros por página
+    current_user: schemas.User = Depends(get_current_active_user)
+):
+    """
+    Obtiene los registros de costes paginados para un TIPO de coste específico.
+    """
+    tenant_id_str = str(current_user.tenant_id)
+    offset = (page - 1) * page_size
+
+    # Query para contar el total de registros
+    count_query = "SELECT COUNT(*) FROM costs WHERE tenant_id = %s AND cost_type = %s;"
+    
+    # Query para obtener los registros de la página actual
+    records_query = """
+        SELECT id, cost_type, amount, description, cost_date, related_lot_id 
+        FROM costs 
+        WHERE tenant_id = %s AND cost_type = %s
+        ORDER BY cost_date DESC
+        LIMIT %s OFFSET %s;
+    """
+    
+    try:
+        with get_db_connection() as conn:
+            with closing(conn.cursor()) as cur:
+                # Contamos el total
+                cur.execute(count_query, (tenant_id_str, parameter_name))
+                total_records = cur.fetchone()[0]
+                if total_records == 0:
+                    return schemas.PaginatedCostRecordResponse(
+                        records=[], total_records=0, page=page, 
+                        page_size=page_size, total_pages=0
+                    )
+                
+                # Obtenemos los registros de la página
+                cur.execute(records_query, (tenant_id_str, parameter_name, page_size, offset))
+                records_tuples = cur.fetchall()
+
+                # Creamos la lista de objetos
+                cost_records = [
+                    schemas.CostRecord(
+                        id=rec[0], cost_type=rec[1], amount=rec[2],
+                        description=rec[3], cost_date=rec[4], related_lot_id=rec[5]
+                    ) for rec in records_tuples
+                ]
+                
+                total_pages = math.ceil(total_records / page_size)
+
+                return schemas.PaginatedCostRecordResponse(
+                    records=cost_records,
+                    total_records=total_records,
+                    page=page,
+                    page_size=page_size,
+                    total_pages=total_pages
+                )
+    except Exception as e:
+        print(f"Error al obtener registros de costes paginados: {e}")
+        raise HTTPException(status_code=500, detail="Error interno al consultar los costes.")
+
 
 # --- ¡NUEVO ENDPOINT PARA CALCULAR PORCENTAJES! ---
 @router.get("/costs-summary/", response_model=schemas.CostSummaryResponse)
