@@ -10,31 +10,53 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <style>
-    /* 🍂 Paleta Otoñal para la página general */
-    :root {
-        --pumpkin-orange: #D96C06;
-        --clay-red: #A23E48;
-        --golden-ochre: #C98C32;
-        --chestnut-brown: #5C4033;
-        --warm-beige: #F2E2C4;
-        --stone-gray: #8C8C88;
+    /* --- Sistema de Temas --- */
+    :root { /* Tema Claro (Blanco) por Defecto */
+        --bg-color: #F8F7F4;
+        --text-color: #1c1917; /* stone-900 */
+        --text-secondary-color: #57534e; /* stone-600 */
+        --header-bg-color: #292524; /* stone-800 */
+        --card-bg: #FFFFFF;
+        --input-bg: #FFFFFF;
+        --border-color: #e5e7eb; /* gray-200 */
+        --tab-active-color: #5C1A33;
+        --cta-button-bg: #5C1A33;
+        --secondary-button-bg: #A23E48;
+        --text-highlight: #5C1A33;
     }
 
+    body.theme-warm { /* 🍂 Tema Otoñal Cálido */
+        --bg-color: #F2E2C4;
+        --text-color: #5C4033;
+        --text-secondary-color: #8C8C88;
+        --header-bg-color: #5C4033;
+        --card-bg: rgba(255, 255, 255, 0.6);
+        --input-bg: rgba(92, 64, 51, 0.05);
+        --border-color: rgba(92, 64, 51, 0.2);
+        --tab-active-color: #C98C32;
+        --cta-button-bg: #D96C06;
+        --secondary-button-bg: #A23E48;
+        --text-highlight: #C98C32;
+    }
+    
+    /* --- Estilos Generales con Variables --- */
     body { 
         font-family: 'Montserrat', sans-serif; 
-        background-color: var(--warm-beige); 
-        color: var(--chestnut-brown);
+        background-color: var(--bg-color); 
+        color: var(--text-color);
+        transition: background-color 0.3s, color 0.3s;
     }
-    .cta-button { background-color: var(--pumpkin-orange); color: white; }
-    .secondary-button { background-color: var(--clay-red); color: white; }
-    .tab-active { border-color: var(--golden-ochre) !important; color: var(--golden-ochre) !important; font-weight: 700; }
-    .text-highlight { color: var(--golden-ochre); }
-    .text-secondary { color: var(--stone-gray); }
-    .bg-dark { background-color: var(--chestnut-brown); }
-    .bg-light-accent { background-color: rgba(92, 64, 51, 0.05); }
-    .border-accent { border-color: rgba(92, 64, 51, 0.2); }
+    .cta-button { background-color: var(--cta-button-bg); color: white; }
+    .secondary-button { background-color: var(--secondary-button-bg); color: white; }
+    .tab-active { border-color: var(--tab-active-color) !important; color: var(--tab-active-color) !important; font-weight: 700; }
+    .text-highlight { color: var(--text-highlight); }
+    .text-secondary { color: var(--text-secondary-color); }
+    .bg-dark { background-color: var(--header-bg-color); }
+    .bg-light-accent { background-color: var(--input-bg); }
+    .border-accent { border-color: var(--border-color); }
+    .card { background-color: var(--card-bg); border: 1px solid var(--border-color); }
 
-    /* --- ESTILOS ORIGINALES PARA LA SECCIÓN DE COSTES --- */
+    /* --- ESTILOS ORIGINALES PARA LA SECCIÓN DE COSTES (ADAPTADOS) --- */
     .cost-card {
         cursor: pointer;
         overflow: hidden;
@@ -42,44 +64,21 @@
         z-index: 1;
         transition: box-shadow 0.4s ease;
         border-radius: 1rem;
-        background-color: #FFFFFF; /* Fondo blanco original */
+        background-color: var(--card-bg); /* Adaptado */
+        border: 1px solid var(--border-color); /* Adaptado */
     }
-    .cost-card:hover {
-        box-shadow: 0 15px 30px -10px rgba(0,0,0,0.2);
-    }
-    /* Efecto hover de vino */
+    .cost-card:hover { box-shadow: 0 15px 30px -10px rgba(0,0,0,0.2); }
     .cost-card::before, .cost-card::after {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 100%;
-        width: 100%;
-        height: 100%;
-        background-color: #8C2B4F; /* Color vino */
-        z-index: -1;
-        transition: top 0.6s cubic-bezier(0.7, 0, 0.3, 1);
+        content: ''; position: absolute; left: 0; top: 100%; width: 100%; height: 100%;
+        background-color: #8C2B4F; z-index: -1; transition: top 0.6s cubic-bezier(0.7, 0, 0.3, 1);
     }
-    .cost-card::after {
-        background-color: #5C1A33; /* Color vino oscuro */
-        transition-delay: 0.05s;
-    }
-    .cost-card:hover::before, .cost-card:hover::after {
-        top: 0;
-    }
-    /* Texto se vuelve blanco en hover */
-    .cost-card:hover .main-card-text,
-    .cost-card:hover .main-card-text h3,
-    .cost-card:hover .main-card-text p,
-    .cost-card:hover .main-card-text .font-bold {
-        color: #FFFFFF !important;
-    }
-    .cost-card:hover .chevron {
-        color: rgba(255,255,255,0.7) !important;
-    }
+    .cost-card::after { background-color: #5C1A33; transition-delay: 0.05s; }
+    .cost-card:hover::before, .cost-card:hover::after { top: 0; }
+    .cost-card:hover .main-card-text, .cost-card:hover .main-card-text h3,
+    .cost-card:hover .main-card-text p, .cost-card:hover .main-card-text .font-bold { color: #FFFFFF !important; }
+    .cost-card:hover .chevron { color: rgba(255,255,255,0.7) !important; }
     .cost-card .chevron { transition: transform 0.8s cubic-bezier(.2,.8,.2,1), color 0.6s ease; }
     .cost-card.expanded .chevron { transform: rotate(180deg); }
-
-    /* Estilos para los desplegables internos (parámetros y registros) */
     .parameter-item { cursor: pointer; background-color: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.05); border-radius: 0.75rem; padding: 0.75rem 1.25rem; transition: background-color 0.3s, box-shadow 0.3s; color: #1c1917; }
     .parameter-item:hover { background-color: rgba(255,255,255,1); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     .parameter-item .chevron-param { transition: transform 0.5s ease; }
@@ -90,21 +89,54 @@
     .pagination-btn { background-color: #e7e5e4; color: #57534e; padding: 0.25rem 0.75rem; border-radius: 999px; cursor: pointer; transition: background-color 0.2s; }
     .pagination-btn:hover { background-color: #d6d3d1; }
     .pagination-btn:disabled { background-color: #f5f5f4; color: #a8a29e; cursor: not-allowed; }
+
+    /* --- CSS DE LA ANTORCHA --- */
+    .torch-container { position: absolute; right: 220px; top: -35px; display: flex; align-items: center; cursor: pointer; user-select: none; transform: scale(0.45); }
+    .torch-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+    .torch { display: flex; justify-content: center; height: 150px; }
+    .head, .stick { position: absolute; width: 30px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); }
+    .stick { position: relative; height: 120px; }
+    .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000000; }
+    .top { transform: rotateX(90deg) translateZ(15px); } .left { transform: rotateY(-90deg) translateZ(15px); } .right { transform: rotateY(0deg) translateZ(15px); }
+    .top div, .left div, .right div { width: 102%; height: 102%; }
+    .top div:nth-child(1), .left div:nth-child(3), .right div:nth-child(3) { background-color: #ffff9760; } .top div:nth-child(2), .left div:nth-child(1), .right div:nth-child(1) { background-color: #ffd80060; } .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; } .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; }
+    .side { position: absolute; width: 30px; height: 120px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: repeat(8, 12.5%); cursor: pointer; translate: 0 12px; }
+    .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); } .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); }
+    .side-left div, .side-right div { width: 103%; height: 103%; }
+    .side div:nth-child(1) { background-color: #443622; } .side div:nth-child(2) { background-color: #2e2517; } .side div:nth-child(3), .side div:nth-child(5) { background-color: #4b3b23; } .side div:nth-child(4), .side div:nth-child(10) { background-color: #251e12; } .side div:nth-child(6) { background-color: #292115; } .side div:nth-child(7) { background-color: #4b3c26; } .side div:nth-child(8) { background-color: #292115; } .side div:nth-child(9) { background-color: #4b3a21; } .side div:nth-child(11), .side div:nth-child(15) { background-color: #3d311d; } .side div:nth-child(12) { background-color: #2c2315; } .side div:nth-child(13) { background-color: #493a22; } .side div:nth-child(14) { background-color: #2b2114; } .side div:nth-child(16) { background-color: #271e10; }
+    .torch-container input:checked ~ .torch .face { filter: drop-shadow(0px 0px 2px #fff) drop-shadow(0px 0px 10px rgba(255, 237, 156, 0.7)) drop-shadow(0px 0px 25px rgba(255, 227, 101, 0.4)); }
+    .torch-container input:checked ~ .torch .top div:nth-child(1), .torch-container input:checked ~ .torch .left div:nth-child(3), .torch-container input:checked ~ .torch .right div:nth-child(3) { background-color: #ffff97; } .torch-container input:checked ~ .torch .top div:nth-child(2), .torch-container input:checked ~ .torch .left div:nth-child(1), .torch-container input:checked ~ .torch .right div:nth-child(1) { background-color: #ffd800; } .torch-container input:checked ~ .torch .top div:nth-child(3), .torch-container input:checked ~ .torch .left div:nth-child(4), .torch-container input:checked ~ .torch .right div:nth-child(4) { background-color: #fff; } .torch-container input:checked ~ .torch .top div:nth-child(4), .torch-container input:checked ~ .torch .left div:nth-child(2), .torch-container input:checked ~ .torch .right div:nth-child(2) { background-color: #ff8f00; } .torch-container input:checked ~ .torch .side div:nth-child(1) { background-color: #7c623e; } .torch-container input:checked ~ .torch .side div:nth-child(2) { background-color: #4c3d26; } .torch-container input:checked ~ .torch .side div:nth-child(3), .torch-container input:checked ~ .torch .side div:nth-child(5) { background-color: #937344; } .torch-container input:checked ~ .torch .side div:nth-child(4), .torch-container input:checked ~ .torch .side div:nth-child(10) { background-color: #3c2f1c; } .torch-container input:checked ~ .torch .side div:nth-child(6) { background-color: #423522; } .torch-container input:checked ~ .torch .side div:nth-child(7) { background-color: #9f7f50; } .torch-container input:checked ~ .torch .side div:nth-child(8) { background-color: #403320; } .torch-container input:checked ~ .torch .side div:nth-child(9) { background-color: #977748; } .torch-container input:checked ~ .torch .side div:nth-child(11), .torch-container input:checked ~ .torch .side div:nth-child(15) { background-color: #675231; } .torch-container input:checked ~ .torch .side div:nth-child(12) { background-color: #3d301d; } .torch-container input:checked ~ .torch .side div:nth-child(13) { background-color: #987849; } .torch-container input:checked ~ .torch .side div:nth-child(14) { background-color: #3b2e1b; } .torch-container input:checked ~ .torch .side div:nth-child(16) { background-color: #372a17; }
   </style>
 </head>
 <body>
   <div class="p-4 sm:p-8">
-    <header class="flex justify-between items-center mb-6">
-        <a href="performance.html" class="flex items-center gap-4">
-            <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
-            <span class="text-3xl font-light text-secondary">|</span>
-            <h1 class="text-3xl font-semibold">Análisis Financiero</h1>
-        </a>
-        <button id="logout-btn" class="bg-dark text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
+    <header class="flex justify-between items-center mb-6 relative">
+      <a href="performance.html" class="flex items-center gap-4">
+          <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+          <span class="text-3xl font-light text-secondary">|</span>
+          <h1 class="text-3xl font-semibold">Análisis Financiero</h1>
+      </a>
+      <div class="flex items-center gap-4">
+          <label class="torch-container">
+              <input id="theme-toggle" type="checkbox" />
+              <div class="torch">
+                  <div class="head">
+                      <div class="face top"><div></div><div></div><div></div><div></div></div>
+                      <div class="face left"><div></div><div></div><div></div><div></div></div>
+                      <div class="face right"><div></div><div></div><div></div><div></div></div>
+                  </div>
+                  <div class="stick">
+                      <div class="side side-left"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                      <div class="side side-right"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                  </div>
+              </div>
+          </label>
+          <button id="logout-btn" class="bg-dark text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
+      </div>
     </header>
 
     <div class="mb-6 border-b border-accent">
-       <nav class="flex space-x-8" aria-label="Tabs">
+        <nav class="flex space-x-8" aria-label="Tabs">
             <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Análisis de Rendimiento</a>
             <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Predicciones</a>
             <a href="catalog.html" id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Catálogo y Stock</a>
@@ -120,50 +152,50 @@
     </div>
 
     <main class="space-y-12">
-        <div>
-            <h2 class="text-2xl font-bold mb-4">Desglose de Costes</h2>
-            <div id="loading-costs" class="text-center p-8 bg-white rounded-2xl shadow-lg"><p class="text-secondary">Cargando y calculando resumen de costes...</p></div>
-            <div id="costs-container" class="space-y-4"></div>
-        </div>
-        
-        <div>
-            <div id="margins-results-container" class="hidden mb-8">
-                <h2 class="text-2xl font-bold mb-4">Resultados de Rentabilidad</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="font-semibold text-secondary mb-2">Margen Bruto</h3><p id="result-gross-margin" class="text-5xl font-bold" style="color: var(--olive-green);">-</p></div>
-                    <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="font-semibold text-secondary mb-2">Margen Neto Real</h3><p id="result-net-margin" class="text-5xl font-bold" style="color: var(--pumpkin-orange);">-</p></div>
-                </div>
-            </div>
-            <form id="financials-form" class="space-y-8">
-                <div>
-                    <h2 class="text-2xl font-bold mb-4">Calcular Márgenes de Rentabilidad (Agregado)</h2>
-                    <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <label for="total-revenue" class="block text-lg font-semibold mb-2">1. Ingresos Totales (Ventas) del Período (€)</label>
-                        <input type="number" step="0.01" id="total-revenue" placeholder="Ej: 50000.00" class="w-full max-w-sm bg-light-accent p-3 rounded-lg border-accent text-lg">
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-lg">
-                    <h3 class="text-xl font-bold mb-4">2. Coste de los Bienes Vendidos (COGS)</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div><label for="cogs-raw-material" class="block mb-1 font-semibold">Materia Prima</label><input type="number" step="0.01" id="cogs-raw-material" placeholder="Coste de uva, levaduras..." class="w-full bg-light-accent p-3 rounded-lg border-accent"></div>
-                        <div><label for="cogs-packaging" class="block mb-1 font-semibold">Embotellado y Empaquetado</label><input type="number" step="0.01" id="cogs-packaging" placeholder="Botellas, corchos, cajas..." class="w-full bg-light-accent p-3 rounded-lg border-accent"></div>
-                        <div><label for="cogs-production" class="block mb-1 font-semibold">Elaboración y Crianza</label><input type="number" step="0.01" id="cogs-production" placeholder="Mano de obra, barricas..." class="w-full bg-light-accent p-3 rounded-lg border-accent"></div>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-lg">
-                    <h3 class="text-xl font-bold mb-4">3. Gastos Operativos del Período</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div><label for="op-sales-marketing" class="block mb-1 font-semibold">Venta y Marketing</label><input type="number" step="0.01" id="op-sales-marketing" placeholder="Salarios, publicidad, ferias..." class="w-full bg-light-accent p-3 rounded-lg border-accent"></div>
-                        <div><label for="op-admin" class="block mb-1 font-semibold">Administrativos</label><input type="number" step="0.01" id="op-admin" placeholder="Oficina, personal, software..." class="w-full bg-light-accent p-3 rounded-lg border-accent"></div>
-                        <div><label for="op-financial" class="block mb-1 font-semibold">Financieros e Impuestos</label><input type="number" step="0.01" id="op-financial" placeholder="Intereses, tasas, impuestos..." class="w-full bg-light-accent p-3 rounded-lg border-accent"></div>
-                    </div>
-                </div>
-                <div class="flex gap-4 mt-8">
-                    <button type="submit" class="cta-button px-8 py-3 rounded-full font-bold text-lg hover:opacity-90">Calcular Márgenes</button>
-                    <button type="reset" id="reset-financials-btn" class="secondary-button px-6 py-3 rounded-full font-semibold hover:opacity-90">Limpiar Campos</button>
-                </div>
-            </form>
-        </div>
+      <div>
+          <h2 class="text-2xl font-bold mb-4">Desglose de Costes</h2>
+          <div id="loading-costs" class="text-center p-8 card rounded-2xl shadow-lg"><p class="text-secondary">Cargando y calculando resumen de costes...</p></div>
+          <div id="costs-container" class="space-y-4"></div>
+      </div>
+      
+      <div>
+          <div id="margins-results-container" class="hidden mb-8">
+              <h2 class="text-2xl font-bold mb-4">Resultados de Rentabilidad</h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="card p-6 rounded-2xl shadow-lg text-center"><h3 class="font-semibold text-secondary mb-2">Margen Bruto</h3><p id="result-gross-margin" class="text-5xl font-bold" style="color: var(--olive-green);">-</p></div>
+                  <div class="card p-6 rounded-2xl shadow-lg text-center"><h3 class="font-semibold text-secondary mb-2">Margen Neto Real</h3><p id="result-net-margin" class="text-5xl font-bold text-highlight">-</p></div>
+              </div>
+          </div>
+          <form id="financials-form" class="space-y-8">
+              <div>
+                  <h2 class="text-2xl font-bold mb-4">Calcular Márgenes de Rentabilidad (Agregado)</h2>
+                  <div class="card p-6 rounded-2xl shadow-lg">
+                      <label for="total-revenue" class="block text-lg font-semibold mb-2">1. Ingresos Totales (Ventas) del Período (€)</label>
+                      <input type="number" step="0.01" id="total-revenue" placeholder="Ej: 50000.00" class="w-full max-w-sm bg-light-accent p-3 rounded-lg border-accent text-lg">
+                  </div>
+              </div>
+              <div class="card p-6 rounded-2xl shadow-lg">
+                  <h3 class="text-xl font-bold mb-4">2. Coste de los Bienes Vendidos (COGS)</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div><label for="cogs-raw-material" class="block mb-1 font-semibold">Materia Prima</label><input type="number" step="0.01" id="cogs-raw-material" placeholder="Coste de uva, levaduras..." class="w-full bg-light-accent p-3 rounded-lg border-accent"></div>
+                      <div><label for="cogs-packaging" class="block mb-1 font-semibold">Embotellado y Empaquetado</label><input type="number" step="0.01" id="cogs-packaging" placeholder="Botellas, corchos, cajas..." class="w-full bg-light-accent p-3 rounded-lg border-accent"></div>
+                      <div><label for="cogs-production" class="block mb-1 font-semibold">Elaboración y Crianza</label><input type="number" step="0.01" id="cogs-production" placeholder="Mano de obra, barricas..." class="w-full bg-light-accent p-3 rounded-lg border-accent"></div>
+                  </div>
+              </div>
+              <div class="card p-6 rounded-2xl shadow-lg">
+                  <h3 class="text-xl font-bold mb-4">3. Gastos Operativos del Período</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div><label for="op-sales-marketing" class="block mb-1 font-semibold">Venta y Marketing</label><input type="number" step="0.01" id="op-sales-marketing" placeholder="Salarios, publicidad, ferias..." class="w-full bg-light-accent p-3 rounded-lg border-accent"></div>
+                      <div><label for="op-admin" class="block mb-1 font-semibold">Administrativos</label><input type="number" step="0.01" id="op-admin" placeholder="Oficina, personal, software..." class="w-full bg-light-accent p-3 rounded-lg border-accent"></div>
+                      <div><label for="op-financial" class="block mb-1 font-semibold">Financieros e Impuestos</label><input type="number" step="0.01" id="op-financial" placeholder="Intereses, tasas, impuestos..." class="w-full bg-light-accent p-3 rounded-lg border-accent"></div>
+                  </div>
+              </div>
+              <div class="flex gap-4 mt-8">
+                  <button type="submit" class="cta-button px-8 py-3 rounded-full font-bold text-lg hover:opacity-90">Calcular Márgenes</button>
+                  <button type="reset" id="reset-financials-btn" class="secondary-button px-6 py-3 rounded-full font-semibold hover:opacity-90">Limpiar Campos</button>
+              </div>
+          </form>
+      </div>
     </main>
   </div>
 
@@ -172,8 +204,37 @@
     const TOKEN_KEY = 'accessToken';
     const ROLE_KEY = 'userRole';
 
+    // --- LÓGICA DEL TEMA (AÑADIDA) ---
+    function setupThemeToggle() {
+      const themeToggle = document.getElementById('theme-toggle');
+      const body = document.body;
+      const savedTheme = localStorage.getItem('theme');
+      
+      if (savedTheme === 'warm') {
+          body.classList.add('theme-warm');
+          themeToggle.checked = true;
+      } else {
+          themeToggle.checked = false;
+      }
+
+      themeToggle.addEventListener('change', () => {
+          if (themeToggle.checked) {
+              body.classList.add('theme-warm');
+              localStorage.setItem('theme', 'warm');
+          } else {
+              body.classList.remove('theme-warm');
+              localStorage.setItem('theme', 'light');
+          }
+      });
+    }
+
     function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
-    function logout() { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(ROLE_KEY); window.location.href = 'login.html'; }
+    function logout() { 
+        localStorage.removeItem(TOKEN_KEY); 
+        localStorage.removeItem(ROLE_KEY);
+        localStorage.removeItem('theme'); // Limpiar tema al salir
+        window.location.href = 'login.html'; 
+    }
     async function apiFetch(endpoint, options = {}) {
         const headers = { 'Content-Type': 'application/json' };
         const token = localStorage.getItem(TOKEN_KEY);
@@ -226,14 +287,14 @@
                 <div class="cost-card" data-category="${category}">
                     <div class="cost-card-header p-4 relative">
                         <div class="main-card-text">
-                            <h3 class="text-xl font-bold text-stone-800">${details.title || category}</h3>
-                            <p class="text-stone-500">${details.subtitle}</p>
+                            <h3 class="text-xl font-bold">${details.title || category}</h3>
+                            <p class="text-secondary">${details.subtitle}</p>
                         </div>
-                        <div class="absolute top-4 right-12 text-right">
-                            <div class="font-bold text-lg text-stone-700">${percentage}%</div>
-                            <div class="text-sm text-stone-500">del total</div>
+                        <div class="absolute top-4 right-12 text-right main-card-text">
+                            <div class="font-bold text-lg">${percentage}%</div>
+                            <div class="text-sm text-secondary">del total</div>
                         </div>
-                        <div class="chevron absolute top-4 right-4 text-stone-400">
+                        <div class="chevron absolute top-4 right-4 text-secondary">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                         </div>
                     </div>
@@ -242,6 +303,7 @@
             `;
         };
 
+        // El resto de la función setupCostBreakdown y sus funciones auxiliares permanecen idénticas...
         const createParameterItemHTML = (parameter) => `
             <div class="parameter-item" data-parameter-name="${parameter.parameter_name}" data-current-page="1">
                 <div class="flex justify-between items-center">
@@ -344,12 +406,13 @@
             });
 
         }).catch(error => {
-            loadingDiv.innerHTML = `<p class="font-semibold" style="color: var(--clay-red);">Error al cargar datos de costes: ${error.message}</p>`;
+            loadingDiv.innerHTML = `<p class="font-semibold text-highlight">Error al cargar datos de costes: ${error.message}</p>`;
             console.error(error);
         });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        setupThemeToggle(); // Inicializar el interruptor de tema
         document.getElementById('logout-btn')?.addEventListener('click', logout);
         requireAuth();
         updateUIVisibility();

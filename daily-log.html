@@ -9,48 +9,121 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
   <style>
-    body{font-family:'Montserrat',sans-serif;background-color:#F8F7F4}
-    .wine-grad{background-image:linear-gradient(to right,#5C1A33,#8C2B4F)}
-    .tab-active{border-color:#5C1A33;color:#5C1A33;font-weight:700}
+    /* --- Sistema de Temas --- */
+    :root { /* Tema Claro (Blanco) por Defecto */
+        --bg-color: #F8F7F4;
+        --text-color: #1c1917; /* stone-900 */
+        --text-secondary-color: #57534e; /* stone-600 */
+        --header-bg-color: #292524; /* stone-800 */
+        --card-bg: #FFFFFF;
+        --input-bg: #f5f5f4; /* stone-100 */
+        --border-color: #e5e7eb; /* gray-200 */
+        --tab-active-color: #5C1A33;
+        --cta-button-bg: #5C1A33;
+        --cta-button-gradient: linear-gradient(to right, #5C1A33, #8C2B4F);
+        --checkbox-accent: #5C1A33;
+    }
+
+    body.theme-warm { /* 🍂 Tema Otoñal Cálido */
+        --bg-color: #F2E2C4;
+        --text-color: #5C4033;
+        --text-secondary-color: #8C8C88;
+        --header-bg-color: #5C4033;
+        --card-bg: rgba(255, 255, 255, 0.6);
+        --input-bg: rgba(92, 64, 51, 0.05);
+        --border-color: rgba(92, 64, 51, 0.2);
+        --tab-active-color: #C98C32;
+        --cta-button-bg: #D96C06;
+        --cta-button-gradient: linear-gradient(to right, #D96C06, #C98C32);
+        --checkbox-accent: #D96C06;
+    }
+    
+    /* --- Estilos Generales con Variables --- */
+    body { 
+        font-family: 'Montserrat', sans-serif; 
+        background-color: var(--bg-color); 
+        color: var(--text-color);
+        transition: background-color 0.3s, color 0.3s;
+    }
+    .text-secondary { color: var(--text-secondary-color); }
+    .header-button { background-color: var(--header-bg-color); }
+    .tab-active { border-color: var(--tab-active-color) !important; color: var(--tab-active-color) !important; font-weight: 700; }
+    .border-accent { border-color: var(--border-color); }
+    .card { background-color: var(--card-bg); border: 1px solid var(--border-color); }
+    .input-field { background-color: var(--input-bg); border-color: var(--border-color); }
+    .cta-button { background-image: var(--cta-button-gradient); color: white; }
+    .checkbox-accent { color: var(--checkbox-accent); }
+    .checkbox-accent:focus { ring-color: var(--checkbox-accent); }
+
+    /* --- CSS DE LA ANTORCHA --- */
+    .torch-container { position: absolute; right: 220px; top: -35px; display: flex; align-items: center; cursor: pointer; user-select: none; transform: scale(0.45); }
+    .torch-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+    .torch { display: flex; justify-content: center; height: 150px; }
+    .head, .stick { position: absolute; width: 30px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); }
+    .stick { position: relative; height: 120px; }
+    .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000000; }
+    .top { transform: rotateX(90deg) translateZ(15px); } .left { transform: rotateY(-90deg) translateZ(15px); } .right { transform: rotateY(0deg) translateZ(15px); }
+    .top div, .left div, .right div { width: 102%; height: 102%; }
+    .top div:nth-child(1), .left div:nth-child(3), .right div:nth-child(3) { background-color: #ffff9760; } .top div:nth-child(2), .left div:nth-child(1), .right div:nth-child(1) { background-color: #ffd80060; } .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; } .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; }
+    .side { position: absolute; width: 30px; height: 120px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: repeat(8, 12.5%); cursor: pointer; translate: 0 12px; }
+    .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); } .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); }
+    .side-left div, .side-right div { width: 103%; height: 103%; }
+    .side div:nth-child(1) { background-color: #443622; } .side div:nth-child(2) { background-color: #2e2517; } .side div:nth-child(3), .side div:nth-child(5) { background-color: #4b3b23; } .side div:nth-child(4), .side div:nth-child(10) { background-color: #251e12; } .side div:nth-child(6) { background-color: #292115; } .side div:nth-child(7) { background-color: #4b3c26; } .side div:nth-child(8) { background-color: #292115; } .side div:nth-child(9) { background-color: #4b3a21; } .side div:nth-child(11), .side div:nth-child(15) { background-color: #3d311d; } .side div:nth-child(12) { background-color: #2c2315; } .side div:nth-child(13) { background-color: #493a22; } .side div:nth-child(14) { background-color: #2b2114; } .side div:nth-child(16) { background-color: #271e10; }
+    .torch-container input:checked ~ .torch .face { filter: drop-shadow(0px 0px 2px #fff) drop-shadow(0px 0px 10px rgba(255, 237, 156, 0.7)) drop-shadow(0px 0px 25px rgba(255, 227, 101, 0.4)); }
+    .torch-container input:checked ~ .torch .top div:nth-child(1), .torch-container input:checked ~ .torch .left div:nth-child(3), .torch-container input:checked ~ .torch .right div:nth-child(3) { background-color: #ffff97; } .torch-container input:checked ~ .torch .top div:nth-child(2), .torch-container input:checked ~ .torch .left div:nth-child(1), .torch-container input:checked ~ .torch .right div:nth-child(1) { background-color: #ffd800; } .torch-container input:checked ~ .torch .top div:nth-child(3), .torch-container input:checked ~ .torch .left div:nth-child(4), .torch-container input:checked ~ .torch .right div:nth-child(4) { background-color: #fff; } .torch-container input:checked ~ .torch .top div:nth-child(4), .torch-container input:checked ~ .torch .left div:nth-child(2), .torch-container input:checked ~ .torch .right div:nth-child(2) { background-color: #ff8f00; } .torch-container input:checked ~ .torch .side div:nth-child(1) { background-color: #7c623e; } .torch-container input:checked ~ .torch .side div:nth-child(2) { background-color: #4c3d26; } .torch-container input:checked ~ .torch .side div:nth-child(3), .torch-container input:checked ~ .torch .side div:nth-child(5) { background-color: #937344; } .torch-container input:checked ~ .torch .side div:nth-child(4), .torch-container input:checked ~ .torch .side div:nth-child(10) { background-color: #3c2f1c; } .torch-container input:checked ~ .torch .side div:nth-child(6) { background-color: #423522; } .torch-container input:checked ~ .torch .side div:nth-child(7) { background-color: #9f7f50; } .torch-container input:checked ~ .torch .side div:nth-child(8) { background-color: #403320; } .torch-container input:checked ~ .torch .side div:nth-child(9) { background-color: #977748; } .torch-container input:checked ~ .torch .side div:nth-child(11), .torch-container input:checked ~ .torch .side div:nth-child(15) { background-color: #675231; } .torch-container input:checked ~ .torch .side div:nth-child(12) { background-color: #3d301d; } .torch-container input:checked ~ .torch .side div:nth-child(13) { background-color: #987849; } .torch-container input:checked ~ .torch .side div:nth-child(14) { background-color: #3b2e1b; } .torch-container input:checked ~ .torch .side div:nth-child(16) { background-color: #372a17; }
   </style>
 </head>
-<body class="text-stone-800">
+<body>
   <div class="p-4 sm:p-8">
-    <header class="flex justify-between items-center mb-6">
+    <header class="flex justify-between items-center mb-6 relative">
+      <a href="performance.html" class="flex items-center gap-4">
+          <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+          <span class="text-3xl font-light text-secondary">|</span>
+          <h1 class="text-3xl font-semibold">Registro Diario</h1>
+      </a>
       <div class="flex items-center gap-4">
-        <a href="performance.html" class="flex items-center gap-4">
-            <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
-            <span class="text-3xl font-light text-stone-400">|</span>
-            <h1 class="text-3xl font-semibold text-stone-700">Registro Diario</h1>
-        </a>
+        <label class="torch-container">
+            <input id="theme-toggle" type="checkbox" />
+            <div class="torch">
+                <div class="head">
+                    <div class="face top"><div></div><div></div><div></div><div></div></div>
+                    <div class="face left"><div></div><div></div><div></div><div></div></div>
+                    <div class="face right"><div></div><div></div><div></div><div></div></div>
+                </div>
+                <div class="stick">
+                    <div class="side side-left"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="side side-right"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                </div>
+            </div>
+        </label>
+        <button id="logout-btn" class="header-button text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
       </div>
-      <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
     </header>
 
-    <div class="mb-6 border-b border-stone-200">
+    <div class="mb-6 border-b border-accent">
       <nav class="flex space-x-8" aria-label="Tabs">
-        <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="performance">Análisis de Rendimiento</a>
-        <a href="forecast.html"    class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="forecast">Predicciones y Escenarios</a>
-        <a href="catalog.html"     id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="catalog">Catálogo y Stock</a>
-        <a href="daily-log.html"   id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="daily-log">Registro Diario</a>
-        <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Finanzas</a>
-        <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Cuaderno de Campo</a>
-        <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Trazabilidad</a>
-        <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Gestión de Bodega</a>
-        <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Parcelas</a>
-        <a href="weather.html"     class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="weather">Clima</a>
-        <a href="settings.html"    class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent" data-tab="settings">Configuración</a>
+        <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent" data-tab="performance">Análisis de Rendimiento</a>
+        <a href="forecast.html"     class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent" data-tab="forecast">Predicciones y Escenarios</a>
+        <a href="catalog.html"     id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent" data-tab="catalog">Catálogo y Stock</a>
+        <a href="daily-log.html"   id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg tab-active" data-tab="daily-log">Registro Diario</a>
+        <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Finanzas</a>
+        <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Cuaderno de Campo</a>
+        <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Trazabilidad</a>
+        <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Gestión de Bodega</a>
+        <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Parcelas</a>
+        <a href="weather.html"     class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent" data-tab="weather">Clima</a>
+        <a href="settings.html"    class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent" data-tab="settings">Configuración</a>
       </nav>
     </div>
 
     <main>
       <form id="daily-log-form" class="space-y-6">
-        <section class="bg-white p-6 rounded-2xl shadow-lg">
-          <h3 class="text-xl font-bold text-stone-800 mb-4">Ventas y Costes</h3>
-          <p class="text-stone-500 mb-4 text-sm">Introduce las unidades vendidas hoy por canal y el coste actualizado de los productos.</p>
+        <section class="card p-6 rounded-2xl shadow-lg">
+          <h3 class="text-xl font-bold mb-4">Ventas y Costes</h3>
+          <p class="text-secondary mb-4 text-sm">Introduce las unidades vendidas hoy por canal y el coste actualizado de los productos.</p>
           <div class="overflow-x-auto">
             <table class="w-full text-left">
-              <thead class="border-b border-stone-200">
+              <thead class="border-b border-accent">
                 <tr>
                   <th class="p-4 font-bold text-sm">Producto</th>
                   <th class="p-4 font-bold text-sm">Ventas Online (Uds.)</th>
@@ -59,53 +132,77 @@
                 </tr>
               </thead>
               <tbody>
-                <tr class="border-b border-stone-100"><td class="p-4 font-semibold text-sm">BOOTLEG RED - 750ML</td><td class="p-2"><input type="number" name="sold_online_100009" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" name="sold_physical_100009" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" step="0.01" name="cost_100009" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td></tr>
-                <tr class="border-b border-stone-100"><td class="p-4 font-semibold text-sm">MOMENT DE PLAISIR - 750ML</td><td class="p-2"><input type="number" name="sold_online_100024" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" name="sold_physical_100024" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" step="0.01" name="cost_100024" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td></tr>
-                <tr class="border-b border-stone-100"><td class="p-4 font-semibold text-sm">S SMITH ORGANIC PEAR CIDER - 18.7OZ</td><td class="p-2"><input type="number" name="sold_online_1001" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" name="sold_physical_1001" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" step="0.01" name="cost_1001" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td></tr>
-                <tr class="border-b border-stone-100"><td class="p-4 font-semibold text-sm">SCHLINK HAUS KABINETT - 750ML</td><td class="p-2"><input type="number" name="sold_online_100145" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" name="sold_physical_100145" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" step="0.01" name="cost_100145" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td></tr>
-                <tr><td class="p-4 font-semibold text-sm">SANTORINI GAVALA WHITE - 750ML</td><td class="p-2"><input type="number" name="sold_online_100293" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" name="sold_physical_100293" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td><td class="p-2"><input type="number" step="0.01" name="cost_100293" class="w-full bg-stone-50 p-2 rounded-lg border border-stone-300"></td></tr>
+                <tr class="border-b border-accent"><td class="p-4 font-semibold text-sm">BOOTLEG RED - 750ML</td><td class="p-2"><input type="number" name="sold_online_100009" class="input-field w-full p-2 rounded-lg border"></td><td class="p-2"><input type="number" name="sold_physical_100009" class="input-field w-full p-2 rounded-lg border"></td><td class="p-2"><input type="number" step="0.01" name="cost_100009" class="input-field w-full p-2 rounded-lg border"></td></tr>
+                <tr class="border-b border-accent"><td class="p-4 font-semibold text-sm">MOMENT DE PLAISIR - 750ML</td><td class="p-2"><input type="number" name="sold_online_100024" class="input-field w-full p-2 rounded-lg border"></td><td class="p-2"><input type="number" name="sold_physical_100024" class="input-field w-full p-2 rounded-lg border"></td><td class="p-2"><input type="number" step="0.01" name="cost_100024" class="input-field w-full p-2 rounded-lg border"></td></tr>
+                <tr class="border-b border-accent"><td class="p-4 font-semibold text-sm">S SMITH ORGANIC PEAR CIDER - 18.7OZ</td><td class="p-2"><input type="number" name="sold_online_1001" class="input-field w-full p-2 rounded-lg border"></td><td class="p-2"><input type="number" name="sold_physical_1001" class="input-field w-full p-2 rounded-lg border"></td><td class="p-2"><input type="number" step="0.01" name="cost_1001" class="input-field w-full p-2 rounded-lg border"></td></tr>
+                <tr class="border-b border-accent"><td class="p-4 font-semibold text-sm">SCHLINK HAUS KABINETT - 750ML</td><td class="p-2"><input type="number" name="sold_online_100145" class="input-field w-full p-2 rounded-lg border"></td><td class="p-2"><input type="number" name="sold_physical_100145" class="input-field w-full p-2 rounded-lg border"></td><td class="p-2"><input type="number" step="0.01" name="cost_100145" class="input-field w-full p-2 rounded-lg border"></td></tr>
+                <tr><td class="p-4 font-semibold text-sm">SANTORINI GAVALA WHITE - 750ML</td><td class="p-2"><input type="number" name="sold_online_100293" class="input-field w-full p-2 rounded-lg border"></td><td class="p-2"><input type="number" name="sold_physical_100293" class="input-field w-full p-2 rounded-lg border"></td><td class="p-2"><input type="number" step="0.01" name="cost_100293" class="input-field w-full p-2 rounded-lg border"></td></tr>
               </tbody>
             </table>
           </div>
         </section>
 
         <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="bg-white p-6 rounded-2xl shadow-lg space-y-4">
-            <h3 class="text-xl font-bold text-stone-800">Marketing</h3>
-            <p class="text-stone-500 -mt-2 text-xs italic">Dejar en blanco salvo los días que haya campañas activas.</p>
-            <div><label for="marketing-investment" class="block mb-1 text-sm font-semibold">Inversión en Marketing (€)</label><input type="number" step="0.01" id="marketing-investment" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+          <div class="card p-6 rounded-2xl shadow-lg space-y-4">
+            <h3 class="text-xl font-bold">Marketing</h3>
+            <p class="text-secondary -mt-2 text-xs italic">Dejar en blanco salvo los días que haya campañas activas.</p>
+            <div><label for="marketing-investment" class="block mb-1 text-sm font-semibold">Inversión en Marketing (€)</label><input type="number" step="0.01" id="marketing-investment" class="input-field w-full p-3 rounded-lg border"></div>
             <div>
               <label class="block mb-2 text-sm font-semibold">Canales de Marketing Activos</label>
               <div class="flex gap-4 items-center">
-                <label class="flex items-center gap-2"><input type="checkbox" id="channel-social" value="social_media" class="h-4 w-4 rounded border-stone-300 text-[#5C1A33] focus:ring-[#5C1A33]"> Redes Sociales</label>
-                <label class="flex items-center gap-2"><input type="checkbox" id="channel-email" value="email" class="h-4 w-4 rounded border-stone-300 text-[#5C1A33] focus:ring-[#5C1A33]"> Email</label>
+                <label class="flex items-center gap-2"><input type="checkbox" id="channel-social" value="social_media" class="checkbox-accent h-4 w-4 rounded border-accent focus:ring-2"> Redes Sociales</label>
+                <label class="flex items-center gap-2"><input type="checkbox" id="channel-email" value="email" class="checkbox-accent h-4 w-4 rounded border-accent focus:ring-2"> Email</label>
               </div>
             </div>
-            <div><label for="active-promotions" class="block mb-1 text-sm font-semibold">Promociones Activas</label><textarea id="active-promotions" rows="2" placeholder="Ej: 2x1 en vinos..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></textarea></div>
+            <div><label for="active-promotions" class="block mb-1 text-sm font-semibold">Promociones Activas</label><textarea id="active-promotions" rows="2" placeholder="Ej: 2x1 en vinos..." class="input-field w-full p-3 rounded-lg border"></textarea></div>
           </div>
 
-          <div class="bg-white p-6 rounded-2xl shadow-lg space-y-4">
-            <h3 class="text-xl font-bold text-stone-800">Eventos y Proveedores</h3>
-            <p class="text-stone-500 -mt-2 text-xs italic">Dejar en blanco salvo eventos especiales o nuevos pedidos.</p>
-            <div><label for="special-events" class="block mb-1 text-sm font-semibold">Eventos Especiales</label><textarea id="special-events" rows="2" placeholder="Ej: Fiesta patronal..." class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></textarea></div>
-            <div class="border-t border-stone-200 pt-4">
-              <h4 class="font-semibold text-stone-700 mb-2">Nuevo Pedido a Proveedor</h4>
+          <div class="card p-6 rounded-2xl shadow-lg space-y-4">
+            <h3 class="text-xl font-bold">Eventos y Proveedores</h3>
+            <p class="text-secondary -mt-2 text-xs italic">Dejar en blanco salvo eventos especiales o nuevos pedidos.</p>
+            <div><label for="special-events" class="block mb-1 text-sm font-semibold">Eventos Especiales</label><textarea id="special-events" rows="2" placeholder="Ej: Fiesta patronal..." class="input-field w-full p-3 rounded-lg border"></textarea></div>
+            <div class="border-t border-accent pt-4">
+              <h4 class="font-semibold mb-2">Nuevo Pedido a Proveedor</h4>
               <div class="grid grid-cols-2 gap-4">
-                <div><label for="supplier-name" class="block mb-1 text-sm">Nombre Proveedor</label><input type="text" id="supplier-name" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-                <div><label for="promised-delivery" class="block mb-1 text-sm">Fecha Prometida</label><input type="date" id="promised-delivery" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
+                <div><label for="supplier-name" class="block mb-1 text-sm">Nombre Proveedor</label><input type="text" id="supplier-name" class="input-field w-full p-3 rounded-lg border"></div>
+                <div><label for="promised-delivery" class="block mb-1 text-sm">Fecha Prometida</label><input type="date" id="promised-delivery" class="input-field w-full p-3 rounded-lg border"></div>
               </div>
-              <h4 class="font-semibold text-stone-700 mt-4 mb-2">Pedidos Pendientes de Recibir</h4>
-              <div id="pending-orders-list" class="space-y-2 text-sm"><p class="text-stone-500 text-center py-2">No hay pedidos pendientes.</p></div>
+              <h4 class="font-semibold mt-4 mb-2">Pedidos Pendientes de Recibir</h4>
+              <div id="pending-orders-list" class="space-y-2 text-sm"><p class="text-secondary text-center py-2">No hay pedidos pendientes.</p></div>
             </div>
           </div>
         </section>
 
-        <button type="submit" class="w-full wine-grad text-white py-4 rounded-full font-bold text-lg hover:opacity-90 transition-opacity">Guardar Registro Diario</button>
+        <button type="submit" class="cta-button w-full py-4 rounded-full font-bold text-lg hover:opacity-90 transition-opacity">Guardar Registro Diario</button>
       </form>
     </main>
   </div>
 
   <script>
+    // --- Lógica del Tema ---
+    function setupThemeToggle() {
+      const themeToggle = document.getElementById('theme-toggle');
+      const body = document.body;
+      const savedTheme = localStorage.getItem('theme');
+      
+      if (savedTheme === 'warm') {
+          body.classList.add('theme-warm');
+          themeToggle.checked = true;
+      } else {
+          themeToggle.checked = false;
+      }
+
+      themeToggle.addEventListener('change', () => {
+          if (themeToggle.checked) {
+              body.classList.add('theme-warm');
+              localStorage.setItem('theme', 'warm');
+          } else {
+              body.classList.remove('theme-warm');
+              localStorage.setItem('theme', 'light');
+          }
+      });
+    }
+
     // --- Configuración y Autenticación Estandarizada ---
     const API_BASE_URL = 'http://127.0.0.1:8000';
     const TOKEN_KEY = 'accessToken';
@@ -120,6 +217,7 @@
     function logout() {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(ROLE_KEY);
+        localStorage.removeItem('theme'); // Limpiar tema
         window.location.href = 'login.html';
     }
 
@@ -191,13 +289,13 @@
         function renderPendingOrders() {
             if (!pendingOrdersList) return;
             if (pendingOrders.length === 0) {
-                pendingOrdersList.innerHTML = '<p class="text-stone-500 text-center py-2">No hay pedidos pendientes.</p>'; return;
+                pendingOrdersList.innerHTML = '<p class="text-secondary text-center py-2">No hay pedidos pendientes.</p>'; return;
             }
             pendingOrdersList.innerHTML = '';
             pendingOrders.forEach(order => {
                 const el = document.createElement('div');
-                el.className = 'flex justify-between items-center bg-stone-100 p-2 rounded-lg';
-                el.innerHTML = `<div><span class="font-semibold">${order.name}</span><span class="text-stone-500 ml-2">(Prometido: ${order.date})</span></div><button data-order-id="${order.id}" class="mark-received-btn text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full font-semibold hover:bg-green-300">Marcar como Recibido</button>`;
+                el.className = 'flex justify-between items-center input-field p-2 rounded-lg';
+                el.innerHTML = `<div><span class="font-semibold">${order.name}</span><span class="text-secondary ml-2">(Prometido: ${order.date})</span></div><button data-order-id="${order.id}" class="mark-received-btn text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full font-semibold hover:bg-green-300">Marcar como Recibido</button>`;
                 pendingOrdersList.appendChild(el);
             });
         }
@@ -221,6 +319,8 @@
 
     // --- Ejecución al Cargar la Página ---
     document.addEventListener('DOMContentLoaded', () => {
+        setupThemeToggle(); // Inicializar el interruptor de tema
+        
         const logoutBtn = document.getElementById('logout-btn');
         if(logoutBtn) logoutBtn.addEventListener('click', logout);
 

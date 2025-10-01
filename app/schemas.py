@@ -306,3 +306,18 @@ class PaginatedCostRecordResponse(BaseModel):
     page: int
     page_size: int
     total_pages: int
+    
+class ProductSimple(BaseModel):
+    id: uuid.UUID
+    name: str
+
+    class Config:
+        from_attributes = True
+        
+class SunburstItem(BaseModel):
+    name: str
+    value: float
+
+class SunburstCategory(BaseModel):
+    name: str
+    children: List[SunburstItem]

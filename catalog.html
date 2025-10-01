@@ -9,297 +9,378 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
   <style>
-    body{font-family:'Montserrat',sans-serif;background-color:#F8F7F4}
-    .wine-grad{background-image:linear-gradient(to right,#5C1A33,#8C2B4F)}
-    .tab-active{border-color:#5C1A33;color:#5C1A33;font-weight:700}
+    /* --- Sistema de Temas --- */
+    :root { /* Tema Claro (Blanco) por Defecto */
+        --bg-color: #F8F7F4;
+        --text-color: #1c1917; /* stone-900 */
+        --text-secondary-color: #57534e; /* stone-600 */
+        --header-bg-color: #292524; /* stone-800 */
+        --card-bg: #FFFFFF;
+        --input-bg: #f5f5f4; /* stone-100 */
+        --border-color: #e5e7eb; /* gray-200 */
+        --tab-active-color: #5C1A33;
+        --cta-button-gradient: linear-gradient(to right, #5C1A33, #8C2B4F);
+        --secondary-button-bg: #e7e5e4; /* stone-200 */
+        --secondary-button-text: #3d3d3d;
+    }
+
+    body.theme-warm { /* 🍂 Tema Otoñal Cálido */
+        --bg-color: #F2E2C4;
+        --text-color: #5C4033;
+        --text-secondary-color: #8C8C88;
+        --header-bg-color: #5C4033;
+        --card-bg: rgba(255, 255, 255, 0.6);
+        --input-bg: rgba(92, 64, 51, 0.05);
+        --border-color: rgba(92, 64, 51, 0.2);
+        --tab-active-color: #C98C32;
+        --cta-button-gradient: linear-gradient(to right, #D96C06, #C98C32);
+        --secondary-button-bg: #A23E48;
+        --secondary-button-text: white;
+    }
+    
+    /* --- Estilos Generales con Variables --- */
+    body { 
+        font-family: 'Montserrat', sans-serif; 
+        background-color: var(--bg-color); 
+        color: var(--text-color);
+        transition: background-color 0.3s, color 0.3s;
+    }
+    .text-secondary { color: var(--text-secondary-color); }
+    .header-button { background-color: var(--header-bg-color); }
+    .tab-active { border-color: var(--tab-active-color) !important; color: var(--tab-active-color) !important; font-weight: 700; }
+    .border-accent { border-color: var(--border-color); }
+    .card { background-color: var(--card-bg); border: 1px solid var(--border-color); }
+    .modal-card { background-color: var(--card-bg); color: var(--text-color); }
+    .input-field { background-color: var(--input-bg); border-color: var(--border-color); }
+    .cta-button { background-image: var(--cta-button-gradient); color: white; }
+    .secondary-button { background-color: var(--secondary-button-bg); color: var(--secondary-button-text); }
+    .sticky-header { background-color: var(--card-bg); }
+
+    /* --- CSS DE LA ANTORCHA --- */
+    .torch-container { position: absolute; right: 220px; top: -35px; display: flex; align-items: center; cursor: pointer; user-select: none; transform: scale(0.45); }
+    .torch-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+    .torch { display: flex; justify-content: center; height: 150px; }
+    .head, .stick { position: absolute; width: 30px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); }
+    .stick { position: relative; height: 120px; }
+    .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000000; }
+    .top { transform: rotateX(90deg) translateZ(15px); } .left { transform: rotateY(-90deg) translateZ(15px); } .right { transform: rotateY(0deg) translateZ(15px); }
+    .top div, .left div, .right div { width: 102%; height: 102%; }
+    .top div:nth-child(1), .left div:nth-child(3), .right div:nth-child(3) { background-color: #ffff9760; } .top div:nth-child(2), .left div:nth-child(1), .right div:nth-child(1) { background-color: #ffd80060; } .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; } .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; }
+    .side { position: absolute; width: 30px; height: 120px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: repeat(8, 12.5%); cursor: pointer; translate: 0 12px; }
+    .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); } .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); }
+    .side-left div, .side-right div { width: 103%; height: 103%; }
+    .side div:nth-child(1){background-color:#443622}.side div:nth-child(2){background-color:#2e2517}.side div:nth-child(3),.side div:nth-child(5){background-color:#4b3b23}.side div:nth-child(4),.side div:nth-child(10){background-color:#251e12}.side div:nth-child(6){background-color:#292115}.side div:nth-child(7){background-color:#4b3c26}.side div:nth-child(8){background-color:#292115}.side div:nth-child(9){background-color:#4b3a21}.side div:nth-child(11),.side div:nth-child(15){background-color:#3d311d}.side div:nth-child(12){background-color:#2c2315}.side div:nth-child(13){background-color:#493a22}.side div:nth-child(14){background-color:#2b2114}.side div:nth-child(16){background-color:#271e10}
+    .torch-container input:checked~.torch .face{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 10px rgba(255,237,156,.7)) drop-shadow(0 0 25px rgba(255,227,101,.4))}.torch-container input:checked~.torch .top div:nth-child(1),.torch-container input:checked~.torch .left div:nth-child(3),.torch-container input:checked~.torch .right div:nth-child(3){background-color:#ffff97}.torch-container input:checked~.torch .top div:nth-child(2),.torch-container input:checked~.torch .left div:nth-child(1),.torch-container input:checked~.torch .right div:nth-child(1){background-color:#ffd800}.torch-container input:checked~.torch .top div:nth-child(3),.torch-container input:checked~.torch .left div:nth-child(4),.torch-container input:checked~.torch .right div:nth-child(4){background-color:#fff}.torch-container input:checked~.torch .top div:nth-child(4),.torch-container input:checked~.torch .left div:nth-child(2),.torch-container input:checked~.torch .right div:nth-child(2){background-color:#ff8f00}.torch-container input:checked~.torch .side div:nth-child(1){background-color:#7c623e}.torch-container input:checked~.torch .side div:nth-child(2){background-color:#4c3d26}.torch-container input:checked~.torch .side div:nth-child(3),.torch-container input:checked~.torch .side div:nth-child(5){background-color:#937344}.torch-container input:checked~.torch .side div:nth-child(4),.torch-container input:checked~.torch .side div:nth-child(10){background-color:#3c2f1c}.torch-container input:checked~.torch .side div:nth-child(6){background-color:#423522}.torch-container input:checked~.torch .side div:nth-child(7){background-color:#9f7f50}.torch-container input:checked~.torch .side div:nth-child(8){background-color:#403320}.torch-container input:checked~.torch .side div:nth-child(9){background-color:#977748}.torch-container input:checked~.torch .side div:nth-child(11),.torch-container input:checked~.torch .side div:nth-child(15){background-color:#675231}.torch-container input:checked~.torch .side div:nth-child(12){background-color:#3d301d}.torch-container input:checked~.torch .side div:nth-child(13){background-color:#987849}.torch-container input:checked~.torch .side div:nth-child(14){background-color:#3b2e1b}.torch-container input:checked~.torch .side div:nth-child(16){background-color:#372a17}
   </style>
 </head>
-<body class="text-stone-800">
+<body>
   <div class="p-4 sm:p-8">
-    <header class="flex justify-between items-center mb-6">
-        <div class="flex items-center gap-4">
-          <a href="performance.html" class="flex items-center gap-4">
-            <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
-            <span class="text-3xl font-light text-stone-400">|</span>
-            <h1 class="text-3xl font-semibold text-stone-700">Catálogo y Stock</h1>
-          </a>
-        </div>
-        <button id="logout-btn" class="bg-stone-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-stone-800">Cerrar Sesión</button>
+    <header class="flex justify-between items-center mb-6 relative">
+        <a href="performance.html" class="flex items-center gap-4">
+          <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+          <span class="text-3xl font-light text-secondary">|</span>
+          <h1 class="text-3xl font-semibold">Catálogo y Stock</h1>
+        </a>
+      <div class="flex items-center gap-4">
+        <label class="torch-container">
+            <input id="theme-toggle" type="checkbox" />
+            <div class="torch">
+                <div class="head"><div class="face top"><div></div><div></div><div></div><div></div></div><div class="face left"><div></div><div></div><div></div><div></div></div><div class="face right"><div></div><div></div><div></div><div></div></div></div>
+                <div class="stick"><div class="side side-left"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div><div class="side side-right"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>
+            </div>
+        </label>
+        <button id="logout-btn" class="header-button text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
+      </div>
     </header>
 
-    <div class="mb-6 border-b border-stone-200">
+    <div class="mb-6 border-b border-accent">
       <nav class="flex space-x-8" aria-label="Tabs">
-        <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Análisis de Rendimiento</a>
-        <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Predicciones y Escenarios</a>
+        <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Análisis de Rendimiento</a>
+        <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Predicciones</a>
         <a href="catalog.html" id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Catálogo y Stock</a>
-        <a href="daily-log.html" id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</a>
-        <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Finanzas</a>
-        <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Cuaderno de Campo</a>
-        <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Trazabilidad</a>
-        <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Gestión de Bodega</a>
-        <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Parcelas</a>
-        <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Clima</a>
-        <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Configuración</a>
+        <a href="daily-log.html" id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Registro Diario</a>
+        <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Finanzas</a>
+        <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Cuaderno de Campo</a>
+        <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Trazabilidad</a>
+        <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Gestión de Bodega</a>
+        <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Parcelas</a>
+        <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Clima</a>
+        <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Configuración</a>
       </nav>
     </div>
 
     <main class="space-y-6">
       <section class="flex justify-between items-center">
         <div class="relative">
-          <input type="text" id="sku-filter-input" placeholder="Buscar por SKU..." class="w-full max-w-xs pl-10 pr-4 py-2 border border-stone-300 rounded-full">
-          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <input type="text" id="sku-filter-input" placeholder="Buscar por SKU..." class="input-field w-full max-w-xs pl-10 pr-4 py-2 border rounded-full">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
         </div>
-        <button id="add-product-btn" class="wine-grad text-white px-5 py-2 rounded-full font-semibold hover:opacity-90 flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          Añadir Vino Manualmente
+        <button id="add-product-btn" class="cta-button px-5 py-2 rounded-full font-semibold hover:opacity-90 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Añadir Vino
         </button>
       </section>
 
-      <section class="bg-white p-6 rounded-2xl shadow-lg">
+      <section class="card p-6 rounded-2xl shadow-lg">
         <div class="max-h-[60vh] overflow-y-auto">
           <table class="w-full text-left">
-            <thead class="border-b border-stone-200 sticky top-0 bg-white">
+            <thead class="border-b border-accent sticky top-0 sticky-header">
               <tr>
-                <th class="p-4 font-bold">Nombre del Vino</th>
-                <th class="p-4 font-bold">SKU</th>
-                <th class="p-4 font-bold">Precio</th>
-                <th class="p-4 font-bold">Coste</th>
-                <th class="p-4 font-bold">Stock</th>
+                <th class="p-4 font-bold">Nombre del Vino</th><th class="p-4 font-bold">SKU</th><th class="p-4 font-bold">Precio</th><th class="p-4 font-bold">Coste</th><th class="p-4 font-bold">Stock</th>
               </tr>
             </thead>
             <tbody id="product-table-body"></tbody>
           </table>
         </div>
-        <p id="catalog-placeholder" class="hidden text-center py-8 text-stone-500">No se encontraron productos.</p>
+        <p id="catalog-placeholder" class="hidden text-center py-8 text-secondary">No se encontraron productos.</p>
         <div id="catalog-pagination" class="flex justify-center items-center gap-4 mt-4"></div>
       </section>
     </main>
 
     <div id="add-product-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="bg-white text-stone-800 w-full max-w-4xl p-8 rounded-3xl shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8 relative">
-            <div>
-                <h2 class="text-2xl font-bold">Añadir Nuevo Vino al Catálogo</h2>
-                <p class="text-stone-500 text-sm mb-6">Completa los campos para añadir un nuevo producto a la base de datos.</p>
-                <form id="add-product-form" class="space-y-4">
-                    <h3 class="font-bold text-lg border-b border-stone-200 pb-2">Datos del vino</h3>
-                    <div><label class="block mb-1 text-sm font-semibold">Nombre del Vino <span class="text-red-500">*</span></label><input type="text" id="product-name" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-                    <div><label class="block mb-1 text-sm font-semibold">SKU / Código <span class="text-red-500">*</span></label><input type="text" id="product-sku" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block mb-1 text-sm font-semibold">Precio (€) <span class="text-red-500">*</span></label><input type="number" step="0.01" id="product-price" required class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-                        <div>
-                            <label class="block mb-1 text-sm font-semibold">Lote de Origen (Opcional)</label>
-                            <select id="wine-lot-origin" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300">
-                                <option value="">Seleccionar lote...</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block mb-1 text-sm font-semibold">Coste (€)</label><input type="number" step="0.01" id="product-cost" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-                        <div><label class="block mb-1 text-sm font-semibold">Stock inicial</label><input type="number" id="product-quantity" class="w-full bg-stone-50 p-3 rounded-lg border border-stone-300"></div>
-                    </div>
-                </form>
+      <div class="modal-card w-full max-w-4xl p-8 rounded-3xl shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+          <div>
+            <h2 class="text-2xl font-bold">Añadir Nuevo Vino</h2>
+            <p class="text-secondary text-sm mb-6">Completa los campos para añadir un nuevo producto.</p>
+            <form id="add-product-form" class="space-y-4">
+              <h3 class="font-bold text-lg border-b border-accent pb-2">Datos del vino</h3>
+              <div><label class="block mb-1 text-sm font-semibold">Nombre del Vino <span class="text-red-500">*</span></label><input type="text" id="product-name" required class="input-field w-full p-3 rounded-lg border"></div>
+              <div><label class="block mb-1 text-sm font-semibold">SKU / Código <span class="text-red-500">*</span></label><input type="text" id="product-sku" required class="input-field w-full p-3 rounded-lg border"></div>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="block mb-1 text-sm font-semibold">Precio (€) <span class="text-red-500">*</span></label><input type="number" step="0.01" id="product-price" required class="input-field w-full p-3 rounded-lg border"></div>
+                <div><label class="block mb-1 text-sm font-semibold">Lote de Origen</label><select id="wine-lot-origin" class="input-field w-full p-3 rounded-lg border"><option value="">Seleccionar lote...</option></select></div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="block mb-1 text-sm font-semibold">Coste (€)</label><input type="number" step="0.01" id="product-cost" class="input-field w-full p-3 rounded-lg border"></div>
+                <div><label class="block mb-1 text-sm font-semibold">Stock inicial</label><input type="number" id="product-quantity" class="input-field w-full p-3 rounded-lg border"></div>
+              </div>
+            </form>
+          </div>
+          <div class="input-field p-6 rounded-2xl border border-accent">
+            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg">Métricas en Tiempo Real</h3><button id="clear-metrics-btn" class="text-sm text-secondary hover:text-stone-800">Borrar</button></div>
+            <div class="grid grid-cols-2 gap-4 text-center">
+              <div class="card p-3 rounded-lg"><p class="text-secondary text-sm">Precio</p><p id="metric-price" class="font-bold text-xl">-</p></div>
+              <div class="card p-3 rounded-lg"><p class="text-secondary text-sm">Coste</p><p id="metric-cost" class="font-bold text-xl">-</p></div>
+              <div class="card p-3 rounded-lg"><p class="text-secondary text-sm">Margen</p><p id="metric-margin-abs" class="font-bold text-xl">-</p></div>
+              <div class="card p-3 rounded-lg"><p class="text-secondary text-sm">Margen %</p><p id="metric-margin-perc" class="font-bold text-xl">-</p></div>
+              <div class="card p-3 rounded-lg col-span-2"><p class="text-secondary text-sm">Ingresos (estim.)</p><p id="metric-total-revenue" class="font-bold text-3xl text-green-600">-</p></div>
             </div>
-            <div class="bg-stone-50 p-6 rounded-2xl border border-stone-200">
-                <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg">Métricas en Tiempo Real</h3><button id="clear-metrics-btn" class="text-sm text-stone-500 hover:text-stone-800">Borrar</button></div>
-                <div class="grid grid-cols-2 gap-4 text-center">
-                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Precio</p><p id="metric-price" class="font-bold text-xl">-</p></div>
-                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Coste</p><p id="metric-cost" class="font-bold text-xl">-</p></div>
-                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Margen</p><p id="metric-margin-abs" class="font-bold text-xl">-</p></div>
-                    <div class="bg-white p-3 rounded-lg border"><p class="text-stone-500 text-sm">Margen %</p><p id="metric-margin-perc" class="font-bold text-xl">-</p></div>
-                    <div class="bg-white p-3 rounded-lg border col-span-2"><p class="text-stone-500 text-sm">Ingresos (estim.)</p><p id="metric-total-revenue" class="font-bold text-3xl text-green-600">-</p></div>
-                </div>
-                <p class="text-xs text-stone-500 mt-4 text-center">Las métricas se actualizan al escribir.</p>
-            </div>
-            <div class="md:col-span-2 flex justify-end gap-4 mt-6">
-                <button id="cancel-product-btn" type="button" class="bg-stone-200 px-6 py-3 rounded-full font-bold hover:bg-stone-300">Cancelar</button>
-                <button id="save-product-btn" form="add-product-form" type="submit" class="wine-grad text-white px-6 py-3 rounded-full font-bold hover:opacity-90">Guardar Vino</button>
-            </div>
-        </div>
+            <p class="text-xs text-secondary mt-4 text-center">Las métricas se actualizan al escribir.</p>
+          </div>
+          <div class="md:col-span-2 flex justify-end gap-4 mt-6">
+            <button id="cancel-product-btn" type="button" class="secondary-button px-6 py-3 rounded-full font-bold hover:opacity-90">Cancelar</button>
+            <button id="save-product-btn" form="add-product-form" type="submit" class="cta-button text-white px-6 py-3 rounded-full font-bold hover:opacity-90">Guardar Vino</button>
+          </div>
+      </div>
     </div>
   </div>
 
   <script>
+    // --- Lógica del Tema ---
+    function setupThemeToggle() {
+      const themeToggle = document.getElementById('theme-toggle');
+      const body = document.body;
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'warm') {
+          body.classList.add('theme-warm');
+          themeToggle.checked = true;
+      } else {
+          themeToggle.checked = false;
+      }
+      themeToggle.addEventListener('change', () => {
+          if (themeToggle.checked) {
+              body.classList.add('theme-warm');
+              localStorage.setItem('theme', 'warm');
+          } else {
+              body.classList.remove('theme-warm');
+              localStorage.setItem('theme', 'light');
+          }
+      });
+    }
+
+    // --- Configuración y Autenticación ---
     const API_BASE_URL = 'http://127.0.0.1:8000';
     const TOKEN_KEY = 'accessToken';
     const ROLE_KEY = 'userRole';
 
     function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
     function logout() {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(ROLE_KEY);
-        window.location.href = 'login.html';
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(ROLE_KEY);
+      localStorage.removeItem('theme'); // Limpiar tema
+      window.location.href = 'login.html';
     }
     
     async function apiFetch(endpoint, options = {}) {
-        const headers = { 'Content-Type': 'application/json' };
-        const token = localStorage.getItem(TOKEN_KEY);
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-        if (options.body && options.body instanceof FormData) delete headers['Content-Type'];
-        
-        const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-        
-        if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
-        if (resp.status === 204) return null;
-        if (!resp.ok) {
-            const errData = await resp.json().catch(() => ({ detail: 'Error en la API.' }));
-            throw new Error(errData.detail);
-        }
-        return resp.json();
+      const headers = { 'Content-Type': 'application/json' };
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (options.body && options.body instanceof FormData) delete headers['Content-Type'];
+      
+      const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+      
+      if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
+      if (resp.status === 204) return null;
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({ detail: 'Error en la API.' }));
+        throw new Error(errData.detail);
+      }
+      return resp.json();
     }
 
     function updateUIVisibility() {
-        const role = localStorage.getItem(ROLE_KEY);
-        if (role === 'lector') {
-            const addProductBtn = document.getElementById('add-product-btn');
-            if(addProductBtn) addProductBtn.style.display = 'none';
-        }
+      const role = localStorage.getItem(ROLE_KEY);
+      if (role === 'lector') {
+        const addProductBtn = document.getElementById('add-product-btn');
+        if(addProductBtn) addProductBtn.style.display = 'none';
+      }
     }
     
     document.addEventListener('DOMContentLoaded', () => {
-        const logoutBtn = document.getElementById('logout-btn');
-        if(logoutBtn) logoutBtn.addEventListener('click', logout);
-        requireAuth();
-        updateUIVisibility();
+      setupThemeToggle(); // Inicializar el interruptor de tema
+      
+      const logoutBtn = document.getElementById('logout-btn');
+      if(logoutBtn) logoutBtn.addEventListener('click', logout);
+      requireAuth();
+      updateUIVisibility();
 
-        // --- LÓGICA DE LA PÁGINA DE CATÁLOGO ---
-        const catalog = {
-            tableBody: document.getElementById('product-table-body'),
-            placeholder: document.getElementById('catalog-placeholder'),
-            pagination: document.getElementById('catalog-pagination'),
-            filterInput: document.getElementById('sku-filter-input'),
-            addProductBtn: document.getElementById('add-product-btn'),
-            modal: {
-                container: document.getElementById('add-product-modal'),
-                form: document.getElementById('add-product-form'),
-                cancelBtn: document.getElementById('cancel-product-btn'),
-                clearMetricsBtn: document.getElementById('clear-metrics-btn'),
-                wineLotSelect: document.getElementById('wine-lot-origin'),
-                inputs: { name: document.getElementById('product-name'), sku: document.getElementById('product-sku'), price: document.getElementById('product-price'), cost: document.getElementById('product-cost'), quantity: document.getElementById('product-quantity') },
-                metrics: { price: document.getElementById('metric-price'), cost: document.getElementById('metric-cost'), marginAbs: document.getElementById('metric-margin-abs'), marginPerc: document.getElementById('metric-margin-perc'), totalRevenue: document.getElementById('metric-total-revenue') }
-            }
+      // --- LÓGICA DE LA PÁGINA DE CATÁLOGO ---
+      const catalog = {
+        tableBody: document.getElementById('product-table-body'),
+        placeholder: document.getElementById('catalog-placeholder'),
+        pagination: document.getElementById('catalog-pagination'),
+        filterInput: document.getElementById('sku-filter-input'),
+        addProductBtn: document.getElementById('add-product-btn'),
+        modal: {
+          container: document.getElementById('add-product-modal'),
+          form: document.getElementById('add-product-form'),
+          cancelBtn: document.getElementById('cancel-product-btn'),
+          clearMetricsBtn: document.getElementById('clear-metrics-btn'),
+          wineLotSelect: document.getElementById('wine-lot-origin'),
+          inputs: { name: document.getElementById('product-name'), sku: document.getElementById('product-sku'), price: document.getElementById('product-price'), cost: document.getElementById('product-cost'), quantity: document.getElementById('product-quantity') },
+          metrics: { price: document.getElementById('metric-price'), cost: document.getElementById('metric-cost'), marginAbs: document.getElementById('metric-margin-abs'), marginPerc: document.getElementById('metric-margin-perc'), totalRevenue: document.getElementById('metric-total-revenue') }
+        }
+      };
+      
+      let currentPage = 1; 
+      const pageSize = 10; 
+      let skuFilterTimeout;
+
+      async function loadProducts(page = 1) {
+        currentPage = page;
+        const offset = (page - 1) * pageSize;
+        const sku = catalog.filterInput.value || '';
+        
+        try {
+          const products = await apiFetch(`/api/analytics/product-catalog?limit=${pageSize}&offset=${offset}&sku=${encodeURIComponent(sku)}`);
+          
+          catalog.tableBody.innerHTML = '';
+          
+          if (Array.isArray(products) && products.length > 0) {
+            catalog.placeholder.classList.add('hidden');
+            products.forEach(p => {
+              const stockColor = p.Stock < 50 ? 'text-red-600' : (p.Stock < 200 ? 'text-yellow-600' : 'text-green-700');
+              catalog.tableBody.insertAdjacentHTML('beforeend', 
+                `<tr class="border-b border-accent">
+                  <td class="p-4 font-semibold">${p.ProductName}</td>
+                  <td class="p-4 text-secondary">${p.SKU}</td>
+                  <td class="p-4">€${(p.UnitPrice || 0).toFixed(2)}</td>
+                  <td class="p-4 text-secondary">€${(p.UnitCost || 0).toFixed(2)}</td>
+                  <td class="p-4 font-bold ${stockColor}">${p.Stock != null ? p.Stock : '-'}</td>
+                </tr>`
+              );
+            });
+          } else {
+            if (page === 1) catalog.placeholder.classList.remove('hidden');
+          }
+          renderPaginationControls(page, Array.isArray(products) && products.length === pageSize);
+        } catch (err) {
+          alert(`Error al cargar los productos: ${err.message}`);
+        }
+      }
+
+      function renderPaginationControls(page, hasNext) {
+        catalog.pagination.innerHTML = `<button id="prev-page-btn" class="secondary-button px-4 py-2 rounded-full font-semibold disabled:opacity-50" ${page === 1 ? 'disabled' : ''}>Anterior</button><span class="font-bold">Página ${page}</span><button id="next-page-btn" class="secondary-button px-4 py-2 rounded-full font-semibold disabled:opacity-50" ${!hasNext ? 'disabled' : ''}>Siguiente</button>`;
+        document.getElementById('prev-page-btn').onclick = () => { if (page > 1) loadProducts(page - 1); };
+        document.getElementById('next-page-btn').onclick = () => { if (hasNext) loadProducts(page + 1); };
+      }
+      
+      catalog.filterInput.addEventListener('input', () => { 
+        clearTimeout(skuFilterTimeout); 
+        skuFilterTimeout = setTimeout(() => loadProducts(1), 500); 
+      });
+
+      // --- LÓGICA DEL MODAL PARA AÑADIR MANUALMENTE ---
+      catalog.addProductBtn.addEventListener('click', async () => {
+        catalog.modal.form.reset();
+        updateMetrics();
+        try {
+          const wineLots = await apiFetch('/api/traceability/wine-lots');
+          const select = catalog.modal.wineLotSelect;
+          select.innerHTML = '<option value="">(Ninguno)</option>';
+          wineLots.forEach(lot => {
+            select.innerHTML += `<option value="${lot.id}">${lot.name}</option>`;
+          });
+        } catch (error) {
+          console.error("Error al cargar lotes para el modal:", error);
+        }
+        catalog.modal.container.classList.remove('hidden');
+      });
+
+      catalog.modal.cancelBtn.addEventListener('click', () => catalog.modal.container.classList.add('hidden'));
+      catalog.modal.clearMetricsBtn.addEventListener('click', () => {
+        catalog.modal.form.reset();
+        updateMetrics();
+      });
+      Object.values(catalog.modal.inputs).forEach(i => i.addEventListener('input', updateMetrics));
+      
+      function updateMetrics() {
+        const {inputs, metrics} = catalog.modal;
+        const price = parseFloat(inputs.price.value) || 0;
+        const cost = parseFloat(inputs.cost.value) || 0;
+        const qty = parseInt(inputs.quantity.value) || 0;
+        
+        metrics.price.textContent = price > 0 ? `€${price.toFixed(2)}` : '-';
+        metrics.cost.textContent  = cost > 0 ?  `€${cost.toFixed(2)}` : '-';
+        
+        if(price > 0 && cost > 0 && price >= cost) {
+          const m = price - cost;
+          metrics.marginAbs.textContent = `€${m.toFixed(2)}`;
+          metrics.marginPerc.textContent = `${((m / price) * 100).toFixed(1)}%`;
+        } else {
+          metrics.marginAbs.textContent = '-';
+          metrics.marginPerc.textContent = '-';
+        }
+        metrics.totalRevenue.textContent = (price > 0 && qty > 0) ? `€${(price * qty).toFixed(2)}` : '-';
+      }
+
+      catalog.modal.form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const { modal } = catalog;
+        const lotId = modal.wineLotSelect.value;
+        if (!lotId) {
+          alert("Para crear un producto, debes asociarlo a un lote de vino de origen.");
+          return;
+        }
+
+        const productData = { 
+          name: modal.inputs.name.value, 
+          sku: modal.inputs.sku.value, 
+          price: parseFloat(modal.inputs.price.value),
+          wine_lot_origin_id: lotId,
+          stock_units: modal.inputs.quantity.value ? parseInt(modal.inputs.quantity.value) : 0 
         };
-        
-        let currentPage = 1; 
-        const pageSize = 10; 
-        let skuFilterTimeout;
-
-        async function loadProducts(page = 1) {
-            currentPage = page;
-            const offset = (page - 1) * pageSize;
-            const sku = catalog.filterInput.value || '';
-            
-            try {
-                // APUNTAMOS AL ENDPOINT HÍBRIDO
-                const products = await apiFetch(`/api/analytics/product-catalog?limit=${pageSize}&offset=${offset}&sku=${encodeURIComponent(sku)}`);
-                
-                catalog.tableBody.innerHTML = '';
-                
-                if (Array.isArray(products) && products.length > 0) {
-                    catalog.placeholder.classList.add('hidden');
-                    products.forEach(p => {
-                        const stockColor = p.Stock < 50 ? 'text-red-600' : (p.Stock < 200 ? 'text-yellow-600' : 'text-green-700');
-                        catalog.tableBody.insertAdjacentHTML('beforeend', 
-                           `<tr class="border-b border-stone-100">
-                                <td class="p-4 font-semibold">${p.ProductName}</td>
-                                <td class="p-4 text-stone-500">${p.SKU}</td>
-                                <td class="p-4">€${(p.UnitPrice || 0).toFixed(2)}</td>
-                                <td class="p-4 text-stone-500">€${(p.UnitCost || 0).toFixed(2)}</td>
-                                <td class="p-4 font-bold ${stockColor}">${p.Stock != null ? p.Stock : '-'}</td>
-                            </tr>`
-                        );
-                    });
-                } else {
-                    if (page === 1) catalog.placeholder.classList.remove('hidden');
-                }
-                renderPaginationControls(page, Array.isArray(products) && products.length === pageSize);
-            } catch (err) {
-                alert(`Error al cargar los productos: ${err.message}`);
-            }
+        try {
+          await apiFetch('/api/products/', { method: 'POST', body: JSON.stringify(productData) });
+          modal.container.classList.add('hidden');
+          alert("Producto añadido a la base de datos.");
+          loadProducts(currentPage);
+        } catch (err) {
+          alert(`Error al guardar el producto: ${err.message}`);
         }
+      });
 
-        function renderPaginationControls(page, hasNext) {
-            catalog.pagination.innerHTML = `<button id="prev-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${page === 1 ? 'disabled' : ''}>Anterior</button><span class="font-bold">Página ${page}</span><button id="next-page-btn" class="px-4 py-2 rounded-full bg-stone-200 hover:bg-stone-300 font-semibold disabled:opacity-50" ${!hasNext ? 'disabled' : ''}>Siguiente</button>`;
-            document.getElementById('prev-page-btn').onclick = () => { if (page > 1) loadProducts(page - 1); };
-            document.getElementById('next-page-btn').onclick = () => { if (hasNext) loadProducts(page + 1); };
-        }
-        
-        catalog.filterInput.addEventListener('input', () => { 
-            clearTimeout(skuFilterTimeout); 
-            skuFilterTimeout = setTimeout(() => loadProducts(1), 500); 
-        });
-
-        // --- LÓGICA DEL MODAL PARA AÑADIR MANUALMENTE ---
-        catalog.addProductBtn.addEventListener('click', async () => {
-            catalog.modal.form.reset();
-            updateMetrics();
-            try {
-                const wineLots = await apiFetch('/api/traceability/wine-lots');
-                const select = catalog.modal.wineLotSelect;
-                select.innerHTML = '<option value="">(Ninguno)</option>';
-                wineLots.forEach(lot => {
-                    select.innerHTML += `<option value="${lot.id}">${lot.name}</option>`;
-                });
-            } catch (error) {
-                console.error("Error al cargar lotes para el modal:", error);
-            }
-            catalog.modal.container.classList.remove('hidden');
-        });
-
-        catalog.modal.cancelBtn.addEventListener('click', () => catalog.modal.container.classList.add('hidden'));
-        catalog.modal.clearMetricsBtn.addEventListener('click', () => {
-            catalog.modal.form.reset();
-            updateMetrics();
-        });
-        Object.values(catalog.modal.inputs).forEach(i => i.addEventListener('input', updateMetrics));
-        
-        function updateMetrics() {
-            const {inputs, metrics} = catalog.modal;
-            const price = parseFloat(inputs.price.value) || 0;
-            const cost = parseFloat(inputs.cost.value) || 0;
-            const qty = parseInt(inputs.quantity.value) || 0;
-            
-            metrics.price.textContent = price > 0 ? `€${price.toFixed(2)}` : '-';
-            metrics.cost.textContent  = cost > 0 ?  `€${cost.toFixed(2)}` : '-';
-            
-            if(price > 0 && cost > 0 && price >= cost) {
-                const m = price - cost;
-                metrics.marginAbs.textContent = `€${m.toFixed(2)}`;
-                metrics.marginPerc.textContent = `${((m / price) * 100).toFixed(1)}%`;
-            } else {
-                metrics.marginAbs.textContent = '-';
-                metrics.marginPerc.textContent = '-';
-            }
-            metrics.totalRevenue.textContent = (price > 0 && qty > 0) ? `€${(price * qty).toFixed(2)}` : '-';
-        }
-
-        catalog.modal.form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const { modal } = catalog;
-            const lotId = modal.wineLotSelect.value;
-            if (!lotId) {
-                alert("Para crear un producto, debes asociarlo a un lote de vino de origen.");
-                return;
-            }
-
-            const productData = { 
-                name: modal.inputs.name.value, 
-                sku: modal.inputs.sku.value, 
-                price: parseFloat(modal.inputs.price.value),
-                wine_lot_origin_id: lotId,
-                stock_units: modal.inputs.quantity.value ? parseInt(modal.inputs.quantity.value) : 0 
-            };
-            try {
-                await apiFetch('/api/products/', { method: 'POST', body: JSON.stringify(productData) });
-                modal.container.classList.add('hidden');
-                alert("Producto añadido a la base de datos.");
-                loadProducts(currentPage); // Recargar la tabla para mostrar el nuevo producto
-            } catch (err) {
-                alert(`Error al guardar el producto: ${err.message}`);
-            }
-        });
-
-        // Carga inicial
-        loadProducts(1);
+      loadProducts(1);
     });
   </script>
 </body>

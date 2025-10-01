@@ -5,10 +5,14 @@ from typing import Optional
 import pandas as pd
 from datetime import datetime, timedelta
 import random
+import uuid
+from typing import List
 
 from ..services import security
 from ..database import get_db_connection
 from .. import schemas
+from psycopg2.extras import RealDictCursor
+from collections import defaultdict
 
 # --- Configuración ---
 DATA_FILE = 'grapeiq_fictional_data.csv'
@@ -155,3 +159,112 @@ def get_product_catalog(
     paginated_df = sorted_df.iloc[offset : offset + limit]
 
     return paginated_df.to_dict(orient='records')
+
+# --- NUEVOS ENDPOINTS PARA GRÁFICAS ESTRATÉGICAS ---
+
+@router.get("/parcel-performance")
+def get_parcel_performance_metrics(current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
+    query = """
+    WITH ParcelCosts AS (SELECT related_parcel_id, SUM(amount) as total_cost FROM costs WHERE related_parcel_id IS NOT NULL AND tenant_id = %s GROUP BY related_parcel_id),
+    ParcelProduction AS (SELECT origin_parcel_id, SUM(initial_grape_kg) as total_production_kg FROM wine_lots WHERE origin_parcel_id IS NOT NULL AND tenant_id = %s GROUP BY origin_parcel_id)
+    SELECT p.id, p.name, p.area_hectares, COALESCE(pc.total_cost, 0) as cost, COALESCE(pp.total_production_kg, 0) as production_kg
+    FROM parcels p LEFT JOIN ParcelCosts pc ON p.id = pc.related_parcel_id LEFT JOIN ParcelProduction pp ON p.id = pp.origin_parcel_id
+    WHERE p.tenant_id = %s;
+    """
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(query, (str(current_user.tenant_id), str(current_user.tenant_id), str(current_user.tenant_id)))
+                results = []
+                for rec in cur.fetchall():
+                    area = float(rec['area_hectares'] or 1.0); cost = float(rec['cost']); prod_kg = float(rec['production_kg'])
+                    results.append({ "parcel_name": rec['name'], "cost_per_ha": cost / area if area > 0 else 0, "prod_per_ha": prod_kg / area if area > 0 else 0, "cost_per_kg": cost / prod_kg if prod_kg > 0 else 0 })
+                return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de base de datos en parcel-performance: {e}")
+
+# --- FUNCIÓN CORREGIDA Y RESTAURADA ---
+@router.get("/cost-breakdown", response_model=List[schemas.SunburstCategory])
+def get_cost_breakdown(current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
+    query = """
+    SELECT cp.category, c.cost_type, SUM(c.amount) as total
+    FROM costs c JOIN cost_parameters cp ON c.cost_type = cp.parameter_name AND c.tenant_id = cp.tenant_id
+    WHERE c.tenant_id = %s GROUP BY cp.category, c.cost_type ORDER BY cp.category, total DESC;
+    """
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(query, (str(current_user.tenant_id),))
+                hierarchical_data = defaultdict(lambda: {'name': '', 'children': []})
+                for rec in cur.fetchall():
+                    category = rec['category']
+                    hierarchical_data[category]['name'] = category
+                    hierarchical_data[category]['children'].append({'name': rec['cost_type'], 'value': float(rec['total'])})
+                final_data = list(hierarchical_data.values())
+                final_data.sort(key=lambda x: sum(c['value'] for c in x['children']), reverse=True)
+                return final_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de base de datos en cost-breakdown: {e}")
+
+# --- FUNCIÓN CORREGIDA Y ROBUSTECIDA ---
+@router.get("/product-profitability")
+def get_product_profitability(current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
+    query = """
+    WITH ProductSales AS (
+        SELECT sd.product_id, SUM(sd.quantity) as total_units_sold, SUM(sd.quantity * sd.unit_price) as total_revenue
+        FROM sale_details sd JOIN sales s ON sd.sale_id = s.id
+        WHERE s.tenant_id = %s GROUP BY sd.product_id
+    )
+    SELECT p.name as product_name, p.price as price, p.unit_cost as cost,
+           COALESCE(ps.total_units_sold, 0) as units_sold, COALESCE(ps.total_revenue, 0) as revenue
+    FROM products p LEFT JOIN ProductSales ps ON p.id = ps.product_id
+    WHERE p.tenant_id = %s;
+    """
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(query, (str(current_user.tenant_id), str(current_user.tenant_id)))
+                results = []
+                for rec in cur.fetchall():
+                    price = float(rec['price'] or 0); cost = float(rec['cost'] or 0)
+                    results.append([ int(rec['units_sold']), price - cost, float(rec['revenue']), rec['product_name'] ])
+                return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de base de datos en product-profitability: {e}")
+
+
+@router.get("/cost-breakdown/{product_id}")
+def get_single_product_cost_breakdown(product_id: uuid.UUID, current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
+    product_query = """
+    SELECT p.unit_cost as total_unit_cost, p.wine_lot_origin_id, wl.origin_parcel_id, (wl.total_liters / 0.75) as total_bottles
+    FROM products p JOIN wine_lots wl ON p.wine_lot_origin_id = wl.id
+    WHERE p.id = %s AND p.tenant_id = %s;
+    """
+    costs_query = """
+    SELECT cp.category, c.cost_type, c.amount FROM costs c
+    JOIN cost_parameters cp ON c.cost_type = cp.parameter_name AND c.tenant_id = cp.tenant_id
+    WHERE c.tenant_id = %s AND (c.related_lot_id = %s OR c.related_parcel_id = %s);
+    """
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(product_query, (str(product_id), str(current_user.tenant_id)))
+                product_info = cur.fetchone()
+                if not product_info: raise HTTPException(status_code=404, detail="Producto no encontrado.")
+                lot_id = product_info['wine_lot_origin_id']; parcel_id = product_info['origin_parcel_id']
+                total_bottles = float(product_info['total_bottles'] or 1)
+                total_unit_cost = float(product_info['total_unit_cost'] or 0)
+                cur.execute(costs_query, (str(current_user.tenant_id), lot_id, parcel_id))
+                
+                aggregated_costs = defaultdict(lambda: defaultdict(float))
+                for rec in cur.fetchall():
+                    aggregated_costs[rec['category']][rec['cost_type']] += float(rec['amount']) / total_bottles if total_bottles > 0 else 0
+                
+                final_data = []
+                for category, children in aggregated_costs.items():
+                    child_list = [{'name': name, 'value': value} for name, value in children.items()]
+                    final_data.append({'name': category, 'children': sorted(child_list, key=lambda x: x['value'], reverse=True)})
+                
+                return { "total_unit_cost": total_unit_cost, "breakdown": sorted(final_data, key=lambda x: sum(c['value'] for c in x['children']), reverse=True) }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de base de datos: {str(e)}")

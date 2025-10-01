@@ -8,81 +8,146 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Paleta de Colores Otoñales */
-        :root {
-            --naranja-calabaza: #D96C06;
-            --rojo-arcilla: #A23E48;
-            --ocre-dorado: #C98C32;
-            --verde-olivo: #6B705C;
-            --marron-castana: #5C4033;
-            --beige-calido: #F2E2C4;
+        /* ============================
+         * SISTEMA DE TEMAS UNIFICADO
+         * ============================ */
+        :root { /* Tema Claro (Por Defecto) */
+            --bg-color: #F8F7F4;
+            --text-color: #1c1917;
+            --text-secondary-color: #57534e;
+            --header-bg-color: #292524;
+            --tab-active-color: #5C1A33;
+            --border-color: #e5e7eb;
+            --card-bg: rgba(255, 255, 255, .92);
+            --modal-input-bg: #FFFFFF;
+            --cta-button-bg: #5C1A33;
+            --secondary-button-bg: #A23E48;
+            --contrast-button-bg: #6B705C;
+            --highlight-color: #C98C32;
+            --today-bg-color: rgba(92, 26, 51, 0.1);
         }
-        body { font-family:'Montserrat',sans-serif; background-color: var(--beige-calido); }
-        .header-title { color: var(--marron-castana); }
-        .section-card { background-color: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05); }
-        .tab-active{ border-color: var(--marron-castana); color: var(--marron-castana); font-weight:700; }
-        
-        /* Estilos de FullCalendar */
-        .fc-event { cursor: pointer; background-color: var(--naranja-calabaza); border-color: var(--naranja-calabaza); }
-        .fc-daygrid-day.fc-day-today { background-color: rgba(201, 140, 50, 0.15); }
-        .fc .fc-button-primary { background-color: var(--marron-castana); border-color: var(--marron-castana); }
-        .fc .fc-button-primary:hover { background-color: #4a1529; border-color: #4a1529; }
-        
+
+        body.theme-warm { /* 🍂 Tema Otoñal Cálido */
+            --bg-color: #F2E2C4;
+            --text-color: #5C4033;
+            --text-secondary-color: #8C8C88;
+            --header-bg-color: #5C4033;
+            --tab-active-color: #C98C32;
+            --border-color: rgba(92, 64, 51, 0.2);
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --modal-input-bg: rgba(92, 64, 51, 0.05);
+            --cta-button-bg: #D96C06;
+            --secondary-button-bg: #A23E48;
+            --contrast-button-bg: #6B705C;
+            --highlight-color: #C98C32;
+            --today-bg-color: rgba(201, 140, 50, 0.15);
+        }
+
+        /* --- Estilos Generales con Variables --- */
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s, color 0.3s; }
+        .tab-active { border-color: var(--tab-active-color) !important; color: var(--tab-active-color) !important; font-weight: 700; }
+        .text-secondary { color: var(--text-secondary-color); }
+        .bg-dark { background-color: var(--header-bg-color); }
+        .border-accent { border-color: var(--border-color); }
+        .card { background: var(--card-bg); backdrop-filter: saturate(115%) blur(4px); border-radius: 1rem; box-shadow: 0 10px 24px rgba(0,0,0,.06); }
+        .modal-input { background-color: var(--modal-input-bg); border-color: var(--border-color); }
+        .modal-content-bg { background-color: var(--bg-color); }
+
+        /* Estilos FullCalendar */
+        .fc-event { cursor: pointer; background-color: var(--cta-button-bg); border-color: var(--cta-button-bg); }
+        .fc-daygrid-day.fc-day-today { background-color: var(--today-bg-color); }
+        .fc .fc-button-primary { background-color: var(--header-bg-color); border-color: var(--header-bg-color); }
+        .fc .fc-button-primary:hover { background-color: var(--header-bg-color); opacity: 0.9; }
+
         .modal { display: none; }
         .modal-active { display: flex; }
         .time-input-hidden { display: none; }
+        .checkbox-custom { border-color: var(--highlight-color); color: var(--cta-button-bg); }
+
+        /* --- CSS DE LA ANTORCHA --- */
+        .torch-container { position: absolute; right: 220px; top: -35px; display: flex; align-items: center; cursor: pointer; user-select: none; transform: scale(0.45); }
+        .torch-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+        .torch { display: flex; justify-content: center; height: 150px; }
+        .head, .stick { position: absolute; width: 30px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); }
+        .stick { position: relative; height: 120px; }
+        .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000; }
+        .top { transform: rotateX(90deg) translateZ(15px); } .left { transform: rotateY(-90deg) translateZ(15px); } .right { transform: rotateY(0deg) translateZ(15px); }
+        .top div, .left div, .right div { width: 102%; height: 102%; }
+        .top div:nth-child(1), .left div:nth-child(3), .right div:nth-child(3) { background-color: #ffff9760; } .top div:nth-child(2), .left div:nth-child(1), .right div:nth-child(1) { background-color: #ffd80060; } .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; } .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; }
+        .side { position: absolute; width: 30px; height: 120px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: repeat(8, 12.5%); cursor: pointer; translate: 0 12px; }
+        .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); } .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); }
+        .side-left div, .side-right div { width: 103%; height: 103%; }
+        .side div:nth-child(1) { background-color: #443622; } .side div:nth-child(2) { background-color: #2e2517; } .side div:nth-child(3), .side div:nth-child(5) { background-color: #4b3b23; } .side div:nth-child(4), .side div:nth-child(10) { background-color: #251e12; } .side div:nth-child(6) { background-color: #292115; } .side div:nth-child(7) { background-color: #4b3c26; } .side div:nth-child(8) { background-color: #292115; } .side div:nth-child(9) { background-color: #4b3a21; } .side div:nth-child(11), .side div:nth-child(15) { background-color: #3d311d; } .side div:nth-child(12) { background-color: #2c2315; } .side div:nth-child(13) { background-color: #493a22; } .side div:nth-child(14) { background-color: #2b2114; } .side div:nth-child(16) { background-color: #271e10; }
+        .torch-container input:checked ~ .torch .face { filter: drop-shadow(0px 0px 2px #fff) drop-shadow(0px 0px 10px rgba(255, 237, 156, 0.7)) drop-shadow(0px 0px 25px rgba(255, 227, 101, 0.4)); }
+        .torch-container input:checked ~ .torch .top div:nth-child(1), .torch-container input:checked ~ .torch .left div:nth-child(3), .torch-container input:checked ~ .torch .right div:nth-child(3) { background-color: #ffff97; } .torch-container input:checked ~ .torch .top div:nth-child(2), .torch-container input:checked ~ .torch .left div:nth-child(1), .torch-container input:checked ~ .torch .right div:nth-child(1) { background-color: #ffd800; } .torch-container input:checked ~ .torch .top div:nth-child(3), .torch-container input:checked ~ .torch .left div:nth-child(4), .torch-container input:checked ~ .torch .right div:nth-child(4) { background-color: #fff; } .torch-container input:checked ~ .torch .top div:nth-child(4), .torch-container input:checked ~ .torch .left div:nth-child(2), .torch-container input:checked ~ .torch .right div:nth-child(2) { background-color: #ff8f00; } .torch-container input:checked ~ .torch .side div:nth-child(1) { background-color: #7c623e; } .torch-container input:checked ~ .torch .side div:nth-child(2) { background-color: #4c3d26; } .torch-container input:checked ~ .torch .side div:nth-child(3), .torch-container input:checked ~ .torch .side div:nth-child(5) { background-color: #937344; } .torch-container input:checked ~ .torch .side div:nth-child(4), .torch-container input:checked ~ .torch .side div:nth-child(10) { background-color: #3c2f1c; } .torch-container input:checked ~ .torch .side div:nth-child(6) { background-color: #423522; } .torch-container input:checked ~ .torch .side div:nth-child(7) { background-color: #9f7f50; } .torch-container input:checked ~ .torch .side div:nth-child(8) { background-color: #403320; } .torch-container input:checked ~ .torch .side div:nth-child(9) { background-color: #977748; } .torch-container input:checked ~ .torch .side div:nth-child(11), .torch-container input:checked ~ .torch .side div:nth-child(15) { background-color: #675231; } .torch-container input:checked ~ .torch .side div:nth-child(12) { background-color: #3d301d; } .torch-container input:checked ~ .torch .side div:nth-child(13) { background-color: #987849; } .torch-container input:checked ~ .torch .side div:nth-child(14) { background-color: #3b2e1b; } .torch-container input:checked ~ .torch .side div:nth-child(16) { background-color: #372a17; }
     </style>
 </head>
-<body class="text-stone-800">
+<body>
     <div class="p-4 sm:p-8">
-        <header class="flex justify-between items-center mb-6">
+        <header class="flex justify-between items-center mb-6 relative">
             <a href="performance.html" class="flex items-center gap-4">
                 <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
-                <span class="text-3xl font-light text-stone-400">|</span>
-                <h1 class="text-3xl font-semibold header-title">Cuaderno de Campo</h1>
+                <span class="text-3xl font-light text-secondary">|</span>
+                <h1 class="text-3xl font-semibold">Cuaderno de Campo</h1>
             </a>
-            <button id="logout-btn" style="background-color: var(--marron-castana);" class="text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
+            <div class="flex items-center gap-4">
+                <label class="torch-container">
+                  <input id="theme-toggle" type="checkbox" />
+                  <div class="torch">
+                    <div class="head">
+                      <div class="face top"> <div></div><div></div><div></div><div></div> </div>
+                      <div class="face left"> <div></div><div></div><div></div><div></div> </div>
+                      <div class="face right"> <div></div><div></div><div></div><div></div> </div>
+                    </div>
+                    <div class="stick">
+                      <div class="side side-left"> <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div> </div>
+                      <div class="side side-right"> <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div> </div>
+                    </div>
+                  </div>
+                </label>
+                <button id="logout-btn" class="bg-dark text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
+            </div>
         </header>
 
-        <div class="mb-6 border-b border-stone-300">
+        <div class="mb-6 border-b border-accent">
             <nav class="flex space-x-8 overflow-x-auto pb-2" aria-label="Tabs">
-                <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Análisis de Rendimiento</a>
-                <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Predicciones</a>
-                <a href="catalog.html" id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Catálogo y Stock</a>
-                <a href="daily-log.html" id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Registro Diario</a>
-                <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Finanzas</a>
+                <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Análisis de Rendimiento</a>
+                <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Predicciones</a>
+                <a href="catalog.html" id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Catálogo y Stock</a>
+                <a href="daily-log.html" id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Registro Diario</a>
+                <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Finanzas</a>
                 <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg tab-active">Cuaderno de Campo</a>
-                <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Trazabilidad</a>
-                <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Gestión de Bodega</a>
-                <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Parcelas</a>
-                <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Clima</a>
-                <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-stone-500 hover:text-stone-800 border-transparent">Configuración</a>
+                <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Trazabilidad</a>
+                <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Gestión de Bodega</a>
+                <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Parcelas</a>
+                <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Clima</a>
+                <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Configuración</a>
             </nav>
         </div>
 
         <main class="space-y-8">
-            <div class="section-card p-6 rounded-2xl shadow-lg">
+            <div class="card p-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold header-title">Registro de Actividades</h2>
-                    <button id="add-log-btn" style="background-color: var(--marron-castana);" class="text-white px-5 py-2 rounded-full font-semibold hover:opacity-90">Añadir Nueva Entrada</button>
+                    <h2 class="text-2xl font-bold">Registro de Actividades</h2>
+                    <button id="add-log-btn" class="text-white px-5 py-2 rounded-full font-semibold hover:opacity-90" style="background-color: var(--cta-button-bg);">Añadir Nueva Entrada</button>
                 </div>
                 <div id='calendar'></div>
             </div>
             
-            <div class="section-card p-6 rounded-2xl shadow-lg">
-                <h2 class="text-2xl font-bold header-title mb-4">Generar Informe</h2>
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold mb-4">Generar Informe</h2>
                 <div class="flex flex-col sm:flex-row items-center gap-4">
                     <div>
-                        <label for="start-date" class="block text-sm font-medium text-stone-600 mb-1">Fecha de Inicio</label>
-                        <input type="date" id="start-date" class="px-4 py-2 border border-stone-300 rounded-lg">
+                        <label for="start-date" class="block text-sm font-medium text-secondary mb-1">Fecha de Inicio</label>
+                        <input type="date" id="start-date" class="w-full p-2 rounded-lg modal-input">
                     </div>
                     <div>
-                        <label for="end-date" class="block text-sm font-medium text-stone-600 mb-1">Fecha de Fin</label>
-                        <input type="date" id="end-date" class="px-4 py-2 border border-stone-300 rounded-lg">
+                        <label for="end-date" class="block text-sm font-medium text-secondary mb-1">Fecha de Fin</label>
+                        <input type="date" id="end-date" class="w-full p-2 rounded-lg modal-input">
                     </div>
                     <div class="flex gap-2 mt-auto">
-                        <button id="export-csv-btn" style="background-color: var(--verde-olivo);" class="text-white px-5 py-2 rounded-full font-semibold hover:opacity-90">Exportar a CSV</button>
-                        <button id="export-pdf-btn" style="background-color: var(--rojo-arcilla);" class="text-white px-5 py-2 rounded-full font-semibold hover:opacity-90">Exportar a PDF</button>
+                        <button id="export-csv-btn" class="text-white px-5 py-2 rounded-full font-semibold hover:opacity-90" style="background-color: var(--contrast-button-bg);">Exportar a CSV</button>
+                        <button id="export-pdf-btn" class="text-white px-5 py-2 rounded-full font-semibold hover:opacity-90" style="background-color: var(--secondary-button-bg);">Exportar a PDF</button>
                     </div>
                 </div>
                 <p id="export-error" class="text-red-500 text-sm mt-2 h-4"></p>
@@ -91,34 +156,34 @@
     </div>
 
     <div id="log-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md m-4">
-            <h3 id="modal-title" class="text-2xl font-bold header-title mb-6">Nueva Entrada</h3>
+        <div class="modal-content-bg rounded-2xl shadow-xl p-8 w-full max-w-md m-4">
+            <h3 id="modal-title" class="text-2xl font-bold mb-6">Nueva Entrada</h3>
             <form id="log-form">
                 <input type="hidden" id="log-id">
                 <div class="space-y-4">
                     <div>
-                        <label for="log_date" class="block text-sm font-medium text-stone-600 mb-1">Fecha</label>
-                        <input type="date" id="log_date" name="log_date" required class="w-full px-4 py-2 border border-stone-300 rounded-lg">
+                        <label for="log_date" class="block text-sm font-medium text-secondary mb-1">Fecha</label>
+                        <input type="date" id="log_date" name="log_date" required class="w-full p-2 rounded-lg modal-input">
                     </div>
                     <div>
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" id="specify-time-checkbox" class="rounded" style="border-color: var(--ocre-dorado); color: var(--marron-castana);">
+                            <input type="checkbox" id="specify-time-checkbox" class="rounded checkbox-custom">
                             Especificar hora (si no, se considera todo el día)
                         </label>
                     </div>
                     <div id="time-input-container" class="time-input-hidden grid grid-cols-2 gap-4">
                         <div>
-                            <label for="start_time" class="block text-sm font-medium text-stone-600 mb-1">Hora Inicio</label>
-                            <input type="time" id="start_time" name="start_time" class="w-full px-4 py-2 border border-stone-300 rounded-lg">
+                            <label for="start_time" class="block text-sm font-medium text-secondary mb-1">Hora Inicio</label>
+                            <input type="time" id="start_time" name="start_time" class="w-full p-2 rounded-lg modal-input">
                         </div>
                         <div>
-                            <label for="end_time" class="block text-sm font-medium text-stone-600 mb-1">Hora Fin</label>
-                            <input type="time" id="end_time" name="end_time" class="w-full px-4 py-2 border border-stone-300 rounded-lg">
+                            <label for="end_time" class="block text-sm font-medium text-secondary mb-1">Hora Fin</label>
+                            <input type="time" id="end_time" name="end_time" class="w-full p-2 rounded-lg modal-input">
                         </div>
                     </div>
                     <div>
-                        <label for="activity_type" class="block text-sm font-medium text-stone-600 mb-1">Tipo de Actividad</label>
-                        <select id="activity_type" name="activity_type" required class="w-full px-4 py-2 border border-stone-300 rounded-lg">
+                        <label for="activity_type" class="block text-sm font-medium text-secondary mb-1">Tipo de Actividad</label>
+                        <select id="activity_type" name="activity_type" required class="w-full p-2 rounded-lg modal-input">
                             <option value="Poda">Poda</option>
                             <option value="Riego">Riego</option>
                             <option value="Tratamiento Fitosanitario">Tratamiento Fitosanitario</option>
@@ -128,19 +193,19 @@
                         </select>
                     </div>
                     <div>
-                        <label for="parcel_id" class="block text-sm font-medium text-stone-600 mb-1">Parcela (Opcional)</label>
-                        <select id="parcel_id" name="parcel_id" class="w-full px-4 py-2 border border-stone-300 rounded-lg"></select>
+                        <label for="parcel_id" class="block text-sm font-medium text-secondary mb-1">Parcela (Opcional)</label>
+                        <select id="parcel_id" name="parcel_id" class="w-full p-2 rounded-lg modal-input"></select>
                     </div>
                     <div>
-                        <label for="description" class="block text-sm font-medium text-stone-600 mb-1">Descripción</label>
-                        <textarea id="description" name="description" rows="3" class="w-full px-4 py-2 border border-stone-300 rounded-lg"></textarea>
+                        <label for="description" class="block text-sm font-medium text-secondary mb-1">Descripción</label>
+                        <textarea id="description" name="description" rows="3" class="w-full p-2 rounded-lg modal-input"></textarea>
                     </div>
                 </div>
                 <div class="flex justify-between items-center mt-8">
-                    <button type="button" id="delete-log-btn" style="background-color: var(--rojo-arcilla);" class="text-white px-5 py-2 rounded-full font-semibold hover:opacity-90 hidden">Eliminar</button>
+                    <button type="button" id="delete-log-btn" class="text-white px-5 py-2 rounded-full font-semibold hover:opacity-90 hidden" style="background-color: var(--secondary-button-bg);">Eliminar</button>
                     <div class="flex gap-4 ml-auto">
-                        <button type="button" id="close-modal-btn" class="bg-stone-200 text-stone-800 px-5 py-2 rounded-full font-semibold">Cancelar</button>
-                        <button type="submit" style="background-color: var(--marron-castana);" class="text-white px-5 py-2 rounded-full font-semibold">Guardar</button>
+                        <button type="button" id="close-modal-btn" class="bg-stone-200 px-5 py-2 rounded-full font-semibold" style="color: var(--text-color);">Cancelar</button>
+                        <button type="submit" class="text-white px-5 py-2 rounded-full font-semibold" style="background-color: var(--cta-button-bg);">Guardar</button>
                     </div>
                 </div>
             </form>
@@ -150,6 +215,13 @@
     <script>
         const API_BASE_URL = 'http://127.0.0.1:8000';
         const TOKEN_KEY = 'accessToken';
+        
+        function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
+        function logout() { 
+            localStorage.removeItem(TOKEN_KEY); 
+            localStorage.removeItem('theme'); // Limpiar el tema al salir
+            window.location.href = 'login.html'; 
+        }
 
         async function apiFetch(endpoint, options = {}, expectJson = true) {
             if (!endpoint.endsWith('/')) { endpoint += '/'; }
@@ -166,7 +238,7 @@
                 if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
                 if (resp.status === 204) return;
                 if (!resp.ok) {
-                    const data = await resp.json().catch(() => ({ detail: 'Error en la petición.' }));
+                    const data = await resp.json().catch(() => ({ detail: 'Error del servidor. Por favor, inténtelo de nuevo más tarde.' }));
                     throw new Error(data.detail);
                 }
                 return expectJson ? resp.json() : resp.blob();
@@ -175,14 +247,34 @@
                 throw error;
             }
         }
-        
-        function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
-        function logout() { localStorage.removeItem(TOKEN_KEY); window.location.href = 'login.html'; }
-        document.getElementById('logout-btn').addEventListener('click', logout);
 
         document.addEventListener('DOMContentLoaded', () => {
             requireAuth();
+            document.getElementById('logout-btn').addEventListener('click', logout);
+
+            // --- LÓGICA DEL TEMA (UNIFICADA Y PERSISTENTE) ---
+            const themeToggle = document.getElementById('theme-toggle');
+            const body = document.body;
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'warm') {
+                body.classList.add('theme-warm');
+                themeToggle.checked = true;
+            } else {
+                themeToggle.checked = false;
+            }
             
+            themeToggle.addEventListener('change', () => {
+                if (themeToggle.checked) {
+                    body.classList.add('theme-warm');
+                    localStorage.setItem('theme', 'warm');
+                } else {
+                    body.classList.remove('theme-warm');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+
+            // --- LÓGICA ORIGINAL DE FIELD_LOG.HTML (SIN CAMBIOS) ---
             const modal = document.getElementById('log-modal');
             const addLogBtn = document.getElementById('add-log-btn');
             const closeModalBtn = document.getElementById('close-modal-btn');
@@ -194,7 +286,6 @@
             const parcelSelect = document.getElementById('parcel_id');
             let calendar;
             let parcelsCache = [];
-            let selectedEventInfo = null;
 
             specifyTimeCheckbox.addEventListener('change', () => {
                 timeInputContainer.classList.toggle('time-input-hidden', !specifyTimeCheckbox.checked);
@@ -202,16 +293,17 @@
             });
 
             async function populateParcelsDropdown() {
-                if (parcelsCache.length === 0) {
-                    try {
-                        parcelsCache = await apiFetch('/api/parcels');
-                    } catch (e) {
-                        console.error("Error al cargar parcelas:", e);
-                        parcelSelect.innerHTML = `<option value="">Error al cargar parcelas</option>`;
-                        return;
-                    }
+                if (parcelsCache.length > 0) {
+                     parcelSelect.innerHTML = '<option value="">Ninguna</option>' + parcelsCache.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                     return;
                 }
-                parcelSelect.innerHTML = '<option value="">Ninguna</option>' + parcelsCache.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                try {
+                    parcelsCache = await apiFetch('/api/parcels/');
+                    parcelSelect.innerHTML = '<option value="">Ninguna</option>' + parcelsCache.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                } catch (e) {
+                    console.error("Error al cargar parcelas:", e);
+                    parcelSelect.innerHTML = `<option value="">Error al cargar</option>`;
+                }
             }
             
             async function openModal(info) {
@@ -219,7 +311,6 @@
                 specifyTimeCheckbox.checked = false;
                 timeInputContainer.classList.add('time-input-hidden');
                 deleteLogBtn.style.display = 'none';
-                selectedEventInfo = info;
 
                 await populateParcelsDropdown();
 
@@ -287,8 +378,8 @@
                     calendar.addEventSource({ id: 'logs', events });
 
                 } catch (error) {
-                    console.error("Error al cargar eventos y parcelas:", error);
-                    alert(error.message);
+                    console.error("Error al cargar datos del calendario:", error);
+                    alert(`No se pudieron cargar los datos del calendario: ${error.message}`);
                 }
             }
 
@@ -308,18 +399,18 @@
                 try {
                     await apiFetch(endpoint, { method, body: logData });
                     closeModal();
-                    loadEventsAndParcels();
-                } catch (error) { alert(`Error: ${error.message}`); }
+                    await loadEventsAndParcels();
+                } catch (error) { alert(`Error al guardar: ${error.message}`); }
             });
 
             deleteLogBtn.addEventListener('click', async () => {
                 const logId = document.getElementById('log-id').value;
-                if (!logId || !confirm('¿Estás seguro?')) return;
+                if (!logId || !confirm('¿Estás seguro de que deseas eliminar esta entrada?')) return;
                 try {
                     await apiFetch(`/api/field-logs/${logId}`, { method: 'DELETE' });
                     closeModal();
-                    loadEventsAndParcels();
-                } catch (error) { alert(`Error: ${error.message}`); }
+                    await loadEventsAndParcels();
+                } catch (error) { alert(`Error al eliminar: ${error.message}`); }
             });
 
             const calendarEl = document.getElementById('calendar');
@@ -334,16 +425,13 @@
                     let titleEl = document.createElement('div');
                     titleEl.className = 'font-bold';
                     titleEl.innerHTML = arg.event.title;
-
                     let arrayOfDomNodes = [ titleEl ];
-
                     if (arg.event.extendedProps.parcel_name) {
                         let plotEl = document.createElement('i');
                         plotEl.className = 'text-sm';
                         plotEl.innerHTML = ` - ${arg.event.extendedProps.parcel_name}`;
                         arrayOfDomNodes.push(plotEl);
                     }
-                    
                     return { domNodes: arrayOfDomNodes };
                 }
             });
@@ -375,7 +463,9 @@
                 
                 fetch(url, { headers: { 'Authorization': `Bearer ${token}` } })
                     .then(res => {
-                        if (!res.ok) throw new Error('No se pudo generar el informe.');
+                        if (!res.ok) {
+                            return res.json().then(err => { throw new Error(err.detail || 'No se pudo generar el informe.') });
+                        }
                         return res.blob();
                     })
                     .then(blob => {
@@ -390,7 +480,7 @@
                         a.remove();
                     })
                     .catch(err => {
-                        exportError.textContent = err.message;
+                        exportError.textContent = `Error: ${err.message}`;
                     });
             }
 

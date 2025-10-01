@@ -5,6 +5,9 @@ from typing import Optional
 from ..database import get_db_connection
 from ..services.security import role_checker
 from .. import schemas
+from typing import List # Asegúrate de que List está importado
+from psycopg2.extras import RealDictCursor # Asegúrate de que RealDictCursor está importado
+
 
 router = APIRouter(
     prefix="/api/products",
@@ -80,3 +83,21 @@ def create_product(product: ProductCreate, user: schemas.User = Depends(role_che
                 if "duplicate key value" in str(e).lower():
                     raise HTTPException(status_code=409, detail=f"El SKU '{product.sku}' ya existe.")
                 raise HTTPException(status_code=500, detail=f"Error en la base de datos: {e}")
+            
+@router.get("/list", response_model=List[schemas.ProductSimple])
+def get_products_list(
+    user: schemas.User = Depends(role_checker(["admin", "lector"]))
+):
+    """
+    Devuelve una lista simple de todos los productos (ID y nombre) para los desplegables.
+    """
+    tenant_id = str(user.tenant_id)
+    query = "SELECT id, name FROM products WHERE tenant_id = %s ORDER BY name"
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(query, (tenant_id,))
+                products = cur.fetchall()
+                return products
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en la base de datos: {e}")
