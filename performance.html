@@ -1,97 +1,67 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Análisis de Rendimiento - GrapeIQ</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* --- 🎨 SISTEMA DE TEMAS --- */
-        :root { /* 💡 Tema Claro por Defecto */
-            --bg-color: #F8F7F4;
-            --card-bg: rgba(255, 255, 255, 0.7);
-            --text-color: #1c1917;
-            --text-secondary-color: #57534e;
-            --border-color: #e7e5e4;
-            --header-bg-color: #292524;
-            --tab-active-color: #5C1A33;
-            --section-title-border: #a16207;
-            --kpi-profit-color: #15803d;
-            --explanation-border-parcel: #16a34a; --explanation-border-cost: #f59e0b; --explanation-border-matrix: #dc2626;
-        }
-        body.theme-warm { /* 🍂 Tema Otoñal Cálido */
-            --bg-color: #F2E2C4;
-            --card-bg: rgba(255, 255, 255, 0.6);
-            --text-color: #5C4033;
-            --text-secondary-color: #6B705C;
-            --border-color: rgba(92, 64, 51, 0.2);
-            --header-bg-color: #5C4033;
-            --tab-active-color: #5C4033;
-            --section-title-border: #C98C32;
-            --kpi-profit-color: #6B705C;
-            --explanation-border-parcel: #6B705C; --explanation-border-cost: #C98C32; --explanation-border-matrix: #A23E48;
-        }
-        /* --- Estilos Generales con Variables --- */
-        body { font-family:'Montserrat',sans-serif; background-color: var(--bg-color); color: var(--text-color); }
-        .text-primary { color: var(--text-color); }
-        .text-secondary { color: var(--text-secondary-color); }
-        .border-accent { border-color: var(--border-color); }
-        .bg-dark { background-color: var(--header-bg-color); }
-        .kpi-value{ font-size:2.25rem; line-height:2.5rem; font-weight:700; color: var(--text-color); }
-        .kpi-profit { color: var(--kpi-profit-color) !important; }
-        .kpi-trend-positive{ color:#16a34a; } .kpi-trend-negative{ color:#dc2626; }
-        .tab-active{ border-color: var(--tab-active-color) !important; color: var(--tab-active-color) !important; font-weight:700; }
-        .section-card { background-color: var(--card-bg); border: 1px solid rgba(0,0,0,0.05); backdrop-filter: blur(5px); }
-        .section-title { color: var(--text-color); border-bottom: 2px solid var(--section-title-border); }
-        .echart-container { width: 100%; min-height: 450px; }
-        .explanation-toggle:hover { color: var(--section-title-border); }
-        .explanation-panel { max-height: 0; overflow: hidden; transition: all 0.5s ease-out; padding: 0 1.5rem; opacity: 0; }
-        .explanation-panel.open { max-height: 500px; padding: 1.5rem; opacity: 1; }
-        .cost-category summary::-webkit-details-marker { display: none; }
-        .cost-category summary { list-style: none; cursor: pointer; }
-        .cost-category[open] summary .arrow { transform: rotate(90deg); }
-        .cost-item:hover { background-color: rgba(0,0,0,0.05); border-radius: 0.25rem; }
-        /* --- CSS DE LA ANTORCHA --- */
-        .torch-container { position: absolute; right: 220px; top: -35px; display: flex; align-items: center; cursor: pointer; user-select: none; transform: scale(0.45); z-index: 10; }
-        .torch-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
-        .torch { display: flex; justify-content: center; height: 150px; }
-        .head, .stick { position: absolute; width: 30px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); }
-        .stick { position: relative; height: 120px; }
-        .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000000; }
-        .top { transform: rotateX(90deg) translateZ(15px); } .left { transform: rotateY(-90deg) translateZ(15px); } .right { transform: rotateY(0deg) translateZ(15px); }
-        .top div, .left div, .right div { width: 102%; height: 102%; }
-        .top div:nth-child(1), .left div:nth-child(3), .right div:nth-child(3) { background-color: #ffff9760; } .top div:nth-child(2), .left div:nth-child(1), .right div:nth-child(1) { background-color: #ffd80060; } .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; } .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; }
-        .side { position: absolute; width: 30px; height: 120px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: repeat(8, 12.5%); cursor: pointer; translate: 0 12px; }
-        .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); } .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); }
-        .side div:nth-child(1) { background-color: #443622; } .side div:nth-child(2) { background-color: #2e2517; } .side div:nth-child(3), .side div:nth-child(5) { background-color: #4b3b23; } .side div:nth-child(4), .side div:nth-child(10) { background-color: #251e12; } .side div:nth-child(6) { background-color: #292115; } .side div:nth-child(7) { background-color: #4b3c26; } .side div:nth-child(8) { background-color: #292115; } .side div:nth-child(9) { background-color: #4b3a21; } .side div:nth-child(11), .side div:nth-child(15) { background-color: #3d311d; } .side div:nth-child(12) { background-color: #2c2315; } .side div:nth-child(13) { background-color: #493a22; } .side div:nth-child(14) { background-color: #2b2114; } .side div:nth-child(16) { background-color: #271e10; }
-        .torch-container input:checked ~ .torch .face { filter: drop-shadow(0px 0px 2px #fff) drop-shadow(0px 0px 10px rgba(255, 237, 156, 0.7)) drop-shadow(0px 0px 25px rgba(255, 227, 101, 0.4)); }
-        .torch-container input:checked ~ .torch .top div:nth-child(1), .torch-container input:checked ~ .torch .left div:nth-child(3), .torch-container input:checked ~ .torch .right div:nth-child(3) { background-color: #ffff97; } .torch-container input:checked ~ .torch .top div:nth-child(2), .torch-container input:checked ~ .torch .left div:nth-child(1), .torch-container input:checked ~ .torch .right div:nth-child(1) { background-color: #ffd800; } .torch-container input:checked ~ .torch .top div:nth-child(3), .torch-container input:checked ~ .torch .left div:nth-child(4), .torch-container input:checked ~ .torch .right div:nth-child(4) { background-color: #fff; } .torch-container input:checked ~ .torch .top div:nth-child(4), .torch-container input:checked ~ .torch .left div:nth-child(2), .torch-container input:checked ~ .torch .right div:nth-child(2) { background-color: #ff8f00; }
-    </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Análisis de Rendimiento - GrapeIQ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --naranja-calabaza: #D96C06; --rojo-arcilla: #A23E48; --ocre-dorado: #C98C32;
+      --verde-olivo: #6B705C; --marron-castana: #5C4033; --beige-calido: #F2E2C4;
+      --primary: var(--marron-castana);
+      --secondary: #6b7280; 
+    }
+    body { font-family:'Montserrat',sans-serif; background-color: var(--beige-calido); }
+    .kpi-value{ font-size:2.25rem; line-height:2.5rem; font-weight:700; }
+    .kpi-trend-positive{ color:#16a34a; } .kpi-trend-negative{ color:#dc2626; }
+    .tab-active{ border-color: var(--marron-castana); color: var(--marron-castana); font-weight:700; }
+    .header-title { color: var(--marron-castana); }
+    .section-title { color: var(--marron-castana); border-bottom: 2px solid var(--ocre-dorado); }
+    .echart-container { width: 100%; min-height: 450px; }
+    .explanation-panel { max-height: 0; overflow: hidden; transition: all 0.5s ease-out; padding: 0 1.5rem; opacity: 0; }
+    .explanation-panel.open { max-height: 500px; padding: 1.5rem; opacity: 1; }
+    .cost-category summary::-webkit-details-marker { display: none; }
+    .cost-category summary { list-style: none; cursor: pointer; }
+    .cost-category[open] summary .arrow { transform: rotate(90deg); }
+    .cost-item:hover { background-color: rgba(0,0,0,0.05); border-radius: 0.25rem; }
+    .text-primary { color: var(--primary); }
+    .text-secondary { color: var(--secondary); }
+    .hover\:text-primary:hover { color: var(--primary); }
+
+    .section-card {
+        background-color: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        backdrop-filter: blur(5px);
+        box-shadow: 0 4px 15px rgba(92, 64, 51, 0.1);
+        transition: all 0.3s ease-in-out;
+    }
+    .section-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(92, 64, 51, 0.2);
+    }
+    
+    /* --- Estilos para el nuevo Switch --- */
+    .switch { font-size: 17px; position: relative; display: inline-block; width: 3.5em; height: 2em; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; box-shadow: inset 2px 5px 10px rgba(0,0,0,0.3); transition: .4s; border-radius: 5px; }
+    .slider:before { position: absolute; content: ""; height: 1.4em; width: 0.1em; border-radius: 0px; left: 0.3em; bottom: 0.3em; background-color: white; transition: .4s; }
+    input:checked + .slider { background-color: var(--marron-castana); box-shadow: inset 2px 5px 10px rgb(0, 0, 0); }
+    input:checked + .slider:before { transform: translateX(2.8em) rotate(360deg); }
+
+  </style>
 </head>
-<body class="text-primary">
-<div class="p-4 sm:p-8">
-    <header class="flex justify-between items-center mb-6 relative">
-        <a href="performance.html" class="flex items-center gap-4">
-            <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
-            <span class="text-3xl font-light text-secondary">|</span>
-            <h1 class="text-3xl font-semibold text-primary">Análisis de Rendimiento</h1>
-        </a>
-        <div class="flex items-center gap-4">
-            <label class="torch-container">
-                <input id="theme-toggle" type="checkbox" />
-                <div class="torch">
-                    <div class="head"><div class="face top"><div></div><div></div><div></div><div></div></div><div class="face left"><div></div><div></div><div></div><div></div></div><div class="face right"><div></div><div></div><div></div><div></div></div></div>
-                    <div class="stick"><div class="side side-left"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div><div class="side side-right"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>
-                </div>
-            </label>
-            <button id="logout-btn" class="bg-dark text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
-        </div>
+<body class="text-stone-800">
+  <div class="p-4 sm:p-8">
+    <header class="flex justify-between items-center mb-6">
+      <div class="flex items-center gap-4"><a href="performance.html" class="flex items-center gap-4"><img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10"><span class="text-3xl font-light text-stone-400">|</span><h1 class="text-3xl font-semibold header-title">Análisis de Rendimiento</h1></a></div>
+      <button id="logout-btn" style="background-color: var(--marron-castana);" class="text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
     </header>
-    <div class="mb-6 border-b border-accent">
+    <div class="mb-6 border-b border-stone-300">
         <nav class="flex space-x-8 overflow-x-auto pb-2" aria-label="Tabs">
             <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg tab-active">Análisis de Rendimiento</a>
             <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Predicciones</a>
@@ -102,59 +72,28 @@
             <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Trazabilidad</a>
             <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Gestión de Bodega</a>
             <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent">Parcelas</a>
-            <a href="weather.html"     class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent" data-tab="weather">Clima</a>
-            <a href="settings.html"    class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent" data-tab="settings">Configuración</a>
+            <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent" data-tab="weather">Clima</a>
+            <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-stone-800 border-transparent" data-tab="settings">Configuración</a>
         </nav>
     </div>
 
     <main><div class="space-y-12">
-        <div>
-            <h2 class="text-2xl font-bold section-title pb-2 mb-6">Pulso del Negocio</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                <div class="section-card p-6 rounded-2xl shadow-lg"><h3 class="font-semibold text-secondary mb-2">Ingresos Totales</h3><p id="kpi-total-sales" class="kpi-value">...</p><p id="kpi-mom-change" class="font-semibold text-sm mt-1">...</p></div>
-                <div class="section-card p-6 rounded-2xl shadow-lg"><h3 class="font-semibold text-secondary mb-2">Beneficio Bruto</h3><p id="kpi-total-profit" class="kpi-value kpi-profit">...</p><p class="text-sm text-secondary mt-1">Ingresos - Costes</p></div>
-                <div class="section-card p-6 rounded-2xl shadow-lg"><h3 class="font-semibold text-secondary mb-2">Margen Bruto</h3><p id="kpi-gross-margin" class="kpi-value">...</p><p class="text-sm text-secondary mt-1">Beneficio / Ingresos</p></div>
-                <div class="section-card p-6 rounded-2xl shadow-lg"><h3 class="font-semibold text-secondary mb-2">Botellas Vendidas</h3><p id="kpi-total-quantity" class="kpi-value">...</p><p class="text-sm text-secondary mt-1">Total unidades</p></div>
-                <div class="section-card p-6 rounded-2xl shadow-lg"><h3 class="font-semibold text-secondary mb-2">Clientes Únicos</h3><p id="kpi-unique-customers" class="kpi-value">...</p><p class="text-sm text-secondary mt-1">Este año</p></div>
-                <div class="section-card p-6 rounded-2xl shadow-lg"><h3 class="font-semibold text-secondary mb-2">Venta Media</h3><p id="kpi-avg-sale" class="kpi-value">...</p><p class="text-sm text-secondary mt-1">Por transacción</p></div>
-            </div>
-        </div>
+        <div><h2 class="text-2xl font-bold section-title pb-2 mb-6">Pulso del Negocio</h2><div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6"><div class="section-card p-6 rounded-2xl"><h3 class="font-semibold text-stone-500 mb-2">Ingresos Totales</h3><p id="kpi-total-sales" class="kpi-value text-stone-800">...</p><p id="kpi-mom-change" class="font-semibold text-sm mt-1">...</p></div><div class="section-card p-6 rounded-2xl"><h3 class="font-semibold text-stone-500 mb-2">Beneficio Bruto</h3><p id="kpi-total-profit" class="kpi-value" style="color: var(--verde-olivo);">...</p><p class="text-sm text-stone-400 mt-1">Ingresos - Costes</p></div><div class="section-card p-6 rounded-2xl"><h3 class="font-semibold text-stone-500 mb-2">Margen Bruto</h3><p id="kpi-gross-margin" class="kpi-value text-stone-800">...</p><p class="text-sm text-stone-400 mt-1">Beneficio / Ingresos</p></div><div class="section-card p-6 rounded-2xl"><h3 class="font-semibold text-stone-500 mb-2">Botellas Vendidas</h3><p id="kpi-total-quantity" class="kpi-value text-stone-800">...</p><p class="text-sm text-stone-400 mt-1">Total unidades</p></div><div class="section-card p-6 rounded-2xl"><h3 class="font-semibold text-stone-500 mb-2">Clientes Únicos</h3><p id="kpi-unique-customers" class="kpi-value text-stone-800">...</p><p class="text-sm text-stone-400 mt-1">Este año</p></div><div class="section-card p-6 rounded-2xl"><h3 class="font-semibold text-stone-500 mb-2">Venta Media</h3><p id="kpi-avg-sale" class="kpi-value text-stone-800">...</p><p class="text-sm text-stone-400 mt-1">Por transacción</p></div></div></div>
 
-        <div class="section-card p-6 rounded-2xl shadow-lg">
-            <div class="flex items-center justify-between mb-4"><h3 class="text-xl font-bold text-primary">Rendimiento y Coste por Parcela</h3><svg data-target="explanation-parcel" class="w-6 h-6 text-secondary explanation-toggle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
-            <div id="explanation-parcel" class="explanation-panel section-card rounded-lg mb-6 border-l-4" style="border-color: var(--explanation-border-parcel);"><h4 class="font-bold text-lg mb-2">¿Cómo interpretar este Mapa de Eficiencia?</h4><p class="text-primary">Este mapa de calor es como una radiografía de tus viñedos. Te permite comparar de un solo vistazo qué parcelas son tus "campeonas" y cuáles necesitan más atención, basándose en la relación entre lo que inviertes y lo que cosechas.</p><ul class="list-disc pl-5 mt-2 space-y-1 text-sm text-secondary"><li><b class="text-primary">Coste/Ha (€):</b> Muestra cuánto te cuesta mantener cada hectárea. Un color más intenso (rojo) significa que esa parcela es más cara de cuidar.</li><li><b class="text-primary">Prod/Ha (Kg):</b> Mide el rendimiento. Un color más intenso (verde) es bueno, significa que obtienes más uva por superficie.</li><li><b class="text-primary">Coste/Kg (€):</b> Esta es la métrica clave. Te dice el coste real de producir un kilo de uva. Un color más claro (verde) es ideal, ya que indica un coste de producción bajo.</li></ul><p class="text-sm mt-3"><b class="text-primary">Ejemplo práctico:</b> Si la parcela "Viña del Monte" tiene un color rojo intenso en <b class="text-primary">Coste/Kg</b>, significa que cada kilo de uva de allí te está costando mucho dinero. Es una señal para investigar: ¿quizás necesita un tratamiento caro? ¿o su producción es demasiado baja para lo que inviertes? Te ayuda a decidir dónde optimizar tus recursos.</p></div>
-            <div id="parcel-heatmap-chart" class="echart-container"></div>
-        </div>
+        <div class="section-card p-6 rounded-2xl"><div class="flex items-center justify-between mb-4"><h3 class="text-xl font-bold header-title">Rendimiento y Coste por Parcela</h3><label class="switch"><input type="checkbox" data-target="explanation-parcel"><span class="slider"></span></label></div><div id="explanation-parcel" class="explanation-panel section-card rounded-lg mb-6 border-l-4" style="border-color: var(--verde-olivo);"><h4 class="font-bold text-lg mb-2">¿Cómo interpretar este Mapa de Eficiencia?</h4><p class="text-stone-700">Este mapa de calor es como una radiografía de tus viñedos. Te permite comparar de un solo vistazo qué parcelas son tus "campeonas" y cuáles necesitan más atención, basándose en la relación entre lo que inviertes y lo que cosechas.</p><ul class="list-disc pl-5 mt-2 space-y-1 text-sm text-stone-600"><li><b class="text-stone-800">Coste/Ha (€):</b> Muestra cuánto te cuesta mantener cada hectárea. Un color más intenso (rojo) significa que esa parcela es más cara de cuidar.</li><li><b class="text-stone-800">Prod/Ha (Kg):</b> Mide el rendimiento. Un color más intenso (verde) es bueno, significa que obtienes más uva por superficie.</li><li><b class="text-stone-800">Coste/Kg (€):</b> Esta es la métrica clave. Te dice el coste real de producir un kilo de uva. Un color más claro (verde) es ideal, ya que indica un coste de producción bajo.</li></ul><p class="text-sm mt-3"><b class="text-stone-800">Ejemplo práctico:</b> Si la parcela "Viña del Monte" tiene un color rojo intenso en <b class="text-stone-800">Coste/Kg</b>, significa que cada kilo de uva de allí te está costando mucho dinero. Es una señal para investigar: ¿quizás necesita un tratamiento caro? ¿o su producción es demasiado baja para lo que inviertes? Te ayuda a decidir dónde optimizar tus recursos.</p></div><div id="parcel-heatmap-chart" class="echart-container"></div></div>
 
-        <div>
-            <h2 class="text-2xl font-bold section-title pb-2 mb-6">Anatomía de la Rentabilidad</h2>
-            <div class="section-card p-6 rounded-2xl shadow-lg">
-                <div class="flex items-center justify-between mb-4"><h3 class="text-xl font-bold text-primary">Desglose del Coste por Botella</h3><svg data-target="explanation-cost" class="w-6 h-6 text-secondary explanation-toggle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
-                <div id="explanation-cost" class="explanation-panel section-card rounded-lg mb-6 border-l-4" style="border-color: var(--explanation-border-cost);"><h4 class="font-bold text-lg mb-2">¿De Dónde Viene el Coste de tu Vino?</h4><p class="text-primary">Esta sección es un microscopio financiero. Te muestra exactamente en qué te gastas el dinero para producir una botella de vino. El gráfico circular te da una visión general, y la lista de la izquierda te permite explorar cada céntimo.</p><ul class="list-disc pl-5 mt-2 space-y-1 text-sm text-secondary"><li><b class="text-primary">Visión General:</b> Por defecto, ves el coste promedio de todos tus vinos. Para mejorar la visibilidad, los costes de 'Crianza y Almacenamiento' (CyA*) pueden aparecer magnificados.</li><li><b class="text-primary">Análisis Específico:</b> Usa el desplegable para elegir un vino concreto. Verás cómo cambia la estructura de costes. Un vino de crianza tendrá más costes en 'Bodega' (por la barrica) que un vino joven.</li></ul><p class="text-sm mt-3"><b class="text-primary">Ejemplo práctico:</b> Seleccionas tu vino "Alma de Golia" y descubres que la categoría "Embotellado y Empaquetado" (o "EyE" en la gráfica) representa un 40% de su coste total. Esta información es oro: te permite tomar la decisión de buscar un proveedor de botellas más económico para aumentar directamente el margen de beneficio de ese vino.</p></div>
-                <div class="flex items-center gap-4 mb-4"><label for="product-select" class="font-semibold text-primary">Analizar un producto específico:</label><select id="product-select" class="flex-grow max-w-sm px-4 py-2 border rounded-full bg-white focus:outline-none focus:ring-2" style="border-color: var(--explanation-border-cost);"></select></div>
-                <div class="grid lg:grid-cols-5 gap-8 items-start">
-                    <div class="lg:col-span-1 p-4 w-full rounded-lg border border-accent"><h1 id="cost-breakdown-title" class="text-2xl font-bold text-primary">Coste Promedio (Total Bodega)</h1><div id="cost-breakdown-container" class="grid gap-2 mt-2"></div></div>
-                    <div id="cost-sunburst-chart" class="lg:col-span-4 echart-container" style="min-height: 700px;"></div>
-                </div>
-            </div>
-        </div>
+        <div><h2 class="text-2xl font-bold section-title pb-2 mb-6">Anatomía de la Rentabilidad</h2><div class="section-card p-6 rounded-2xl"><div class="flex items-center justify-between mb-4"><h3 class="text-xl font-bold header-title">Desglose del Coste por Botella</h3><label class="switch"><input type="checkbox" data-target="explanation-cost"><span class="slider"></span></label></div><div id="explanation-cost" class="explanation-panel section-card rounded-lg mb-6 border-l-4" style="border-color: var(--ocre-dorado);"><h4 class="font-bold text-lg mb-2">¿De Dónde Viene el Coste de tu Vino?</h4><p class="text-stone-700">Esta sección es un microscopio financiero. Te muestra exactamente en qué te gastas el dinero para producir una botella de vino. El gráfico circular te da una visión general, y la lista de la izquierda te permite explorar cada céntimo.</p><ul class="list-disc pl-5 mt-2 space-y-1 text-sm text-stone-600"><li><b class="text-stone-800">Visión General:</b> Por defecto, ves el coste promedio de todos tus vinos. Para mejorar la visibilidad, los costes de 'Crianza y Almacenamiento' (CyA*) pueden aparecer magnificados.</li><li><b class="text-stone-800">Análisis Específico:</b> Usa el desplegable para elegir un vino concreto. Verás cómo cambia la estructura de costes. Un vino de crianza tendrá más costes en 'Bodega' (por la barrica) que un vino joven.</li></ul><p class="text-sm mt-3"><b class="text-stone-800">Ejemplo práctico:</b> Seleccionas tu vino "Alma de Golia" y descubres que la categoría "Embotellado y Empaquetado" (o "EyE" en la gráfica) representa un 40% de su coste total. Esta información es oro: te permite tomar la decisión de buscar un proveedor de botellas más económico para aumentar directamente el margen de beneficio de ese vino.</p></div><div class="flex items-center gap-4 mb-4"><label for="product-select" class="font-semibold">Analizar un producto específico:</label><select id="product-select" class="flex-grow max-w-sm px-4 py-2 border rounded-full bg-white focus:outline-none focus:ring-2" style="border-color: var(--ocre-dorado);"></select></div><div class="grid lg:grid-cols-5 gap-8 items-start"><div class="lg:col-span-1 p-4 w-full rounded-lg border dark:border-gray-800"><h1 id="cost-breakdown-title" class="text-2xl font-bold">Coste Promedio (Total Bodega)</h1><div id="cost-breakdown-container" class="grid gap-2 mt-2"></div></div><div id="cost-sunburst-chart" class="lg:col-span-4 echart-container" style="min-height: 700px;"></div></div></div></div>
         
-        <div class="section-card p-6 rounded-2xl shadow-lg">
-            <div class="flex items-center justify-between mb-4"><h3 class="text-xl font-bold text-primary">Matriz de Rentabilidad por Producto</h3><svg data-target="explanation-matrix" class="w-6 h-6 text-secondary explanation-toggle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
-            <div id="explanation-matrix" class="explanation-panel section-card rounded-lg mb-6 border-l-4" style="border-color: var(--explanation-border-matrix);"><h4 class="font-bold text-lg mb-2">¿Qué Vinos son tus Estrellas y Cuáles tus Dudas?</h4><p class="text-primary">Esta matriz es tu mapa estratégico de productos. Cada burbuja es uno de tus vinos, y su posición te dice qué rol juega en tu negocio.</p><ul class="list-disc pl-5 mt-2 space-y-1 text-sm text-secondary"><li><b class="text-primary">Eje Horizontal (Unidades Vendidas):</b> Cuanto más a la derecha, más popular es el vino.</li><li><b class="text-primary">Eje Vertical (Margen por Botella):</b> Cuanto más arriba, más beneficio te deja cada botella vendida.</li><li><b class="text-primary">Tamaño de la Burbuja:</b> Representa los ingresos totales. Una burbuja grande significa que ese vino factura mucho.</li></ul><p class="text-sm mt-3"><b class="text-primary">Ejemplo práctico:</b> Encuentras un vino en la esquina <b class="text-primary">superior izquierda</b> (alto margen, pocas ventas). ¡Es una joya escondida! La decisión estratégica es clara: debes lanzar una campaña de marketing para dar a conocer este vino, ya que cada nueva venta es muy rentable. Por otro lado, un vino en la <b class="text-primary">inferior derecha</b> (bajo margen, muchas ventas) es tu "caballo de batalla": no te da mucho beneficio por unidad, pero su volumen de ventas es crucial para la facturación.</p></div>
-            <div id="profitability-matrix-chart" class="echart-container"></div>
-        </div>
+        <div class="section-card p-6 rounded-2xl"><div class="flex items-center justify-between mb-4"><h3 class="text-xl font-bold header-title">Matriz de Rentabilidad por Producto</h3><label class="switch"><input type="checkbox" data-target="explanation-matrix"><span class="slider"></span></label></div><div id="explanation-matrix" class="explanation-panel section-card rounded-lg mb-6 border-l-4" style="border-color: var(--rojo-arcilla);"><h4 class="font-bold text-lg mb-2">¿Qué Vinos son tus Estrellas y Cuáles tus Dudas?</h4><p class="text-stone-700">Esta matriz es tu mapa estratégico de productos. Cada burbuja es uno de tus vinos, y su posición te dice qué rol juega en tu negocio.</p><ul class="list-disc pl-5 mt-2 space-y-1 text-sm text-stone-600"><li><b class="text-stone-800">Eje Horizontal (Unidades Vendidas):</b> Cuanto más a la derecha, más popular es el vino.</li><li><b class="text-stone-800">Eje Vertical (Margen por Botella):</b> Cuanto más arriba, más beneficio te deja cada botella vendida.</li><li><b class="text-stone-800">Tamaño de la Burbuja:</b> Representa los ingresos totales. Una burbuja grande significa que ese vino factura mucho.</li></ul><p class="text-sm mt-3"><b class="text-stone-800">Ejemplo práctico:</b> Encuentras un vino en la esquina <b class="text-stone-800">superior izquierda</b> (alto margen, pocas ventas). ¡Es una joya escondida! La decisión estratégica es clara: debes lanzar una campaña de marketing para dar a conocer este vino, ya que cada nueva venta es muy rentable. Por otro lado, un vino en la <b class="text-stone-800">inferior derecha</b> (bajo margen, muchas ventas) es tu "caballo de batalla": no te da mucho beneficio por unidad, pero su volumen de ventas es crucial para la facturación.</p></div><div id="profitability-matrix-chart" class="echart-container"></div></div>
     </div></main>
-</div>
+  </div>
 
-<script>
+  <script>
     const API_BASE_URL = 'http://127.0.0.1:8000'; const TOKEN_KEY = 'accessToken';
-    const eChartsInstances = {}; let lastFetchedData = {};
-    const formatCurrency = (v) => `€${(v||0).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-    const formatNumber = (v) => (v||0).toLocaleString('es-ES');
-    
+    const eChartsInstances = {};
     function requireAuth(){ if(!localStorage.getItem(TOKEN_KEY)) window.location.href='login.html'; }
     function logout(){ localStorage.clear(); window.location.href='login.html'; }
+    document.getElementById('logout-btn').addEventListener('click', logout);
     async function apiFetch(endpoint, options = {}) {
         const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}` };
         const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
@@ -162,7 +101,8 @@
         if (!resp.ok) { const errData = await resp.json().catch(()=>({detail:'Error'})); throw new Error(errData.detail); }
         return resp.json();
     }
-    
+    const formatCurrency = (v) => `€${(v||0).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    const formatNumber = (v) => (v||0).toLocaleString('es-ES');
     function initEChart(domId, option) {
         const chartDom = document.getElementById(domId);
         if (eChartsInstances[domId]) eChartsInstances[domId].dispose();
@@ -174,124 +114,245 @@
     }
     function showNoDataMessage(containerId) {
         const container = document.getElementById(containerId);
-        if (container) container.innerHTML = `<div class="flex items-center justify-center h-full text-secondary font-semibold p-8">No hay suficientes datos para mostrar esta gráfica.</div>`;
+        if (container) container.innerHTML = `<div class="flex items-center justify-center h-full text-stone-500 font-semibold p-8">No hay suficientes datos para mostrar esta gráfica.</div>`;
     }
 
     function renderParcelHeatmap(apiData) {
-        if (!apiData || apiData.length === 0) { showNoDataMessage('parcel-heatmap-chart'); return; }
-        lastFetchedData.parcelHeatmap = apiData;
-        const parcels = [...new Set(apiData.map(d => d.parcel_name))]; const metrics = ['Coste/Ha (€)', 'Prod/Ha (Kg)', 'Coste/Kg (€)'];
-        const data = apiData.flatMap(d => [[0, parcels.indexOf(d.parcel_name), d.cost_per_ha.toFixed(2)], [1, parcels.indexOf(d.parcel_name), d.prod_per_ha.toFixed(2)], [2, parcels.indexOf(d.parcel_name), d.cost_per_kg.toFixed(2)]]);
+        const parcels = [...new Set(apiData.map(d => d.parcel_name))];
+        const metrics = ['Coste/Ha (€)', 'Prod/Ha (Kg)', 'Coste/Kg (€)'];
+        const data = apiData.flatMap(d => {
+            const parcelIndex = parcels.indexOf(d.parcel_name);
+            return [[0, parcelIndex, d.cost_per_ha.toFixed(2)], [1, parcelIndex, d.prod_per_ha.toFixed(2)], [2, parcelIndex, d.cost_per_kg.toFixed(2)]];
+        });
         const maxValue = Math.max(...data.map(d => parseFloat(d[2])));
-        initEChart('parcel-heatmap-chart', { tooltip: { position: 'top' }, grid: { height: '60%', top: '10%' }, xAxis: { type: 'category', data: metrics, splitArea: { show: true } }, yAxis: { type: 'category', data: parcels, splitArea: { show: true } }, visualMap: { min: 0, max: maxValue||1, calculable: true, orient: 'horizontal', left: 'center', bottom: '5%', inRange: { color: ['#6B705C', '#F2E2C4', '#A23E48'] } }, series: [{ name: 'Rendimiento', type: 'heatmap', data, label: { show: true, formatter: p => formatNumber(p.value[2]) }, emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.5)' } } }] });
+        initEChart('parcel-heatmap-chart', {
+            tooltip: { position: 'top' }, grid: { height: '60%', top: '10%' },
+            xAxis: { type: 'category', data: metrics, splitArea: { show: true } },
+            yAxis: { type: 'category', data: parcels, splitArea: { show: true } },
+            visualMap: { min: 0, max: maxValue||1, calculable: true, orient: 'horizontal', left: 'center', bottom: '5%', inRange: { color: ['#6B705C', '#F2E2C4', '#A23E48'] } },
+            series: [{ name: 'Rendimiento', type: 'heatmap', data, label: { show: true, formatter: p => formatNumber(p.value[2]) }, emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.5)' } } }]
+        });
     }
 
     function renderProfitabilityMatrix(apiData) {
-        if (!Array.isArray(apiData) || apiData.length === 0) { showNoDataMessage('profitability-matrix-chart'); return; }
-        lastFetchedData.profitabilityMatrix = apiData;
+        if (!Array.isArray(apiData)) { showNoDataMessage('profitability-matrix-chart'); return; }
         const filteredData = apiData.filter(d => Array.isArray(d) && d.length === 4 && d[0] > 0 && isFinite(d[1]) && isFinite(d[2]));
         if (filteredData.length === 0) { showNoDataMessage('profitability-matrix-chart'); return; }
-        const cheerfulColors = ['#2ca02c', '#1f77b4', '#ff7f0e', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
-        initEChart('profitability-matrix-chart', { color: cheerfulColors, xAxis: { name: 'Unidades Vendidas', nameLocation: 'middle', nameGap: 30, splitLine: { lineStyle: { type: 'dashed' } } }, yAxis: { name: 'Margen por Botella (€)', splitLine: { lineStyle: { type: 'dashed' } } }, tooltip: { formatter: p => `${p.value[3]}<br/>Unidades: ${formatNumber(p.value[0])}<br/>Margen: ${formatCurrency(p.value[1])}<br/>Ingresos: ${formatCurrency(p.value[2])}` }, series: [{ symbolSize: p => Math.max(Math.sqrt(p[2]) / 25, 10), data: filteredData, type: 'scatter', label: { show: true, position: 'top', rotate: 0, formatter: p => p.value[3].length > 20 ? p.value[3].substring(0,18)+'...' : '' } }] });
+        const autumnPalette = { marron: '#5C4033', verde: '#6B705C', rojo: '#A23E48', ocre: '#C98C32', naranja: '#D96C06' };
+        initEChart('profitability-matrix-chart', {
+            color: Object.values(autumnPalette),
+            xAxis: { name: 'Unidades Vendidas', nameLocation: 'middle', nameGap: 30, splitLine: { lineStyle: { type: 'dashed' } } },
+            yAxis: { name: 'Margen por Botella (€)', splitLine: { lineStyle: { type: 'dashed' } } },
+            tooltip: { formatter: p => {
+                const name = p.value[3];
+                const shortName = name.length > 25 ? name.substring(0, 22) + '...' : name;
+                return `${shortName}<br/>Unidades: ${formatNumber(p.value[0])}<br/>Margen: ${formatCurrency(p.value[1])}<br/>Ingresos: ${formatCurrency(p.value[2])}`;
+            }},
+            series: [{ 
+                symbolSize: p => Math.max(Math.sqrt(p[2]) / 25, 10), 
+                data: filteredData, 
+                type: 'scatter',
+                label: { show: true, position: 'top', rotate: 0, formatter: p => p.value[3].length > 20 ? p.value[3].substring(0,18)+'...' : '' }
+            }]
+        });
     }
 
     const costBreakdownState = {};
     function renderCostBreakdownList(categories, totalCost) {
-        const container = document.getElementById('cost-breakdown-container'); container.innerHTML = '';
-        if (!categories || categories.length === 0) { container.innerHTML = '<p class="text-secondary p-4">No hay desglose de costes disponible.</p>'; return; }
+        const container = document.getElementById('cost-breakdown-container');
+        container.innerHTML = '';
+        if (!categories || categories.length === 0) {
+            container.innerHTML = '<p class="text-stone-500 p-4">No hay desglose de costes disponible.</p>';
+            return;
+        }
         categories.forEach((category, index) => {
-            const categoryId = `cost-cat-${index}`; costBreakdownState[categoryId] = { currentPage: 1, items: category.children };
+            const categoryId = `cost-cat-${index}`;
+            costBreakdownState[categoryId] = { currentPage: 1, items: category.children, totalCost: totalCost };
             const categoryTotal = category.children.reduce((acc, item) => acc + (parseFloat(item.value) || 0), 0);
             const percentage = totalCost > 0 ? (categoryTotal / totalCost) * 100 : 0;
-            container.innerHTML += `<details class="cost-category border-b border-accent" id="${categoryId}"><summary class="flex items-center justify-between py-3 font-semibold cursor-pointer" onclick="highlightChartSegment('${category.name}', event)"><div class="flex items-center gap-3"><div style="background-color: ${category.itemStyle.color};" class="w-3 h-10 rounded"></div><div><span>${category.name}</span><span class="text-xs text-secondary font-normal"> ${percentage.toFixed(1)}%</span></div></div><div class="flex items-center gap-2"><span class="font-bold">${formatCurrency(categoryTotal)}</span><svg class="arrow w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></div></summary><div class="pl-6 pb-2"><div class="cost-items-container grid gap-1 mt-2"></div><div class="pagination-controls flex justify-end items-center gap-2 mt-3 text-xs"></div></div></details>`;
-            renderCostItemsForCategory(categoryId, totalCost);
+            const categoryHTML = `
+                <details class="cost-category border-b border-stone-200" id="${categoryId}">
+                    <summary class="flex items-center justify-between py-3 font-semibold cursor-pointer" onclick="highlightChartSegment('${category.originalName}', event)">
+                        <div class="flex items-center gap-3">
+                            <div style="background-color: ${category.itemStyle.color};" class="w-3 h-10 rounded"></div>
+                            <div><span>${category.originalName}</span><span class="text-xs text-stone-500 font-normal"> ${percentage.toFixed(1)}%</span></div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                             <span class="font-bold">${formatCurrency(categoryTotal)}</span>
+                            <svg class="arrow w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </div>
+                    </summary>
+                    <div class="pl-6 pb-2">
+                        <div class="cost-items-container grid gap-1 mt-2"></div>
+                        <div class="pagination-controls flex justify-end items-center gap-2 mt-3 text-xs"></div>
+                    </div>
+                </details>`;
+            container.innerHTML += categoryHTML;
+            renderCostItemsForCategory(categoryId);
         });
     }
-    function renderCostItemsForCategory(categoryId, totalCost) {
+
+    function renderCostItemsForCategory(categoryId) {
         const state = costBreakdownState[categoryId]; if (!state) return;
-        const { currentPage, items } = state;
+        const { currentPage, items, totalCost } = state;
         const container = document.querySelector(`#${categoryId} .cost-items-container`);
         const paginationContainer = document.querySelector(`#${categoryId} .pagination-controls`);
         container.innerHTML = ''; paginationContainer.innerHTML = '';
-        const itemsPerPage = 4; const start = (currentPage - 1) * itemsPerPage; const end = start + itemsPerPage;
+        const itemsPerPage = 4;
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
         const paginatedItems = items.slice(start, end);
         paginatedItems.forEach(item => {
             const itemValue = parseFloat(item.value) || 0;
             const itemPercentage = totalCost > 0 ? (itemValue / totalCost) * 100 : 0;
-            container.innerHTML += `<div class="cost-item flex gap-3 items-center text-sm p-2 cursor-pointer" onclick="highlightChartSegment('${item.name}', event)"><div class="grid gap-1 flex-1"><h2 class="font-semibold leading-none">${item.name}</h2><div class="text-xs text-secondary">${formatCurrency(itemValue)} (${itemPercentage.toFixed(1)}%)</div></div></div>`;
+            container.innerHTML += `<div class="cost-item flex gap-3 items-center text-sm p-2 cursor-pointer" onclick="highlightChartSegment('${item.name}', event)">
+                <div class="grid gap-1 flex-1">
+                    <h2 class="font-semibold leading-none">${item.name}</h2>
+                    <div class="text-xs text-stone-500">${formatCurrency(itemValue)} (${itemPercentage.toFixed(1)}%)</div>
+                </div>
+            </div>`;
         });
         if (items.length > itemsPerPage) {
-            const totalPages = Math.ceil(items.length / itemsPerPage); const prevDisabled = currentPage === 1 ? 'disabled':''; const nextDisabled = currentPage === totalPages ? 'disabled':'';
-            paginationContainer.innerHTML = `<button class="px-2 py-1 border rounded ${prevDisabled?'text-gray-300':''}" onclick="changePage('${categoryId}', -1, ${totalCost})" ${prevDisabled}>Ant.</button><span>${currentPage}/${totalPages}</span><button class="px-2 py-1 border rounded ${nextDisabled?'text-gray-300':''}" onclick="changePage('${categoryId}', 1, ${totalCost})" ${nextDisabled}>Sig.</button>`;
+            const totalPages = Math.ceil(items.length / itemsPerPage);
+            const prevDisabled = currentPage === 1 ? 'disabled':''; const nextDisabled = currentPage === totalPages ? 'disabled':'';
+            paginationContainer.innerHTML = `<button class="px-2 py-1 border rounded ${prevDisabled?'text-stone-300':''}" onclick="changePage('${categoryId}', -1)" ${prevDisabled}>Ant.</button><span>${currentPage}/${totalPages}</span><button class="px-2 py-1 border rounded ${nextDisabled?'text-stone-300':''}" onclick="changePage('${categoryId}', 1)" ${nextDisabled}>Sig.</button>`;
         }
     }
-    window.changePage = (categoryId, direction, totalCost) => {
-        event.stopPropagation(); const state = costBreakdownState[categoryId]; const totalPages = Math.ceil(state.items.length / 4);
-        const newPage = state.currentPage + direction; if (newPage >= 1 && newPage <= totalPages) { state.currentPage = newPage; renderCostItemsForCategory(categoryId, totalCost); }
-    }
-    function highlightChartSegment(name, event) {
-        if (event) event.stopPropagation(); const chart = eChartsInstances['cost-sunburst-chart']; if (!chart) return;
-        const nameAliasMap = { "Viñedo y Vendimia": "VyV", "Crianza y Almacenamiento": "CyA", "Embotellado y Empaquetado": "EyE", "Comerciales y de Marketing": "Mkt", "Generales y Administrativos": "G&A" };
-        const chartName = nameAliasMap[name] || name;
-        chart.dispatchAction({ type: 'downplay', seriesIndex: 0 }); chart.dispatchAction({ type: 'highlight', seriesIndex: 0, name: chartName });
+    
+    window.changePage = (categoryId, direction) => {
+        event.stopPropagation();
+        const state = costBreakdownState[categoryId];
+        const totalPages = Math.ceil(state.items.length / 4);
+        const newPage = state.currentPage + direction;
+        if (newPage >= 1 && newPage <= totalPages) { state.currentPage = newPage; renderCostItemsForCategory(categoryId); }
     }
 
+    function highlightChartSegment(name, event) {
+        if (event) event.stopPropagation();
+        const chart = eChartsInstances['cost-sunburst-chart'];
+        if (!chart) return;
+        const nameAliasMap = { "Viñedo y Vendimia": "VyV", "Crianza y Almacenamiento": "CyA", "Embotellado y Empaquetado": "EyE", "Comerciales y de Marketing": "Mkt", "Generales y Administrativos": "G&A" };
+        const chartName = nameAliasMap[name] || name;
+        chart.dispatchAction({ type: 'downplay', seriesIndex: 0 });
+        chart.dispatchAction({ type: 'highlight', seriesIndex: 0, name: chartName });
+    }
+
+    document.body.addEventListener('click', (e) => {
+        if (!e.target.closest('.cost-category')) {
+            const chart = eChartsInstances['cost-sunburst-chart'];
+            if (chart) chart.dispatchAction({ type: 'downplay', seriesIndex: 0 });
+        }
+    });
+
     async function updateCostBreakdown(productId = null) {
-        lastFetchedData.costBreakdownProductId = productId;
         const titleEl = document.getElementById('cost-breakdown-title');
+        let data, totalCost, breakdown;
         try {
-            const data = productId ? await apiFetch(`/api/analytics/cost-breakdown/${productId}`) : await apiFetch('/api/analytics/cost-breakdown');
-            const breakdown = productId ? data.breakdown : data;
-            const totalCost = productId ? data.total_unit_cost : breakdown.reduce((total, cat) => total + cat.children.reduce((acc, item) => acc + (parseFloat(item.value) || 0), 0), 0);
-            titleEl.textContent = productId ? `Coste Total: ${formatCurrency(totalCost)}` : 'Coste Promedio (Total Bodega)';
+            if (productId) {
+                data = await apiFetch(`/api/analytics/cost-breakdown/${productId}`);
+                totalCost = data.total_unit_cost; breakdown = data.breakdown;
+                const selectedText = document.querySelector(`#product-select option[value="${productId}"]`).textContent;
+                titleEl.textContent = `Coste Total: ${formatCurrency(totalCost)}`;
+            } else {
+                data = await apiFetch('/api/analytics/cost-breakdown');
+                breakdown = data;
+                totalCost = breakdown.reduce((total, cat) => total + cat.children.reduce((acc, item) => acc + (parseFloat(item.value) || 0), 0), 0);
+                titleEl.textContent = 'Coste Promedio (Total Bodega)';
+            }
             
-            const categoryColorMap = { 'Viñedo y Vendimia': '#6B705C', 'Vinificación': '#C98C32', 'Crianza y Almacenamiento': '#A23E48', 'Embotellado y Empaquetado': '#D96C06', 'Comerciales y de Marketing': '#5C4033', 'Generales y Administrativos': '#7f7f7f' };
-            const processedBreakdown = breakdown.map(cat => ({ ...cat, itemStyle: { color: categoryColorMap[cat.name] || '#888' } }));
+            const categoryColorMap = {
+                'Viñedo y Vendimia': '#6B705C', 'Vinificación': '#C98C32', 'Crianza y Almacenamiento': '#A23E48',
+                'Embotellado y Empaquetado': '#D96C06', 'Comerciales y de Marketing': '#5C4033', 'Generales y Administrativos': '#7f7f7f'
+            };
+            const nameAliases = { "Viñedo y Vendimia": "VyV", "Crianza y Almacenamiento": "CyA", "Embotellado y Empaquetado": "EyE", "Comerciales y de Marketing": "Mkt", "Generales y Administrativos": "G&A" };
+
+            const processedBreakdown = breakdown.map(cat => ({
+                ...cat, originalName: cat.name, name: nameAliases[cat.name] || cat.name, itemStyle: { color: categoryColorMap[cat.name] || '#888' }
+            }));
+            
             renderCostBreakdownList(processedBreakdown, totalCost);
             
-            const nameAliases = { "Viñedo y Vendimia": "VyV", "Crianza y Almacenamiento": "CyA", "Embotellado y Empaquetado": "EyE", "Comerciales y de Marketing": "Mkt", "Generales y Administrativos": "G&A" };
-            let sunburstData = processedBreakdown.map(cat => ({ name: nameAliases[cat.name] || cat.name, originalName: cat.name, itemStyle: cat.itemStyle, children: cat.children.map(child => ({ name: child.name, value: child.value, itemStyle: cat.itemStyle })) }));
-            if (!productId) { sunburstData = sunburstData.map(cat => { if (cat.originalName === 'Crianza y Almacenamiento') { return { ...cat, name: cat.name + '*', children: cat.children.map(child => ({...child, value: child.value * 4, originalValue: child.value })) } } return cat; }); }
-            
-            if (sunburstData.length > 0) initEChart('cost-sunburst-chart', { series: { type: 'sunburst', data: sunburstData, radius: [0, '95%'], sort: undefined, itemStyle: { borderWidth: 4, borderColor: '#ffffff' }, levels: [{}, { r0: '15%', r: '55%', itemStyle: {borderWidth: 2}, label: {rotate: 'radial', color: '#fff', textShadowColor:'#000', textShadowBlur: 2} }, { r0: '55%', r: '100%', label: {rotate: 'radial'}, itemStyle: {borderWidth: 1} }], minAngle: 7 }, tooltip: { formatter: p => { const isMagnified = p.data.originalValue !== undefined; const value = isMagnified ? p.data.originalValue : p.value; const name = p.data.originalName || p.name; if (isMagnified) return `${name}: ${formatCurrency(value)} <br/>(Magnificado para visibilidad)`; return `${name}: ${formatCurrency(value)} (${p.percent}%)`; } } });
-            else showNoDataMessage('cost-sunburst-chart');
-        } catch (e) { console.error("Error al actualizar desglose:", e); titleEl.textContent = 'Error al calcular costes'; showNoDataMessage('cost-sunburst-chart'); renderCostBreakdownList([], 0); }
+            let sunburstData = processedBreakdown.map(cat => ({
+                name: cat.name,
+                originalName: cat.originalName,
+                itemStyle: cat.itemStyle,
+                children: cat.children.map(child => ({ name: child.name, value: child.value, itemStyle: cat.itemStyle }))
+            }));
+
+            if (!productId) {
+                sunburstData = sunburstData.map(cat => {
+                    if (cat.originalName === 'Crianza y Almacenamiento') {
+                        const magnificationFactor = 4;
+                        return { ...cat, name: cat.name + '*', children: cat.children.map(child => ({...child, value: (child.value || 0) * magnificationFactor, originalValue: child.value })) }
+                    }
+                    return cat;
+                });
+            }
+
+            if (sunburstData.length > 0) {
+                 initEChart('cost-sunburst-chart', {
+                    series: { 
+                        type: 'sunburst', data: sunburstData, radius: [0, '95%'], sort: undefined,
+                        itemStyle: { borderWidth: 4, borderColor: '#ffffff' },
+                        levels: [{}, 
+                            { r0: '15%', r: '55%', itemStyle: {borderWidth: 2}, label: {rotate: 'radial', color: '#fff', textShadowColor:'#000', textShadowBlur: 2} }, 
+                            { r0: '55%', r: '100%', label: {rotate: 'radial'}, itemStyle: {borderWidth: 1} }
+                        ],
+                        minAngle: 7
+                    },
+                    tooltip: { formatter: p => {
+                        const isMagnified = p.data.originalValue !== undefined;
+                        const value = isMagnified ? p.data.originalValue : p.value;
+                        const name = p.data.originalName || p.name;
+                        const percentage = totalCost > 0 ? (value / totalCost * 100).toFixed(1) : 0;
+                        if (isMagnified) return `${name}: ${formatCurrency(value)} <br/>(Magnificado para visibilidad)`;
+                        return `${name}: ${formatCurrency(value)} (${percentage}%)`;
+                    }}
+                });
+            } else { showNoDataMessage('cost-sunburst-chart'); }
+        } catch (e) {
+            console.error("Error al actualizar desglose:", e);
+            titleEl.textContent = 'Error al calcular costes';
+            showNoDataMessage('cost-sunburst-chart'); renderCostBreakdownList([], 0);
+        }
     }
 
     async function main() {
-        requireAuth(); document.getElementById('logout-btn').addEventListener('click', logout);
-        document.querySelectorAll('.explanation-toggle').forEach(t => t.addEventListener('click', () => document.getElementById(t.dataset.target).classList.toggle('open')));
+        requireAuth();
+        document.querySelectorAll('input[type="checkbox"][data-target]').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const targetPanel = document.getElementById(e.target.dataset.target);
+                if (targetPanel) targetPanel.classList.toggle('open', e.target.checked);
+            });
+        });
+
         try {
             const kpis = await apiFetch('/api/analytics/kpis-summary');
-            document.getElementById('kpi-total-sales').textContent = formatCurrency(kpis.TotalSale); document.getElementById('kpi-total-profit').textContent = formatCurrency(kpis.Profit); document.getElementById('kpi-gross-margin').textContent = `${((kpis.Profit/kpis.TotalSale)*100||0).toFixed(1)}%`; document.getElementById('kpi-total-quantity').textContent = formatNumber(kpis.Quantity); document.getElementById('kpi-unique-customers').textContent = formatNumber(kpis.UniqueCustomers); document.getElementById('kpi-avg-sale').textContent = formatCurrency(kpis.AverageSaleValue);
+            document.getElementById('kpi-total-sales').textContent = formatCurrency(kpis.TotalSale);
+            document.getElementById('kpi-total-profit').textContent = formatCurrency(kpis.Profit);
+            document.getElementById('kpi-gross-margin').textContent = `${((kpis.Profit/kpis.TotalSale)*100||0).toFixed(1)}%`;
+            document.getElementById('kpi-total-quantity').textContent = formatNumber(kpis.Quantity);
+            document.getElementById('kpi-unique-customers').textContent = formatNumber(kpis.UniqueCustomers);
+            document.getElementById('kpi-avg-sale').textContent = formatCurrency(kpis.AverageSaleValue);
         } catch(e) { console.error('Error KPIs:', e); }
-        const [parcelData, profitabilityData, products] = await Promise.all([ apiFetch('/api/analytics/parcel-performance').catch(e => { console.error("Error parcelas:", e); return null; }), apiFetch('/api/analytics/product-profitability').catch(e => { console.error("Error rentabilidad:", e); return null; }), apiFetch('/api/products/list').catch(e => { console.error("Error productos:", e); return []; }) ]);
-        if (parcelData) renderParcelHeatmap(parcelData); if (profitabilityData) renderProfitabilityMatrix(profitabilityData);
+
+        const [parcelData, profitabilityData, products] = await Promise.all([
+            apiFetch('/api/analytics/parcel-performance').catch(e => { console.error("Error parcelas:", e); return null; }),
+            apiFetch('/api/analytics/product-profitability').catch(e => { console.error("Error rentabilidad:", e); return null; }),
+            apiFetch('/api/products/list').catch(e => { console.error("Error productos:", e); return []; })
+        ]);
+
+        if (parcelData && parcelData.length > 0) renderParcelHeatmap(parcelData); else showNoDataMessage('parcel-heatmap-chart');
+        if (profitabilityData) renderProfitabilityMatrix(profitabilityData);
+
         const select = document.getElementById('product-select');
-        select.innerHTML = '<option value="">-- General (Todos los vinos) --</option>'; products.forEach(p => select.innerHTML += `<option value="${p.id}">${p.name}</option>`);
+        select.innerHTML = '<option value="">-- General (Todos los vinos) --</option>';
+        products.forEach(p => select.innerHTML += `<option value="${p.id}">${p.name}</option>`);
         select.addEventListener('change', (e) => updateCostBreakdown(e.target.value || null));
         updateCostBreakdown(); 
     }
-    
-    function refreshAllCharts() {
-        if (lastFetchedData.parcelHeatmap) renderParcelHeatmap(lastFetchedData.parcelHeatmap);
-        if (lastFetchedData.profitabilityMatrix) renderProfitabilityMatrix(lastFetchedData.profitabilityMatrix);
-        if (lastFetchedData.hasOwnProperty('costBreakdownProductId')) updateCostBreakdown(lastFetchedData.costBreakdownProductId);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const themeToggle = document.getElementById('theme-toggle'); const body = document.body;
-        function applyTheme(theme, isInitialLoad = false) {
-            body.classList.toggle('theme-warm', theme === 'warm'); if (isInitialLoad) themeToggle.checked = (theme === 'warm');
-            setTimeout(refreshAllCharts, 50);
-        }
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        applyTheme(savedTheme, true);
-        themeToggle.addEventListener('change', () => { const newTheme = themeToggle.checked ? 'warm' : 'light'; localStorage.setItem('theme', newTheme); applyTheme(newTheme); });
-        main();
-    });
+    document.addEventListener('DOMContentLoaded', main);
     window.addEventListener('resize', () => { for (const chartId in eChartsInstances) eChartsInstances[chartId].resize(); });
-    document.body.addEventListener('click', (e) => { if (!e.target.closest('.cost-category')) { const chart = eChartsInstances['cost-sunburst-chart']; if (chart) chart.dispatchAction({ type: 'downplay', seriesIndex: 0 }); } });
-</script>
+  </script>
 </body>
 </html>

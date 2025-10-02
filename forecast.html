@@ -10,102 +10,53 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* --- 🎨 SISTEMA DE TEMAS --- */
-        :root { /* 💡 Tema Claro por Defecto */
-            --bg-color: #F8F7F4;
-            --card-bg: rgba(255, 255, 255, 0.7);
-            --card-nested-bg: #F9FAFB; /* gray-50 */
-            --text-color: #292524; /* stone-800 */
-            --text-secondary-color: #57534e; /* stone-600 */
-            --header-bg-color: #44403c; /* stone-700 */
-            --border-color: #e5e7eb; /* stone-200 */
-            --border-strong-color: #d6d3d1; /* stone-300 */
-            --tab-active-color: #5C1A33;
-            --cta-button-bg: linear-gradient(to right, #5C1A33, #8C2B4F);
-            --secondary-button-bg: #e5e7eb; /* gray-200 */
-            --input-bg: rgba(255, 255, 255, 0.7);
-            --focus-ring-color: #5C1A33;
-            --loader-primary-color: #5C1A33;
-            --loader-secondary-color: #e0e0e0;
+        :root {
+            --bg-color: #F8F7F4; --card-bg: rgba(255, 255, 255, 0.8); --card-nested-bg: #F9FAFB;
+            --text-color: #292524; --text-secondary-color: #57534e; --header-bg-color: #44403c;
+            --border-color: #e5e7eb; --border-strong-color: #d6d3d1; --tab-active-color: #5C1A33;
+            --cta-button-bg: linear-gradient(to right, #5C1A33, #8C2B4F); --secondary-button-bg: #e5e7eb;
+            --input-bg: rgba(255, 255, 255, 0.9); --focus-ring-color: #5C1A33;
+            --loader-primary-color: #5C1A33; --loader-secondary-color: #e0e0e0;
         }
-
-        body.theme-warm { /* 🍂 Tema Otoñal Cálido */
-            --bg-color: #F2E2C4;
-            --card-bg: rgba(255, 255, 255, 0.6);
-            --card-nested-bg: rgba(92, 64, 51, 0.05);
-            --text-color: #5C4033;
-            --text-secondary-color: #6B705C;
-            --header-bg-color: #5C4033;
-            --border-color: rgba(92, 64, 51, 0.2);
-            --border-strong-color: rgba(92, 64, 51, 0.4);
-            --tab-active-color: #C98C32;
-            --cta-button-bg: #D96C06;
-            --secondary-button-bg: #A23E48;
-            --input-bg: rgba(92, 64, 51, 0.05);
-            --focus-ring-color: #D96C06;
-            --loader-primary-color: #D96C06;
-            --loader-secondary-color: rgba(92, 64, 51, 0.2);
+        body.theme-warm {
+            --bg-color: #F2E2C4; --card-bg: rgba(255, 255, 255, 0.7); --card-nested-bg: rgba(92, 64, 51, 0.05);
+            --text-color: #5C4033; --text-secondary-color: #6B705C; --header-bg-color: #5C4033;
+            --border-color: rgba(92, 64, 51, 0.2); --border-strong-color: rgba(92, 64, 51, 0.4);
+            --tab-active-color: #C98C32; --cta-button-bg: #D96C06; --secondary-button-bg: #A23E48;
+            --input-bg: rgba(92, 64, 51, 0.08); --focus-ring-color: #D96C06;
+            --loader-primary-color: #D96C06; --loader-secondary-color: rgba(92, 64, 51, 0.2);
         }
-
-        /* --- Estilos Generales con Variables --- */
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .text-primary { color: var(--text-color); }
-        .text-secondary { color: var(--text-secondary-color); }
-        .bg-dark { background-color: var(--header-bg-color); }
-        .border-accent { border-color: var(--border-color); }
-        .border-accent-strong { border-color: var(--border-strong-color); }
-        .section-card { background-color: var(--card-bg); }
-        .nested-card { background-color: var(--card-nested-bg); }
-        .app-input { background-color: var(--input-bg); border-color: var(--border-strong-color); }
-        .app-input:focus { --tw-ring-color: var(--focus-ring-color) !important; border-color: var(--focus-ring-color) !important; }
-        .cta-button { background: var(--cta-button-bg); color: white; }
-        .secondary-button { background-color: var(--secondary-button-bg); color: var(--text-color); }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s, color 0.3s; }
+        .text-primary { color: var(--text-color); } .text-secondary { color: var(--text-secondary-color); } .bg-dark { background-color: var(--header-bg-color); }
+        .border-accent { border-color: var(--border-color); } .border-accent-strong { border-color: var(--border-strong-color); }
+        .section-card { background-color: var(--card-bg); backdrop-filter: blur(4px); } .nested-card { background-color: var(--card-nested-bg); }
+        .app-input { background-color: var(--input-bg); border-color: var(--border-strong-color); } .app-input:focus { --tw-ring-color: var(--focus-ring-color) !important; border-color: var(--focus-ring-color) !important; }
+        .cta-button { background: var(--cta-button-bg); color: white; } .secondary-button { background-color: var(--secondary-button-bg); color: var(--text-color); }
         .tab-active { border-color: var(--tab-active-color) !important; color: var(--tab-active-color) !important; font-weight: 700; }
-        .loader { border-radius: 50%; width: 16px; height: 16px; animation: spin 1.5s linear infinite; border: 4px solid var(--loader-secondary-color); border-top-color: var(--loader-primary-color); }
-        @keyframes spin { 0% {transform:rotate(0);} 100% {transform:rotate(360deg);} }
-        .details-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
+        .loader { border-radius: 50%; width: 24px; height: 24px; animation: spin 1.5s linear infinite; border: 4px solid var(--loader-secondary-color); border-top-color: var(--loader-primary-color); } @keyframes spin { 0% {transform:rotate(0);} 100% {transform:rotate(360deg);} }
+        .torch-container { position: absolute; right: 220px; top: -35px; display: flex; align-items: center; cursor: pointer; user-select: none; transform: scale(0.45); z-index: 10; } .torch-container input { position: absolute; opacity: 0; } .torch { display: flex; justify-content: center; height: 150px; } .head, .stick { position: absolute; width: 30px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); } .stick { position: relative; height: 120px; } .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000000; } .top { transform: rotateX(90deg) translateZ(15px); } .left { transform: rotateY(-90deg) translateZ(15px); } .right { transform: rotateY(0deg) translateZ(15px); } .top div, .left div, .right div { width: 102%; height: 102%; } .top div:nth-child(1), .left div:nth-child(3), .right div:nth-child(3) { background-color: #ffff9760; } .top div:nth-child(2), .left div:nth-child(1), .right div:nth-child(1) { background-color: #ffd80060; } .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; } .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; } .side { position: absolute; width: 30px; height: 120px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: repeat(8, 12.5%); cursor: pointer; translate: 0 12px; } .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); } .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); } .side-left div, .side-right div { width: 103%; height: 103%; } .side div:nth-child(1){background-color:#443622}.side div:nth-child(2){background-color:#2e2517}.side div:nth-child(3),.side div:nth-child(5){background-color:#4b3b23}.side div:nth-child(4),.side div:nth-child(10){background-color:#251e12}.side div:nth-child(6){background-color:#292115}.side div:nth-child(7){background-color:#4b3c26}.side div:nth-child(8){background-color:#292115}.side div:nth-child(9){background-color:#4b3a21}.side div:nth-child(11),.side div:nth-child(15){background-color:#3d311d}.side div:nth-child(12){background-color:#2c2315}.side div:nth-child(13){background-color:#493a22}.side div:nth-child(14){background-color:#2b2114}.side div:nth-child(16){background-color:#271e10} .torch-container input:checked~.torch .face{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 10px rgba(255,237,156,.7)) drop-shadow(0 0 25px rgba(255,227,101,.4))}.torch-container input:checked~.torch .top div:nth-child(1),.torch-container input:checked~.torch .left div:nth-child(3),.torch-container input:checked~.torch .right div:nth-child(3){background-color:#ffff97}.torch-container input:checked~.torch .top div:nth-child(2),.torch-container input:checked~.torch .left div:nth-child(1),.torch-container input:checked~.torch .right div:nth-child(1){background-color:#ffd800}.torch-container input:checked~.torch .top div:nth-child(3),.torch-container input:checked~.torch .left div:nth-child(4),.torch-container input:checked~.torch .right div:nth-child(4){background-color:#fff}.torch-container input:checked~.torch .top div:nth-child(4),.torch-container input:checked~.torch .left div:nth-child(2),.torch-container input:checked~.torch .right div:nth-child(2){background-color:#ff8f00}.torch-container input:checked~.torch .side div:nth-child(1){background-color:#7c623e}.torch-container input:checked~.torch .side div:nth-child(2){background-color:#4c3d26}.torch-container input:checked~.torch .side div:nth-child(3),.torch-container input:checked~.torch .side div:nth-child(5){background-color:#937344}.torch-container input:checked~.torch .side div:nth-child(4),.torch-container input:checked~.torch .side div:nth-child(10){background-color:#3c2f1c}.torch-container input:checked~.torch .side div:nth-child(6){background-color:#423522}.torch-container input:checked~.torch .side div:nth-child(7){background-color:#9f7f50}.torch-container input:checked~.torch .side div:nth-child(8){background-color:#403320}.torch-container input:checked~.torch .side div:nth-child(9){background-color:#977748}.torch-container input:checked~.torch .side div:nth-child(11),.torch-container input:checked~.torch .side div:nth-child(15){background-color:#675231}.torch-container input:checked~.torch .side div:nth-child(12){background-color:#3d301d}.torch-container input:checked~.torch .side div:nth-child(13){background-color:#987849}.torch-container input:checked~.torch .side div:nth-child(14){background-color:#3b2e1b}.torch-container input:checked~.torch .side div:nth-child(16){background-color:#372a17}
 
-        /* --- CSS DE LA ANTORCHA --- */
-        .torch-container { position: absolute; right: 220px; top: -35px; display: flex; align-items: center; cursor: pointer; user-select: none; transform: scale(0.45); z-index: 10; }
-        .torch-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
-        .torch { display: flex; justify-content: center; height: 150px; }
-        .head, .stick { position: absolute; width: 30px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); }
-        .stick { position: relative; height: 120px; }
-        .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000000; }
-        .top { transform: rotateX(90deg) translateZ(15px); } .left { transform: rotateY(-90deg) translateZ(15px); } .right { transform: rotateY(0deg) translateZ(15px); }
-        .top div, .left div, .right div { width: 102%; height: 102%; }
-        .top div:nth-child(1), .left div:nth-child(3), .right div:nth-child(3) { background-color: #ffff9760; } .top div:nth-child(2), .left div:nth-child(1), .right div:nth-child(1) { background-color: #ffd80060; } .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; } .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; }
-        .side { position: absolute; width: 30px; height: 120px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: repeat(8, 12.5%); cursor: pointer; translate: 0 12px; }
-        .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); } .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); }
-        .side-left div, .side-right div { width: 103%; height: 103%; }
-        .side div:nth-child(1) { background-color: #443622; } .side div:nth-child(2) { background-color: #2e2517; } .side div:nth-child(3), .side div:nth-child(5) { background-color: #4b3b23; } .side div:nth-child(4), .side div:nth-child(10) { background-color: #251e12; } .side div:nth-child(6) { background-color: #292115; } .side div:nth-child(7) { background-color: #4b3c26; } .side div:nth-child(8) { background-color: #292115; } .side div:nth-child(9) { background-color: #4b3a21; } .side div:nth-child(11), .side div:nth-child(15) { background-color: #3d311d; } .side div:nth-child(12) { background-color: #2c2315; } .side div:nth-child(13) { background-color: #493a22; } .side div:nth-child(14) { background-color: #2b2114; } .side div:nth-child(16) { background-color: #271e10; }
-        .torch-container input:checked ~ .torch .face { filter: drop-shadow(0px 0px 2px #fff) drop-shadow(0px 0px 10px rgba(255, 237, 156, 0.7)) drop-shadow(0px 0px 25px rgba(255, 227, 101, 0.4)); }
-        .torch-container input:checked ~ .torch .top div:nth-child(1), .torch-container input:checked ~ .torch .left div:nth-child(3), .torch-container input:checked ~ .torch .right div:nth-child(3) { background-color: #ffff97; } .torch-container input:checked ~ .torch .top div:nth-child(2), .torch-container input:checked ~ .torch .left div:nth-child(1), .torch-container input:checked ~ .torch .right div:nth-child(1) { background-color: #ffd800; } .torch-container input:checked ~ .torch .top div:nth-child(3), .torch-container input:checked ~ .torch .left div:nth-child(4), .torch-container input:checked ~ .torch .right div:nth-child(4) { background-color: #fff; } .torch-container input:checked ~ .torch .top div:nth-child(4), .torch-container input:checked ~ .torch .left div:nth-child(2), .torch-container input:checked ~ .torch .right div:nth-child(2) { background-color: #ff8f00; } .torch-container input:checked ~ .torch .side div:nth-child(1) { background-color: #7c623e; } .torch-container input:checked ~ .torch .side div:nth-child(2) { background-color: #4c3d26; } .torch-container input:checked ~ .torch .side div:nth-child(3), .torch-container input:checked ~ .torch .side div:nth-child(5) { background-color: #937344; } .torch-container input:checked ~ .torch .side div:nth-child(4), .torch-container input:checked ~ .torch .side div:nth-child(10) { background-color: #3c2f1c; } .torch-container input:checked ~ .torch .side div:nth-child(6) { background-color: #423522; } .torch-container input:checked ~ .torch .side div:nth-child(7) { background-color: #9f7f50; } .torch-container input:checked ~ .torch .side div:nth-child(8) { background-color: #403320; } .torch-container input:checked ~ .torch .side div:nth-child(9) { background-color: #977748; } .torch-container input:checked ~ .torch .side div:nth-child(11), .torch-container input:checked ~ .torch .side div:nth-child(15) { background-color: #675231; } .torch-container input:checked ~ .torch .side div:nth-child(12) { background-color: #3d301d; } .torch-container input:checked ~ .torch .side div:nth-child(13) { background-color: #987849; } .torch-container input:checked ~ .torch .side div:nth-child(14) { background-color: #3b2e1b; } .torch-container input:checked ~ .torch .side div:nth-child(16) { background-color: #372a17; }
+        /* --- NUEVOS ESTILOS PARA EL DESPLEGABLE --- */
+        .explanation-panel { max-height: 0; overflow: hidden; transition: all 0.5s ease-out; padding: 0 1.5rem; opacity: 0; }
+        .explanation-panel.open { max-height: 500px; padding: 1.5rem; opacity: 1; }
+        .switch { font-size: 17px; position: relative; display: inline-block; width: 3.5em; height: 2em; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; box-shadow: inset 2px 5px 10px rgba(0,0,0,0.3); transition: .4s; border-radius: 5px; }
+        .slider:before { position: absolute; content: ""; height: 1.4em; width: 0.1em; border-radius: 0px; left: 0.3em; bottom: 0.3em; background-color: white; transition: .4s; }
+        input:checked + .slider { background-color: var(--header-bg-color); box-shadow: inset 2px 5px 10px rgb(0, 0, 0); }
+        input:checked + .slider:before { transform: translateX(2.8em) rotate(360deg); }
     </style>
 </head>
 <body>
 <div class="p-4 sm:p-8">
     <header class="flex justify-between items-center mb-6 relative">
+        <a href="performance.html" class="flex items-center gap-4">
+            <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+            <span class="text-3xl font-light text-secondary">|</span>
+            <h1 class="text-3xl font-semibold text-primary">Predicciones y Escenarios</h1>
+        </a>
         <div class="flex items-center gap-4">
-            <a href="performance.html" class="flex items-center gap-4">
-                <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
-                <span class="text-3xl font-light text-secondary">|</span>
-                <h1 class="text-3xl font-semibold text-primary">Predicciones y Escenarios</h1>
-            </a>
-        </div>
-        <div class="flex items-center gap-4">
-            <label class="torch-container">
-                <input id="theme-toggle" type="checkbox" />
-                <div class="torch">
-                    <div class="head"><div class="face top"><div></div><div></div><div></div><div></div></div><div class="face left"><div></div><div></div><div></div><div></div></div><div class="face right"><div></div><div></div><div></div><div></div></div></div>
-                    <div class="stick"><div class="side side-left"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div><div class="side side-right"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>
-                </div>
-            </label>
+            <label class="torch-container"><input id="theme-toggle" type="checkbox" /><div class="torch"><div class="head"><div class="face top"><div></div><div></div><div></div><div></div></div><div class="face left"><div></div><div></div><div></div><div></div></div><div class="face right"><div></div><div></div><div></div><div></div></div></div><div class="stick"><div class="side side-left"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div><div class="side side-right"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div></div></label>
             <button id="logout-btn" class="bg-dark text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
         </div>
     </header>
@@ -113,7 +64,7 @@
     <div class="mb-6 border-b border-accent">
         <nav class="flex space-x-8 overflow-x-auto pb-2" aria-label="Tabs">
             <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Análisis de Rendimiento</a>
-            <a href="forecast.html"     class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Predicciones y Escenarios</a>
+            <a href="forecast.html"      class="px-1 py-4 border-b-2 font-semibold text-lg border-transparent tab-active">Predicciones y Escenarios</a>
             <a href="catalog.html"      id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Catálogo y Stock</a>
             <a href="daily-log.html"    id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Registro Diario</a>
             <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Finanzas</a>
@@ -126,266 +77,326 @@
         </nav>
     </div>
 
-    <main>
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-            <div class="section-card backdrop-blur-sm rounded-2xl shadow-lg p-6 flex flex-col">
-                <div class="contenido-panel">
-                    <h3 class="text-2xl font-bold text-primary mb-1">1. Predicción de Ventas por SKU</h3>
-                    <p class="text-sm text-secondary mb-4">Genera una predicción de ventas para los próximos 90 días para un producto específico.</p>
-                    <div class="flex items-center gap-4 mb-4">
-                        <input type="text" id="sku-forecast-input" placeholder="Ej: 100009" class="app-input w-full max-w-xs px-4 py-2 border rounded-full focus:outline-none focus:ring-2">
-                        <button id="run-sku-forecast-btn" class="cta-button px-6 py-2 rounded-full font-semibold hover:opacity-90 flex items-center gap-2">
-                            Predecir
-                            <div id="forecast-loader" class="loader hidden"></div>
-                        </button>
-                    </div>
-                    <p id="sku-forecast-error" class="text-red-600 text-sm font-semibold h-5"></p>
-                    <div class="mt-4 nested-card backdrop-blur-sm rounded-xl p-4 flex-grow">
-                        <canvas id="skuForecastChart"></canvas>
-                    </div>
-                </div>
+    <main class="space-y-8">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            <div class="section-card rounded-2xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold text-primary mb-1">1. Predicción Base</h3>
+                <p class="text-sm text-secondary mb-4">Selecciona un producto para generar la predicción estándar.</p>
+                <select id="product-select" class="app-input w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2">
+                    <option selected disabled>Cargando opciones...</option>
+                </select>
             </div>
 
-            <div class="section-card backdrop-blur-sm rounded-2xl shadow-lg p-6 flex flex-col">
-                <div class="contenido-panel">
-                    <h3 class="text-2xl font-bold text-primary mb-1">2. Comparador de Escenarios</h3>
-                    <p class="text-sm text-secondary mb-4">Simula precios y volúmenes para encontrar el escenario de mayor beneficio.</p>
-                    <div id="scenarios-container" class="space-y-3 flex-grow overflow-y-auto pr-2" style="max-height: 400px;"></div>
-                    <div class="flex gap-4 mt-4">
-                        <button type="button" id="add-scenario-btn" class="secondary-button px-4 py-2 rounded-full font-semibold hover:opacity-90">Añadir Escenario</button>
-                        <button type="button" id="reset-scenarios-btn" class="secondary-button opacity-70 px-4 py-2 rounded-full font-semibold hover:opacity-90">Resetear</button>
-                    </div>
-                    <div id="scenarios-table-container" class="mt-6 overflow-x-auto section-card backdrop-blur-sm rounded-lg"></div>
+            <div class="section-card rounded-2xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold text-primary mb-1">2. Escenarios "What-If"</h3>
+                <p class="text-sm text-secondary mb-4">Ajusta variables para ver su impacto en la predicción.</p>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between"><label for="temp-slider" class="font-semibold text-sm">Variación Temperatura (°C)</label><span id="temp-value" class="font-bold text-primary">+0°C</span></div>
+                    <input id="temp-slider" type="range" min="-5" max="5" value="0" step="1" class="w-full">
+                    <div class="flex items-center justify-between pt-1"><label for="promo-toggle" class="font-semibold text-sm">Activar Promoción Futura</label><input type="checkbox" id="promo-toggle" class="form-checkbox h-5 w-5 rounded"></div>
                 </div>
+            </div>
+            
+            <div class="section-card rounded-2xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold text-primary mb-1">3. Añadir Eventos Futuros</h3>
+                <p class="text-sm text-secondary mb-4">Añade eventos como ferias o campañas para incluirlos en el modelo.</p>
+                <form id="event-form" class="flex items-end gap-2">
+                    <div class="flex-grow"><label for="event-name" class="text-xs font-semibold">Nombre</label><input type="text" id="event-name" placeholder="Feria Local" class="app-input w-full p-2 text-sm border rounded-md"></div>
+                    <div class="flex-grow-0 w-36"><label for="event-date" class="text-xs font-semibold">Fecha</label><input type="date" id="event-date" class="app-input w-full p-2 text-sm border rounded-md"></div>
+                    <button type="submit" class="cta-button h-10 px-4 rounded-md font-semibold text-sm">Añadir</button>
+                </form>
+                <div id="events-list" class="mt-2 space-y-1 max-h-20 overflow-y-auto"></div>
             </div>
         </div>
 
-        <h3 class="text-2xl font-bold text-primary mb-4 mt-8 border-t border-accent pt-6">Otros Modelos de Predicción</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="section-card rounded-2xl shadow-lg">
-                <div class="p-6 flex justify-between items-center">
-                    <h3 class="text-xl font-bold text-primary">Días de Alta Demanda</h3>
-                    <button class="toggle-details-btn text-2xl font-semibold text-secondary hover:text-primary transition-colors">+</button>
+        <div id="forecast-loader" class="text-center my-8 hidden"><div class="loader inline-block"></div><p class="text-sm text-secondary mt-3">🧠 Entrenando modelo y calculando...</p></div>
+        <p id="forecast-error" class="text-red-600 text-sm font-semibold h-5 mb-2 text-center"></p>
+
+        <div id="charts-container" class="space-y-8" style="display: none;">
+            
+            <div class="section-card rounded-2xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-primary">Predicción de Ventas (90 días)</h3>
+                    <label class="switch">
+                        <input type="checkbox" data-target="explanation-forecast">
+                        <span class="slider"></span>
+                    </label>
                 </div>
-                <div class="details-content px-6 pb-6">
-                    <p class="text-sm text-secondary mb-4">Identifica qué días de la semana o fechas especiales son propensos a tener picos de ventas.</p>
-                    <div class="nested-card p-4 rounded-lg border border-accent">
-                        <h4 class="font-bold mb-2">Variables utilizadas:</h4>
-                        <div class="flex flex-wrap gap-2 text-sm">
-                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Ventas Diarias (Formulario)</span>
-                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Eventos Especiales (Formulario)</span>
-                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full">Festivos Nacionales (Automático)</span>
-                        </div>
-                    </div>
+                <div id="explanation-forecast" class="explanation-panel nested-card rounded-lg mb-6 border-l-4" style="border-color: var(--focus-ring-color);">
+                    <h4 class="font-bold text-lg mb-2">¿Cómo funciona la predicción? 🧠</h4>
+                    <p class="text-secondary mb-3">
+                        Imagina que el modelo es como un <strong>asistente muy observador</strong> que ha estudiado todo tu historial de ventas. Su trabajo es descomponer ese historial en varios patrones y luego volver a unirlos para proyectar el futuro.
+                    </p>
+                    <h4 class="font-bold text-lg mb-2">Factores Clave</h4>
+                    <ul class="list-disc pl-5 mt-2 space-y-1 text-sm text-secondary">
+                        <li><strong class="text-primary">📈 Tendencia General:</strong> Analiza si, a lo largo de los años, tus ventas están creciendo, disminuyendo o se mantienen estables.</li>
+                        <li><strong class="text-primary">☀️ Estacionalidad Anual:</strong> El modelo sabe que las ventas no son iguales en enero que en agosto. Aprende que en verano y Navidad se vende más.</li>
+                        <li><strong class="text-primary">📅 Estacionalidad Semanal:</strong> Entiende el ritmo de la semana y sabe que los fines de semana suelen tener un comportamiento diferente.</li>
+                        <li><strong class="text-primary">🎉 Fiestas y Eventos:</strong> Considera los festivos nacionales y los eventos personalizados que tú añades (como una "Feria del Vino").</li>
+                        <li><strong class="text-primary">🌡️ Temperatura Media:</strong> Ha aprendido la correlación entre la temperatura y las ventas. Por ejemplo, que los vinos blancos se venden más con calor.</li>
+                        <li><strong class="text-primary">🛒 Canales de Venta:</strong> Analiza el comportamiento de cada canal (Tienda Física, Online, etc.) por separado.</li>
+                        <li><strong class="text-primary">🏷️ Promociones:</strong> Sabe que cuando un producto está en oferta, sus ventas tienden a aumentar.</li>
+                    </ul>
+                </div>
+                <div class="h-[450px]">
+                    <canvas id="forecastChart"></canvas>
                 </div>
             </div>
-
-            <div class="section-card rounded-2xl shadow-lg">
-                <div class="p-6 flex justify-between items-center">
-                    <h3 class="text-xl font-bold text-primary">Impacto de Marketing</h3>
-                    <button class="toggle-details-btn text-2xl font-semibold text-secondary hover:text-primary transition-colors">+</button>
-                </div>
-                <div class="details-content px-6 pb-6">
-                    <p class="text-sm text-secondary mb-4">Estima el retorno de la inversión (ROI) de tus campañas para optimizar el gasto publicitario.</p>
-                    <div class="nested-card p-4 rounded-lg border border-accent">
-                        <h4 class="font-bold mb-2">Variables utilizadas:</h4>
-                        <div class="flex flex-wrap gap-2 text-sm">
-                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Inversión y Canales (Formulario)</span>
-                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Ventas en días de campaña</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="section-card rounded-2xl shadow-lg p-4 h-[400px]">
+                <canvas id="componentsChart"></canvas>
             </div>
         </div>
     </main>
 </div>
 
 <script>
-// Variables globales y de configuración
 const API_BASE_URL = 'http://127.0.0.1:8000';
 const TOKEN_KEY = 'accessToken';
-const ROLE_KEY = 'userRole';
-const charts = {}; // Contenedor para nuestras instancias de Chart.js
+let forecastChart = null, componentsChart = null;
+let baseForecastData = null; 
+let futureEvents = [];
 
-// --- Funciones de Autenticación y API ---
-function requireAuth() {
-    if (!localStorage.getItem(TOKEN_KEY)) {
-        window.location.href = 'login.html';
-    }
-}
-
-function logout() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(ROLE_KEY);
-    localStorage.removeItem('theme'); // Limpiar preferencia de tema al salir
-    window.location.href = 'login.html';
-}
-
+function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
+function logout() { localStorage.clear(); window.location.href = 'login.html'; }
 async function apiFetch(endpoint, options = {}) {
-    const headers = { 'Content-Type': 'application/json' };
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-    if (options.body && options.body instanceof FormData) {
-        delete headers['Content-Type'];
-    }
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}` };
+    if (options.body && typeof options.body !== 'string') options.body = JSON.stringify(options.body);
+    const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+    if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
+    if (!resp.ok) { const data = await resp.json().catch(() => ({ detail: `Error HTTP ${resp.status}` })); throw new Error(data.detail); }
+    if (resp.status === 204) return null;
+    return resp.json();
+}
+
+async function loadProducts() {
+    const select = document.getElementById('product-select');
     try {
-        const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-        if (resp.status === 401) {
-            logout();
-            throw new Error('Sesión expirada o no autorizada.');
-        }
-        if (!resp.ok) {
-            const data = await resp.json().catch(() => ({ detail: `Error HTTP ${resp.status}` }));
-            throw new Error(data.detail);
-        }
-        if (resp.status === 204) return null;
-        return resp.json();
-    } catch (error) {
-        console.error(`Error en apiFetch a ${endpoint}:`, error);
-        throw error;
+        const products = await apiFetch('/api/products/list');
+        select.innerHTML = '<option selected disabled>-- Elige una opción --</option>';
+        select.appendChild(Object.assign(document.createElement('option'), { value: 'total', textContent: '📊 -- Predecir Ventas Totales --', className: 'font-bold' }));
+        products.forEach(p => select.appendChild(Object.assign(document.createElement('option'), { value: p.id, textContent: p.name })));
+    } catch (e) {
+        select.innerHTML = `<option selected disabled>Error al cargar: ${e.message}</option>`;
     }
 }
 
-// --- Funciones de la Página de Predicciones ---
-function renderSkuForecastChart(data){
-    const computedStyles = getComputedStyle(document.documentElement);
-    const chartLineColor = computedStyles.getPropertyValue('--focus-ring-color').trim();
-    const textColor = computedStyles.getPropertyValue('--text-color').trim();
-    const secondaryTextColor = computedStyles.getPropertyValue('--text-secondary-color').trim();
-    const gridColor = computedStyles.getPropertyValue('--border-color').trim();
-    const chartBgColor = chartLineColor + '20'; // ~12% opacidad
+async function fetchAndRenderForecast(selectedValue) {
+    if (!selectedValue || selectedValue.startsWith('--')) return;
+    document.getElementById('charts-container').style.display = 'none';
+    document.getElementById('forecast-loader').classList.remove('hidden');
+    document.getElementById('forecast-error').textContent = '';
+    
+    const endpoint = (selectedValue === 'total') ? '/api/forecast/total' : `/api/forecast/sku/${selectedValue}`;
+    try {
+        const data = await apiFetch(endpoint);
+        baseForecastData = data;
+        renderCharts(data);
+        document.getElementById('charts-container').style.display = 'block';
+    } catch (e) {
+        document.getElementById('forecast-error').textContent = `Error: ${e.message}`;
+    } finally {
+        document.getElementById('forecast-loader').classList.add('hidden');
+    }
+}
 
-    const chartData = {
-        labels: data?.dates || [],
-        datasets: [{
-            label: 'Ventas Predichas',
-            data: data?.sales || [],
-            borderColor: chartLineColor,
-            backgroundColor: chartBgColor,
-            fill: true,
-            tension: 0.3
-        }]
+async function fetchAndRenderScenario() {
+    const selectedValue = document.getElementById('product-select').value;
+    if (!selectedValue || selectedValue.startsWith('--')) return;
+
+    document.getElementById('forecast-loader').classList.remove('hidden');
+    document.getElementById('forecast-error').textContent = '';
+
+    const tempSlider = document.getElementById('temp-slider');
+    const promoToggle = document.getElementById('promo-toggle');
+    const today = new Date();
+    const endDate = new Date(today);
+    endDate.setDate(today.getDate() + 90);
+
+    const scenarioRequest = {
+        product_id: selectedValue,
+        periods: 90,
+        future_regressors: [],
+        future_events: futureEvents
     };
 
-    if (charts.skuForecast) {
-        charts.skuForecast.destroy();
-    }
-    const ctx = document.getElementById('skuForecastChart').getContext('2d');
-    charts.skuForecast = new Chart(ctx, {
-        type: 'line',
-        data: chartData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                title: { display: true, text: 'Predicción de Ventas (90 días)', font: { size: 16, weight: '600' }, color: textColor }
-            },
-            scales: {
-                y: { beginAtZero: true, ticks: { color: secondaryTextColor }, grid: { color: gridColor } },
-                x: { ticks: { color: secondaryTextColor }, grid: { color: gridColor } }
-            }
-        }
-    });
-}
-
-function setupPageEventListeners() {
-    // Lógica para desplegar detalles
-    document.querySelectorAll('.toggle-details-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const content = this.parentElement.nextElementSibling;
-            if (content.style.maxHeight) {
-                content.style.maxHeight = null;
-                this.textContent = '+';
-            } else {
-                content.style.maxHeight = content.scrollHeight + 'px';
-                this.textContent = '−';
-            }
+    if (promoToggle.checked) {
+        scenarioRequest.future_regressors.push({
+            start_date: today.toISOString().split('T')[0], end_date: endDate.toISOString().split('T')[0],
+            name: 'on_promotion', value: 1.0
         });
-    });
-
-    // Lógica para la predicción por SKU
-    const runBtn = document.getElementById('run-sku-forecast-btn');
-    const skuInput = document.getElementById('sku-forecast-input');
-    const errEl = document.getElementById('sku-forecast-error');
-    const loader = document.getElementById('forecast-loader');
-
-    async function handleSkuForecast() {
-        const sku = skuInput.value.trim();
-        if (!sku) { errEl.textContent = 'Por favor, introduce un SKU.'; return; }
-        errEl.textContent = '';
-        runBtn.disabled = true;
-        loader.classList.remove('hidden');
-        try {
-            // const forecastData = await apiFetch(`/api/forecast/sku/${sku}`);
-            // Usamos datos de ejemplo para demostración sin API
-            const forecastData = { dates: Array.from({length: 90}, (_, i) => `Día ${i+1}`), sales: Array.from({length: 90}, () => Math.floor(Math.random() * 50) + 10) };
-            renderSkuForecastChart(forecastData);
-        } catch (e) {
-            errEl.textContent = `Error: ${e.message}`;
-            renderSkuForecastChart(null);
-        } finally {
-            runBtn.disabled = false;
-            loader.classList.add('hidden');
-        }
     }
-    runBtn.addEventListener('click', handleSkuForecast);
-    skuInput.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); handleSkuForecast(); } });
 
-    // Lógica para el comparador de escenarios
-    // (Todo el código del comparador de escenarios va aquí, sin cambios en su lógica interna)
-    // ...
+    try {
+        const scenarioData = await apiFetch('/api/forecast/scenario', { method: 'POST', body: scenarioRequest });
+        
+        const tempEffect = parseFloat(tempSlider.value);
+        if (tempEffect !== 0) {
+            scenarioData.prediction.forEach(p => {
+                const multiplier = 1 + (tempEffect * 0.02);
+                p.forecast = Math.max(0, p.forecast * multiplier);
+                p.forecast_lower = Math.max(0, p.forecast_lower * multiplier);
+                p.forecast_upper = Math.max(0, p.forecast_upper * multiplier);
+            });
+        }
+        
+        updateForecastChart(scenarioData.prediction);
+    } catch (e) {
+        document.getElementById('forecast-error').textContent = `Error en escenario: ${e.message}`;
+    } finally {
+        document.getElementById('forecast-loader').classList.add('hidden');
+    }
 }
 
-// --- EJECUCIÓN PRINCIPAL AL CARGAR LA PÁGINA ---
-document.addEventListener('DOMContentLoaded', () => {
+function renderCharts(data) {
+    const theme = getChartTheme();
+    renderForecastChart(data.prediction, theme);
+    renderComponentsChart(data.prediction.map(p => p.date), data.components, theme);
+}
 
-    // ✅ LÓGICA DEL TEMA (MOVIDA AQUÍ DENTRO)
-    const themeToggle = document.getElementById('theme-toggle');
-    const body = document.body;
+function getChartTheme() {
+    const styles = getComputedStyle(document.documentElement);
+    return {
+        forecastColor: styles.getPropertyValue('--focus-ring-color').trim(),
+        textColor: styles.getPropertyValue('--text-color').trim(),
+        secondaryTextColor: styles.getPropertyValue('--text-secondary-color').trim(),
+        gridColor: styles.getPropertyValue('--border-color').trim(),
+        confidenceBgColor: styles.getPropertyValue('--focus-ring-color').trim() + '20',
+        componentColors: ['#3b82f6', '#16a34a', '#ef4444', '#9333ea']
+    };
+}
 
-    function applyTheme(theme, isInitialLoad = false) {
-        if (theme === 'warm') {
-            body.classList.add('theme-warm');
-            if (isInitialLoad) themeToggle.checked = true;
-        } else {
-            body.classList.remove('theme-warm');
-            if (isInitialLoad) themeToggle.checked = false;
+function renderForecastChart(predictionData, theme) {
+    if (forecastChart) forecastChart.destroy();
+    const labels = predictionData.map(d => d.date);
+    const forecastValues = predictionData.map(d => d.forecast);
+    const lowerBound = predictionData.map(d => d.forecast_lower);
+    const upperBound = predictionData.map(d => d.forecast_upper);
+
+    const ctx = document.getElementById('forecastChart').getContext('2d');
+    forecastChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Predicción Base', data: baseForecastData ? baseForecastData.prediction.map(p => p.forecast) : forecastValues, borderColor: theme.secondaryTextColor, borderDash: [5, 5], tension: 0.2, pointRadius: 0, borderWidth: 1.5 },
+                { label: 'Predicción de Demanda', data: forecastValues, borderColor: theme.forecastColor, backgroundColor: 'transparent', tension: 0.2, pointRadius: 0, borderWidth: 3 },
+                { label: 'Intervalo de Confianza', data: upperBound, fill: '+1', backgroundColor: theme.confidenceBgColor, borderColor: 'transparent', pointRadius: 0 },
+                { label: 'Límite Inferior', data: lowerBound, fill: false, borderColor: 'transparent', pointRadius: 0 }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, title: { display: false } }, // Título movido al HTML
+            scales: { y: { beginAtZero: true, ticks: { color: theme.secondaryTextColor }, grid: { color: theme.gridColor }, title: { display: true, text: 'Unidades Vendidas', color: theme.secondaryTextColor } }, x: { ticks: { color: theme.secondaryTextColor }, grid: { color: theme.gridColor } } }
         }
-        // Redibujar el gráfico con los colores del nuevo tema
-        if (charts.skuForecast) {
-            const lastData = {
-                dates: charts.skuForecast.config.data.labels,
-                sales: charts.skuForecast.config.data.datasets[0].data
-            };
-            renderSkuForecastChart(lastData.sales.length > 0 ? lastData : null);
+    });
+}
+
+function updateForecastChart(scenarioPrediction) {
+    if (!forecastChart) return;
+    forecastChart.data.datasets[1].data = scenarioPrediction.map(p => p.forecast);
+    forecastChart.data.datasets[1].label = 'Predicción de Escenario';
+    forecastChart.update();
+}
+
+function renderComponentsChart(labels, components, theme) {
+    if (componentsChart) componentsChart.destroy();
+    const ctx = document.getElementById('componentsChart').getContext('2d');
+    componentsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Tendencia', data: components.trend, borderColor: theme.componentColors[0], fill: false, pointRadius: 0, borderWidth: 2 },
+                { label: 'Estacionalidad Anual', data: components.yearly, borderColor: theme.componentColors[1], fill: false, pointRadius: 0, borderWidth: 2 },
+                { label: 'Estacionalidad Semanal', data: components.weekly, borderColor: theme.componentColors[2], fill: false, pointRadius: 0, borderWidth: 2 },
+                { label: 'Regresores (Clima, Fiestas, etc.)', data: components.regressors, borderColor: theme.componentColors[3], fill: false, pointRadius: 0, borderWidth: 2 },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: true, position: 'top', labels: { color: theme.textColor } }, title: { display: true, text: 'Componentes de la Predicción (Explicabilidad)', font: { size: 16 }, color: theme.textColor } },
+            scales: { y: { ticks: { color: theme.secondaryTextColor }, grid: { color: theme.gridColor }, title: { display: true, text: 'Impacto en Unidades', color: theme.secondaryTextColor } }, x: { ticks: { color: theme.secondaryTextColor }, grid: { color: theme.gridColor } } }
         }
+    });
+}
+
+function renderEventsList() {
+    const listEl = document.getElementById('events-list');
+    listEl.innerHTML = '';
+    if (futureEvents.length === 0) {
+        listEl.innerHTML = '<p class="text-xs text-secondary text-center">No hay eventos añadidos.</p>';
+        return;
     }
+    futureEvents.forEach((event, index) => {
+        const eventEl = document.createElement('div');
+        eventEl.className = 'flex justify-between items-center text-sm bg-stone-100 p-1 px-2 rounded';
+        eventEl.innerHTML = `<span>📅 <strong>${event.holiday}</strong> el ${event.ds}</span><button data-index="${index}" class="text-red-500 font-bold px-1">&times;</button>`;
+        listEl.appendChild(eventEl);
+    });
+}
 
-    // Aplica el tema guardado al cargar la página
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    applyTheme(savedTheme, true);
+document.addEventListener('DOMContentLoaded', () => {
+    requireAuth();
+    document.getElementById('logout-btn').addEventListener('click', logout);
+    loadProducts();
+    
+    document.getElementById('product-select').addEventListener('change', (e) => {
+        futureEvents = [];
+        renderEventsList();
+        fetchAndRenderForecast(e.target.value);
+    });
+    document.getElementById('temp-slider').addEventListener('input', (e) => {
+        document.getElementById('temp-value').textContent = `${e.target.value > 0 ? '+' : ''}${e.target.value}°C`;
+    });
+    document.getElementById('temp-slider').addEventListener('change', fetchAndRenderScenario);
+    document.getElementById('promo-toggle').addEventListener('change', fetchAndRenderScenario);
 
-    // Añade el listener para cambiar de tema
-    themeToggle.addEventListener('change', () => {
+    const eventForm = document.getElementById('event-form');
+    eventForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById('event-name');
+        const dateInput = document.getElementById('event-date');
+        if (nameInput.value && dateInput.value) {
+            futureEvents.push({ holiday: nameInput.value, ds: dateInput.value });
+            renderEventsList();
+            fetchAndRenderScenario();
+            eventForm.reset();
+        }
+    });
+
+    document.getElementById('events-list').addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            futureEvents.splice(parseInt(e.target.dataset.index, 10), 1);
+            renderEventsList();
+            fetchAndRenderScenario();
+        }
+    });
+
+    const themeToggle = document.getElementById('theme-toggle');
+    const applyTheme = (theme) => {
+        document.body.classList.toggle('theme-warm', theme === 'warm');
+        if (themeToggle) themeToggle.checked = (theme === 'warm');
+        if (baseForecastData) renderCharts(baseForecastData);
+    };
+    applyTheme(localStorage.getItem('theme') || 'light');
+    if (themeToggle) themeToggle.addEventListener('change', () => {
         const newTheme = themeToggle.checked ? 'warm' : 'light';
         localStorage.setItem('theme', newTheme);
         applyTheme(newTheme);
     });
+    
+    // --- LÓGICA PARA EL NUEVO DESPLEGABLE DE EXPLICACIÓN ---
+    document.querySelectorAll('input[type="checkbox"][data-target]').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            const targetPanel = document.getElementById(e.target.dataset.target);
+            if (targetPanel) {
+                targetPanel.classList.toggle('open', e.target.checked);
+            }
+        });
+    });
 
-    // --- Resto de la lógica de la página ---
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) logoutBtn.addEventListener('click', logout);
-
-    requireAuth();
-    // updateUIVisibility(); // Si tienes roles de usuario
-    setupPageEventListeners();
-
-    // Render inicial del gráfico (vacío)
-    renderSkuForecastChart(null);
-    // resetScenarios(); // Si tienes la función de escenarios
+    renderEventsList();
 });
 </script>
 </body>

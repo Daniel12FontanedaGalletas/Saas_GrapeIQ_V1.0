@@ -1,11 +1,11 @@
 # Saas_GrapeIQ_V1.0/app/schemas.py
 
 from pydantic import BaseModel, Field
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Dict
 import uuid
 from datetime import date, datetime
 
-# --- Esquemas de Autenticación y Usuarios (Estructura Original Restaurada) ---
+# --- Esquemas de Autenticación y Usuarios ---
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -54,8 +54,6 @@ class FieldLog(FieldLogBase):
         from_attributes = True
 
 # --- ESQUEMAS PARA LA ARQUITECTURA CENTRAL ---
-
-# Lotes de Vino
 class WineLotBase(BaseModel):
     name: str
     grape_variety: Optional[str] = None
@@ -78,7 +76,6 @@ class WineLot(WineLotBase):
     class Config:
         from_attributes = True
 
-# Contenedores
 class ContainerBase(BaseModel):
     name: str
     type: str
@@ -86,7 +83,7 @@ class ContainerBase(BaseModel):
     material: Optional[str] = None
     location: Optional[str] = None
 
-class ContainerCreate(ContainerBase): # <--- ¡ESTA ES LA CLASE QUE FALTABA!
+class ContainerCreate(ContainerBase):
     pass
 
 class ContainerUpdate(ContainerBase):
@@ -100,7 +97,6 @@ class Container(ContainerBase):
     class Config:
         from_attributes = True
 
-# Movimientos
 class MovementCreate(BaseModel):
     lot_id: uuid.UUID
     source_container_id: Optional[uuid.UUID] = None
@@ -114,9 +110,8 @@ class ToppingUpCreate(BaseModel):
     volume: float
     type: str = "Rellenado"
 
-# Esquemas para las Vistas de la Interfaz
 class WineLotInContainer(WineLot):
-    containers: List[Container]
+    containers: List[Container] = []
 
 class TraceabilityView(BaseModel):
     harvested: List[WineLot]
@@ -125,11 +120,9 @@ class TraceabilityView(BaseModel):
     ready_to_bottle: List[WineLotInContainer]
     bottled: List[WineLot]
 
-# Esquema para actualizar el estado de un lote
 class WineLotStatusUpdate(BaseModel):
     new_status: str
 
-# Esquemas para el Trasiego a Múltiples Destinos
 class MovementDestination(BaseModel):
     destination_container_id: uuid.UUID
     volume: float
@@ -140,26 +133,20 @@ class BulkMovementCreate(BaseModel):
     destinations: List[MovementDestination]
     type: str = "Trasiego"
 
-# Esquema para Embotellado
 class BottlingCreate(BaseModel):
     lot_id: uuid.UUID
     source_container_ids: List[uuid.UUID]
     type: str = "Embotellado"
 
-# --- ESQUEMA MODIFICADO: Embotellado y Creación de Producto ---
 class BottlingToProductCreate(BaseModel):
     lot_id: uuid.UUID
     source_container_ids: List[uuid.UUID]
-    
-    # Datos del nuevo producto a crear
     product_name: str
     product_sku: str
     product_price: float
     bottles_produced: int
-    
-# --- NUEVOS ESQUEMAS PARA EL "CEREBRO" ---
 
-# Parcelas
+# --- Esquemas para el "Cerebro" ---
 class ParcelBase(BaseModel):
     name: str
     variety: Optional[str] = None
@@ -174,7 +161,6 @@ class Parcel(ParcelBase):
     class Config:
         from_attributes = True
 
-# Parámetros de Coste
 class CostParameterBase(BaseModel):
     parameter_name: str
     category: str
@@ -190,7 +176,6 @@ class CostParameter(CostParameterBase):
     class Config:
         from_attributes = True
 
-# Costes
 class CostBase(BaseModel):
     related_lot_id: Optional[uuid.UUID] = None
     related_parcel_id: Optional[uuid.UUID] = None
@@ -207,12 +192,12 @@ class Cost(CostBase):
     class Config:
         from_attributes = True
 
-# Productos
 class ProductBase(BaseModel):
     name: str
     sku: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
+    variety: Optional[str] = None
 
 class ProductCreate(ProductBase):
     wine_lot_origin_id: Optional[uuid.UUID] = None
@@ -222,7 +207,7 @@ class Product(ProductBase):
     id: uuid.UUID
     unit_cost: Optional[float] = None
     wine_lot_origin_id: Optional[uuid.UUID] = None
-    stock_units: int = 0
+    stock_units: int
     class Config:
         from_attributes = True
 
@@ -233,11 +218,14 @@ class SaleDetailBase(BaseModel):
     unit_price: float
 
 class SaleDetailCreate(SaleDetailBase):
-    pass
+    on_promotion: bool = False
+    discount_percentage: float = 0.0
 
 class SaleDetail(SaleDetailBase):
     id: uuid.UUID
     sale_id: uuid.UUID
+    on_promotion: bool
+    discount_percentage: float
     class Config:
         from_attributes = True
 
@@ -246,13 +234,20 @@ class SaleBase(BaseModel):
     notes: Optional[str] = None
 
 class SaleCreate(SaleBase):
+    sale_date: date = Field(default_factory=date.today)
     details: List[SaleDetailCreate]
+    is_weekend: Optional[bool] = None
+    holiday_name: Optional[str] = None
+    avg_temperature: Optional[float] = None
 
 class Sale(SaleBase):
     id: uuid.UUID
-    sale_date: datetime
+    sale_date: date
     total_amount: float
     details: List[SaleDetail] = []
+    is_weekend: bool
+    holiday_name: Optional[str] = None
+    avg_temperature: Optional[float] = None
     class Config:
         from_attributes = True
         
@@ -265,27 +260,13 @@ class CostSummaryResponse(BaseModel):
     grand_total: float
     details: List[CategorySummary]
     
-class WineLotInContainer(WineLot):
-    """Representa un lote de vino e incluye la lista de contenedores donde se encuentra."""
-    containers: List[Container] = []
-
 class TraceabilityKanbanView(BaseModel):
-    """Define la estructura de datos para la vista Kanban de Trazabilidad."""
     harvested: List[WineLot]
     fermenting: List[WineLotInContainer]
     aging: List[WineLotInContainer]
     ready_to_bottle: List[WineLotInContainer]
     bottled: List[WineLot]
 
-# El antiguo TraceabilityView sigue aquí por si otra parte del código lo usa
-class TraceabilityView(BaseModel):
-    harvested: List[WineLot]
-    fermenting: List[WineLotInContainer]
-    aging: List[WineLotInContainer]
-    ready_to_bottle: List[WineLotInContainer]
-    bottled: List[WineLot]
-
-# -- CLASE AÑADIDA PARA CORREGIR EL ERROR --
 class LotStatusUpdate(BaseModel):
     new_status: str
     
@@ -293,10 +274,9 @@ class CostRecord(BaseModel):
     id: uuid.UUID
     cost_type: str
     amount: float
-    description: str
+    description: Optional[str] = None
     cost_date: date
-    related_lot_id: uuid.UUID | None = None
-
+    related_lot_id: Optional[uuid.UUID] = None
     class Config:
         from_attributes = True
         
@@ -310,7 +290,6 @@ class PaginatedCostRecordResponse(BaseModel):
 class ProductSimple(BaseModel):
     id: uuid.UUID
     name: str
-
     class Config:
         from_attributes = True
         
@@ -321,3 +300,32 @@ class SunburstItem(BaseModel):
 class SunburstCategory(BaseModel):
     name: str
     children: List[SunburstItem]
+
+# --- ESQUEMAS PARA FORECASTING AVANZADO ---
+
+class ForecastPoint(BaseModel):
+    date: str
+    forecast: float
+    forecast_lower: float
+    forecast_upper: float
+
+class ForecastResponse(BaseModel):
+    prediction: List[ForecastPoint]
+    components: Dict[str, List[float]]
+
+class ScenarioRegressor(BaseModel):
+    start_date: date
+    end_date: date
+    name: str
+    value: float
+
+# --- NUEVO: Esquema para añadir eventos personalizados desde la UI ---
+class FutureEvent(BaseModel):
+    holiday: str # Nombre del evento, ej: "Feria del Vino Local"
+    ds: date     # Fecha del evento
+
+class ScenarioRequest(BaseModel):
+    product_id: Optional[str] = 'total'
+    periods: int = 90
+    future_regressors: List[ScenarioRegressor] = []
+    future_events: List[FutureEvent] = [] # <-- Se añade la lista de eventos
