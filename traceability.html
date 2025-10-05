@@ -71,26 +71,41 @@
         .action-btn-green { background-color: var(--btn-green); }
         .action-btn-yellow { background-color: var(--btn-yellow); }
         .action-btn-purple { background-color: var(--btn-purple); }
+        
+        .kanban-card.hidden { display: none; }
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            margin-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .pagination-btn {
+            background-color: rgba(0,0,0,0.05);
+            border-radius: 999px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .pagination-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
 
         /* --- CSS DE LA ANTORCHA DE MINECRAFT (AJUSTADO) --- */
-        .torch-container input {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-            height: 0;
-            width: 0;
-        }
         .torch-container {
-            position: absolute; /* Clave para no afectar el layout */
-            right: 220px; /* Más a la izquierda */
-            top: -35px; /* Más abajo */
+            position: absolute;
+            right: 220px;
+            top: -35px;
             display: flex;
             flex-direction: column;
             align-items: center;
             cursor: pointer;
             user-select: none;
-            transform: scale(0.45); /* Antorcha más grande */
+            transform: scale(0.45);
         }
+        .torch-container input { position: absolute; opacity: 0; }
         .torch { display: flex; justify-content: center; height: 150px; }
         .head, .stick { position: absolute; width: 30px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); }
         .stick { position: relative; height: 120px; }
@@ -107,19 +122,7 @@
         .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); }
         .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); }
         .side-left div, .side-right div { width: 103%; height: 103%; }
-        .side div:nth-child(1) { background-color: #443622; }
-        .side div:nth-child(2) { background-color: #2e2517; }
-        .side div:nth-child(3), .side div:nth-child(5) { background-color: #4b3b23; }
-        .side div:nth-child(4), .side div:nth-child(10) { background-color: #251e12; }
-        .side div:nth-child(6) { background-color: #292115; }
-        .side div:nth-child(7) { background-color: #4b3c26; }
-        .side div:nth-child(8) { background-color: #292115; }
-        .side div:nth-child(9) { background-color: #4b3a21; }
-        .side div:nth-child(11), .side div:nth-child(15) { background-color: #3d311d; }
-        .side div:nth-child(12) { background-color: #2c2315; }
-        .side div:nth-child(13) { background-color: #493a22; }
-        .side div:nth-child(14) { background-color: #2b2114; }
-        .side div:nth-child(16) { background-color: #271e10; }
+        .side div:nth-child(1) { background-color: #443622; } .side div:nth-child(2) { background-color: #2e2517; } .side div:nth-child(3), .side div:nth-child(5) { background-color: #4b3b23; } .side div:nth-child(4), .side div:nth-child(10) { background-color: #251e12; } .side div:nth-child(6) { background-color: #292115; } .side div:nth-child(7) { background-color: #4b3c26; } .side div:nth-child(8) { background-color: #292115; } .side div:nth-child(9) { background-color: #4b3a21; } .side div:nth-child(11), .side div:nth-child(15) { background-color: #3d311d; } .side div:nth-child(12) { background-color: #2c2315; } .side div:nth-child(13) { background-color: #493a22; } .side div:nth-child(14) { background-color: #2b2114; } .side div:nth-child(16) { background-color: #271e10; }
         .torch-container input:checked ~ .torch .face { filter: drop-shadow(0px 0px 2px rgb(255, 255, 255)) drop-shadow(0px 0px 10px rgba(255, 237, 156, 0.7)) drop-shadow(0px 0px 25px rgba(255, 227, 101, 0.4)); }
         .torch-container input:checked ~ .torch .top div:nth-child(1), .torch-container input:checked ~ .torch .left div:nth-child(3), .torch-container input:checked ~ .torch .right div:nth-child(3) { background-color: #ffff97; }
         .torch-container input:checked ~ .torch .top div:nth-child(2), .torch-container input:checked ~ .torch .left div:nth-child(1), .torch-container input:checked ~ .torch .right div:nth-child(1) { background-color: #ffd800; }
@@ -142,13 +145,14 @@
 </head>
 <body>
     <div class="p-4 sm:p-8">
-        <header class="flex justify-between items-center mb-6 relative"> <a href="performance.html" class="flex items-center gap-4">
-                 <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
-                 <span class="text-3xl font-light text-secondary">|</span>
-                 <h1 class="text-3xl font-semibold">Trazabilidad del Vino</h1>
-             </a>
-             <div class="flex items-center gap-4">
-                <label class="torch-container">
+        <header class="flex justify-between items-center mb-6 relative">
+             <a href="performance.html" class="flex items-center gap-4">
+                <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+                <span class="text-3xl font-light text-secondary">|</span>
+                <h1 class="text-3xl font-semibold">Trazabilidad del Vino</h1>
+            </a>
+            <div class="flex items-center gap-4">
+                 <label class="torch-container">
                     <input id="theme-toggle" type="checkbox" />
                     <div class="torch">
                         <div class="head">
@@ -166,7 +170,7 @@
              </div>
         </header>
         <div class="mb-8 border-b border-accent">
-             <nav class="flex space-x-8 overflow-x-auto pb-2">
+            <nav class="flex space-x-8 overflow-x-auto pb-2">
                 <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Análisis de Rendimiento</a>
                 <a href="forecast.html"   class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Predicciones y Escenarios</a>
                 <a href="catalog.html"     id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Catálogo y Stock</a>
@@ -178,15 +182,17 @@
                 <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Parcelas</a>
                 <a href="weather.html"     class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Clima</a>
                 <a href="settings.html"    class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-chestnut-brown border-transparent">Configuración</a>
-             </nav>
+            </nav>
         </div>
 
-        <div class="flex justify-end mb-6">
+        <div class="flex flex-wrap justify-end mb-6 gap-4">
             <button id="add-lot-btn" class="cta-button px-5 py-2 rounded-full font-semibold hover:opacity-90">
                 <i class="fas fa-plus mr-2"></i>Crear Lote de Vino
             </button>
+            <button id="manage-dry-goods-btn" class="secondary-button px-5 py-2 rounded-full font-semibold hover:opacity-90">
+                Gestionar Materiales Secos
+            </button>
         </div>
-
         <main class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
             <section class="p-4 rounded-2xl shadow-lg kanban-column">
                 <h2 class="text-lg font-bold mb-4 text-center">🍇 Cosechado</h2>
@@ -249,6 +255,60 @@
         </div>
     </div>
     
+    <div id="bottling-event-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl m-4">
+            <h3 class="text-2xl font-bold mb-2 text-chestnut-brown">Registrar Evento de Embotellado</h3>
+            <p class="text-secondary text-sm mb-6">Lote: <strong id="bottling-event-lot-name" class="text-chestnut-brown"></strong></p>
+            <form id="bottling-event-form" class="space-y-4">
+                <input type="hidden" id="bottling-event-lot-id">
+                <input type="hidden" id="bottling-event-product-id">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm">Nº de Lote Oficial (etiqueta)</label>
+                        <input type="text" name="official_lot_number" required class="w-full mt-1 p-2 rounded modal-input">
+                    </div>
+                    <div>
+                        <label class="block text-sm">Muestras Retenidas</label>
+                        <input type="number" name="retained_samples" value="0" class="w-full mt-1 p-2 rounded modal-input">
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg border-b border-accent pb-2 mb-2">Trazabilidad de Materiales Secos</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm">Lote de Botellas</label>
+                            <select name="bottle_lot_id" class="w-full mt-1 p-2 rounded modal-input"></select>
+                        </div>
+                        <div>
+                            <label class="block text-sm">Lote de Corchos/Tapones</label>
+                            <select name="cork_lot_id" class="w-full mt-1 p-2 rounded modal-input"></select>
+                        </div>
+                        <div>
+                            <label class="block text-sm">Lote de Cápsulas</label>
+                            <select name="capsule_lot_id" class="w-full mt-1 p-2 rounded modal-input"></select>
+                        </div>
+                        <div>
+                            <label class="block text-sm">Lote de Etiquetas</label>
+                            <select name="label_lot_id" class="w-full mt-1 p-2 rounded modal-input"></select>
+                        </div>
+                    </div>
+                </div>
+                 <div>
+                    <h4 class="font-bold text-lg border-b border-accent pb-2 mb-2">Control de Calidad</h4>
+                     <div>
+                        <label class="block text-sm">Oxígeno Disuelto (mg/L)</label>
+                        <input type="number" step="0.01" name="dissolved_oxygen" class="w-full mt-1 p-2 rounded modal-input">
+                    </div>
+                </div>
+            </form>
+            <div class="flex justify-end gap-4 mt-8">
+                <button type="button" id="close-bottling-event-modal-btn" class="bg-stone-200 text-chestnut-brown px-5 py-2 rounded-full font-semibold">Cancelar</button>
+                <button type="submit" form="bottling-event-form" class="cta-button px-5 py-2 rounded-full font-semibold">Confirmar Embotellado</button>
+            </div>
+        </div>
+    </div>
     <div id="bottling-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50">
         <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl m-4">
             <h3 class="text-2xl font-bold mb-2 text-chestnut-brown">Embotellar y Crear Producto</h3>
@@ -263,21 +323,21 @@
                     <h4 class="font-bold text-lg border-b border-accent pb-2 mb-2">2. Datos del Nuevo Producto</h4>
                     <div>
                         <label class="block text-sm">Nombre del Producto <span class="text-red-500">*</span></label>
-                        <input type="text" id="product-name" required class="w-full mt-1 p-2 rounded modal-input">
+                        <input type="text" id="product-name" name="product_name" required class="w-full mt-1 p-2 rounded modal-input">
                     </div>
                     <div class="grid grid-cols-2 gap-4 mt-4">
                         <div>
                             <label class="block text-sm">SKU / Código <span class="text-red-500">*</span></label>
-                            <input type="text" id="product-sku" required class="w-full mt-1 p-2 rounded modal-input">
+                            <input type="text" id="product-sku" name="product_sku" required class="w-full mt-1 p-2 rounded modal-input">
                         </div>
                         <div>
                             <label class="block text-sm">Precio Venta (€) <span class="text-red-500">*</span></label>
-                            <input type="number" step="0.01" id="product-price" required class="w-full mt-1 p-2 rounded modal-input">
+                            <input type="number" step="0.01" id="product-price" name="product_price" required class="w-full mt-1 p-2 rounded modal-input">
                         </div>
                     </div>
                      <div class="mt-4">
                         <label class="block text-sm">Nº de Botellas <span class="text-red-500">*</span></label>
-                        <input type="number" id="bottles-produced" required class="w-full mt-1 p-2 rounded modal-input">
+                        <input type="number" id="bottles-produced" name="bottles_produced" required class="w-full mt-1 p-2 rounded modal-input">
                     </div>
                 </div>
             </form>
@@ -318,7 +378,6 @@
         function logout() { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem('theme'); window.location.href = 'login.html'; }
         
         async function apiFetch(endpoint, options = {}) {
-            if (!endpoint.endsWith('/')) { endpoint += '/'; }
             const headers = { 'Content-Type': 'application/json', ...options.headers };
             const token = localStorage.getItem(TOKEN_KEY);
             if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -336,7 +395,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             requireAuth();
             document.getElementById('logout-btn').addEventListener('click', logout);
-            // ... resto de tu script de trazabilidad (sin cambios)
+            
             const lists = {
                 harvested: document.getElementById('harvested-list'),
                 fermenting: document.getElementById('fermenting-list'),
@@ -354,68 +413,243 @@
             const bottlingModalForm = document.getElementById('bottling-form');
             const closeBottlingModalBtn = document.getElementById('close-bottling-modal-btn');
             let traceabilityData = {};
+
+            const bottlingEventModal = document.getElementById('bottling-event-modal');
+            const closeBottlingEventModalBtn = document.getElementById('close-bottling-event-modal-btn');
+            const bottlingEventForm = document.getElementById('bottling-event-form');
+            
+            closeBottlingEventModalBtn.addEventListener('click', () => bottlingEventModal.classList.remove('modal-active'));
+
+            bottlingEventForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                const body = {
+                    ...data,
+                    lot_id: document.getElementById('bottling-event-lot-id').value,
+                    product_id: document.getElementById('bottling-event-product-id').value,
+                    dissolved_oxygen: data.dissolved_oxygen ? parseFloat(data.dissolved_oxygen) : null,
+                    retained_samples: parseInt(data.retained_samples, 10),
+                    bottle_lot_id: data.bottle_lot_id || null,
+                    cork_lot_id: data.cork_lot_id || null,
+                    capsule_lot_id: data.capsule_lot_id || null,
+                    label_lot_id: data.label_lot_id || null,
+                };
+                try {
+                    await apiFetch('/api/traceability/bottling-events', { method: 'POST', body });
+                    alert('Evento de embotellado registrado con éxito.');
+                    bottlingEventModal.classList.remove('modal-active');
+                    await loadTraceabilityView(); // Refrescar la vista
+                } catch (error) {
+                    alert(`Error al registrar el evento: ${error.message}`);
+                }
+            });
+
+            async function openBottlingEventModal(lotId, productId, lotName) {
+                bottlingEventForm.reset();
+                document.getElementById('bottling-event-lot-id').value = lotId;
+                document.getElementById('bottling-event-product-id').value = productId;
+                document.getElementById('bottling-event-lot-name').textContent = lotName;
+                
+                try {
+                    const dryGoods = await apiFetch('/api/traceability/dry-goods');
+                    const selects = {
+                        bottle_lot_id: dryGoods.filter(d => d.material_type === 'Botella'),
+                        cork_lot_id: dryGoods.filter(d => d.material_type === 'Corcho'),
+                        capsule_lot_id: dryGoods.filter(d => d.material_type === 'Cápsula'),
+                        label_lot_id: dryGoods.filter(d => d.material_type === 'Etiqueta'),
+                    };
+
+                    for (const selectName in selects) {
+                        const selectEl = bottlingEventForm.querySelector(`select[name="${selectName}"]`);
+                        selectEl.innerHTML = '<option value="">(No especificado)</option>';
+                        selects[selectName].forEach(item => {
+                            selectEl.innerHTML += `<option value="${item.id}">${item.supplier_lot_number || item.model_reference}</option>`;
+                        });
+                    }
+                } catch(e) {
+                    console.error("Error al cargar materiales secos:", e);
+                }
+                
+                bottlingEventModal.classList.add('modal-active');
+            }
+
+            const LOTS_PER_PAGE = 5;
+            const paginationState = {};
+
+            function renderColumnPage(listId) {
+                const state = paginationState[listId];
+                if (!state) return;
+
+                const listElement = document.getElementById(listId);
+                const allCards = listElement.querySelectorAll('.kanban-card');
+                const start = (state.currentPage - 1) * LOTS_PER_PAGE;
+                const end = start + LOTS_PER_PAGE;
+
+                allCards.forEach((card, index) => {
+                    card.classList.toggle('hidden', index < start || index >= end);
+                });
+
+                renderPaginationControls(listId);
+            }
+
+            function renderPaginationControls(listId) {
+                const state = paginationState[listId];
+                const listElement = document.getElementById(listId);
+                let controlsContainer = listElement.nextElementSibling;
+                if (!controlsContainer || !controlsContainer.classList.contains('pagination-controls')) {
+                    controlsContainer = document.createElement('div');
+                    controlsContainer.className = 'pagination-controls';
+                    listElement.insertAdjacentElement('afterend', controlsContainer);
+                }
+
+                if (!state || state.totalPages <= 1) {
+                    controlsContainer.innerHTML = '';
+                    return;
+                }
+                
+                controlsContainer.innerHTML = `
+                    <button class="pagination-btn prev-btn" data-list-id="${listId}" ${state.currentPage === 1 ? 'disabled' : ''}>&larr; Ant</button>
+                    <span class="text-sm text-secondary">Pág ${state.currentPage} / ${state.totalPages}</span>
+                    <button class="pagination-btn next-btn" data-list-id="${listId}" ${state.currentPage === state.totalPages ? 'disabled' : ''}>Sig &rarr;</button>
+                `;
+            }
+
             const renderLotCard = (lot) => {
                 const volumeInfo = lot.total_liters ? `<p class="text-sm" style="color: var(--clay-red);">${parseFloat(lot.total_liters).toFixed(0)} L</p>` : '';
-                return `<div class="border-accent border rounded-lg p-3 bg-white/80 shadow-sm"><div class="flex justify-between items-start"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-secondary">${lot.grape_variety || 'N/A'} - ${lot.vintage_year || 'N/A'}</p>${volumeInfo}</div><div class="flex gap-2 text-secondary"><i class="fas fa-pencil-alt cursor-pointer hover:text-chestnut-brown edit-lot-btn" data-id="${lot.id}"></i><i class="fas fa-trash-alt cursor-pointer hover:text-chestnut-brown delete-lot-btn" data-id="${lot.id}"></i></div></div></div>`;
+                return `<div class="kanban-card border-accent border rounded-lg p-3 bg-white/80 shadow-sm"><div class="flex justify-between items-start"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-secondary">${lot.grape_variety || 'N/A'} - ${lot.vintage_year || 'N/A'}</p>${volumeInfo}</div><div class="flex gap-2 text-secondary"><i class="fas fa-pencil-alt cursor-pointer hover:text-chestnut-brown edit-lot-btn" data-id="${lot.id}"></i><i class="fas fa-trash-alt cursor-pointer hover:text-chestnut-brown delete-lot-btn" data-id="${lot.id}"></i></div></div></div>`;
             };
+            
             const renderLotInContainerCard = (lot, actionButtonHtml = '') => {
                 const containersHtml = lot.containers && lot.containers.length ? `<ul class="text-xs text-secondary mt-1 pl-4 list-disc">${lot.containers.map(c => `<li>${c.name} (${parseFloat(c.current_volume).toFixed(0)} L)</li>`).join('')}</ul>` : `<p class="text-xs mt-1" style="color: var(--pumpkin-orange);">⚠️ Esperando asignación en Bodega...</p>`;
                 const cardContent = `<div class="flex justify-between items-start"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-secondary">${lot.grape_variety || 'N/A'} - ${lot.vintage_year || 'N/A'}</p></div><div class="flex gap-2 text-secondary"><i class="fas fa-pencil-alt cursor-pointer hover:text-chestnut-brown edit-lot-btn" data-id="${lot.id}"></i><i class="fas fa-trash-alt cursor-pointer hover:text-chestnut-brown delete-lot-btn" data-id="${lot.id}"></i></div></div>${containersHtml}`;
-                return `<div class="border-accent border rounded-lg p-3 bg-white/80 shadow-sm">${cardContent}${actionButtonHtml}</div>`;
+                return `<div class="kanban-card border-accent border rounded-lg p-3 bg-white/80 shadow-sm">${cardContent}${actionButtonHtml}</div>`;
             };
+
+            const setupPagination = (listElement, lotData, renderFn, actionFn) => {
+                const listId = listElement.id;
+                const emptyListHtml = '<p class="text-xs text-center text-secondary">No hay lotes.</p>';
+                
+                if (!lotData || lotData.length === 0) {
+                    listElement.innerHTML = emptyListHtml;
+                    paginationState[listId] = null;
+                    renderPaginationControls(listId);
+                    return;
+                }
+
+                listElement.innerHTML = lotData.map((lot) => {
+                    const actionButtonHtml = actionFn ? actionFn(lot) : '';
+                    return renderFn(lot, actionButtonHtml);
+                }).join('');
+
+                paginationState[listId] = {
+                    currentPage: 1,
+                    totalPages: Math.ceil(lotData.length / LOTS_PER_PAGE)
+                };
+                
+                renderColumnPage(listId);
+            };
+
             async function loadTraceabilityView() {
                 try {
-                    const view = await apiFetch('/api/traceability/kanban-view/');
+                    const view = await apiFetch('/api/traceability/kanban-view');
                     traceabilityData = view;
-                    const emptyListHtml = '<p class="text-xs text-center text-secondary">No hay lotes.</p>';
-                    lists.harvested.innerHTML = view.harvested.map(lot => renderLotCard(lot) + `<button data-id="${lot.id}" data-action="ferment" class="action-btn action-btn-green mt-2 w-full text-xs text-white px-2 py-1 rounded-full hover:opacity-90">Iniciar Fermentación</button>`).join('') || emptyListHtml;
-                    lists.fermenting.innerHTML = view.fermenting.map(lot => renderLotInContainerCard(lot, `<button data-id="${lot.id}" data-action="age" class="action-btn action-btn-yellow mt-2 w-full text-xs text-white px-2 py-1 rounded-full hover:opacity-90">Llevar a Crianza</button>`)).join('') || emptyListHtml;
-                    lists.aging.innerHTML = view.aging.map(lot => renderLotInContainerCard(lot, `<button data-id="${lot.id}" data-action="bottle" class="action-btn action-btn-purple mt-2 w-full text-xs text-white px-2 py-1 rounded-full hover:opacity-90">Preparar para Embotellar</button>`)).join('') || emptyListHtml;
-                    lists.ready_to_bottle.innerHTML = view.ready_to_bottle.map(lot => {
-                         let bottlingButtonHtml = '';
-                         if (lot.containers && lot.containers.length > 0) {
-                             const containersJson = JSON.stringify(lot.containers);
-                             bottlingButtonHtml = `<button data-id="${lot.id}" data-name="${lot.name}" data-containers='${containersJson}' class="open-bottling-modal-btn mt-2 w-full text-xs cta-button px-2 py-1 rounded-full hover:opacity-90">Embotellar y Crear Producto</button>`;
-                         }
-                         return renderLotInContainerCard(lot, bottlingButtonHtml);
-                    }).join('') || emptyListHtml;
-                    lists.bottled.innerHTML = view.bottled.map(lot => renderLotCard(lot)).join('') || emptyListHtml;
+                    
+                    Object.values(lists).forEach(list => {
+                        const nextButton = list.nextElementSibling;
+                        if (nextButton && nextButton.classList.contains('pagination-controls')) {
+                            nextButton.remove();
+                        }
+                    });
+
+                    setupPagination(lists.harvested, view.harvested, renderLotCard, lot => `<button data-id="${lot.id}" data-action="ferment" class="action-btn action-btn-green mt-2 w-full text-xs text-white px-2 py-1 rounded-full hover:opacity-90">Iniciar Fermentación</button>`);
+                    setupPagination(lists.fermenting, view.fermenting, renderLotInContainerCard, lot => `<button data-id="${lot.id}" data-action="age" class="action-btn action-btn-yellow mt-2 w-full text-xs text-white px-2 py-1 rounded-full hover:opacity-90">Llevar a Crianza</button>`);
+                    setupPagination(lists.aging, view.aging, renderLotInContainerCard, lot => `<button data-id="${lot.id}" data-action="prepare-bottling" class="action-btn action-btn-purple mt-2 w-full text-xs text-white px-2 py-1 rounded-full hover:opacity-90">Preparar para Embotellar</button>`);
+                    setupPagination(lists.ready_to_bottle, view.ready_to_bottle, renderLotInContainerCard, lot => {
+                        if (lot.containers && lot.containers.length > 0) {
+                            const containersJson = JSON.stringify(lot.containers);
+                            return `<button data-id="${lot.id}" data-name="${lot.name}" data-containers='${containersJson}' class="open-bottling-modal-btn mt-2 w-full text-xs cta-button px-2 py-1 rounded-full hover:opacity-90">Embotellar y Crear Producto</button>`;
+                        }
+                        return '';
+                    });
+                    setupPagination(lists.bottled, view.bottled, renderLotCard);
+
                 } catch (error) { console.error("Error al cargar la vista de trazabilidad:", error); alert(error.message); }
             }
+            
+            document.body.addEventListener('click', (e) => {
+                const pagBtn = e.target.closest('.pagination-btn');
+                if (pagBtn) {
+                    const listId = pagBtn.dataset.listId;
+                    const state = paginationState[listId];
+                    if (!state) return;
+
+                    if (pagBtn.classList.contains('next-btn')) {
+                        state.currentPage = Math.min(state.totalPages, state.currentPage + 1);
+                    } else if (pagBtn.classList.contains('prev-btn')) {
+                        state.currentPage = Math.max(1, state.currentPage - 1);
+                    }
+                    renderColumnPage(listId);
+                }
+            });
+            
             async function openLotModal(lot = null) {
                 lotModalForm.reset();
-                document.getElementById('calculated-liters').textContent = '0';
+                lotOriginParcelIdSelect.innerHTML = '<option value="">Cargando parcelas...</option>';
+                lotModal.classList.add('modal-active');
+                
                 try {
-                    const parcels = await apiFetch('/api/parcels/');
-                    lotOriginParcelIdSelect.innerHTML = parcels && parcels.length ? parcels.map(p => `<option value="${p.id}">${p.name}</option>`).join('') : '<option value="">No hay parcelas</option>';
-                } catch(e) { lotOriginParcelIdSelect.innerHTML = `<option value="">Error al cargar</option>`; }
-                if (lot) {
+                    const parcels = await apiFetch('/api/parcels');
+                    lotOriginParcelIdSelect.innerHTML = parcels.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                } catch (error) {
+                    console.error("Error al cargar parcelas:", error);
+                    lotOriginParcelIdSelect.innerHTML = '<option value="">Error al cargar</option>';
+                }
+                
+                if(lot) {
                     lotModalTitle.textContent = 'Editar Lote de Vino';
-                    Object.keys(lot).forEach(key => {
-                        const input = document.getElementById(`lot-${key}`);
+                    for (const key in lot) {
+                        const input = lotModalForm.querySelector(`#lot-${key}`);
                         if (input) input.value = lot[key];
-                    });
-                    if(lot.initial_grape_kg) document.getElementById('calculated-liters').textContent = Math.floor(lot.initial_grape_kg / 1.6);
+                    }
                 } else {
                     lotModalTitle.textContent = 'Crear Nuevo Lote de Vino';
+                    document.getElementById('lot-vintage_year').value = new Date().getFullYear();
                 }
-                lotModal.classList.add('modal-active');
+                
+                document.getElementById('lot-initial_grape_kg').dispatchEvent(new Event('input'));
             }
+            
             function closeLotModal() { lotModal.classList.remove('modal-active'); }
             addLotBtn.addEventListener('click', () => openLotModal());
             closeLotModalBtn.addEventListener('click', closeLotModal);
             closeBottlingModalBtn.addEventListener('click', () => bottlingModal.classList.remove('modal-active'));
+            
             document.body.addEventListener('click', async (e) => {
                 const actionTarget = e.target.closest('.action-btn');
                 if (actionTarget) {
                     const lotId = actionTarget.dataset.id;
                     const action = actionTarget.dataset.action;
+                    
+                    if (action === 'prepare-bottling') {
+                        if (confirm("¿Quieres marcar el vino de este lote que está en barricas como 'Listo para Embotellar'? El vino en depósitos no cambiará.")) {
+                            try {
+                                await apiFetch(`/api/traceability/wine-lots/${lotId}/prepare-for-bottling`, { method: 'PUT' });
+                                alert("Lote actualizado. El vino en barricas está listo para el siguiente paso.");
+                                await loadTraceabilityView();
+                            } catch (error) {
+                                alert(`Error: ${error.message}`);
+                            }
+                        }
+                        return;
+                    }
+
                     let newStatus = '', alertMessage = '';
                     switch (action) {
                         case 'ferment': newStatus = 'En Fermentación'; alertMessage = "Lote preparado. Ve a 'Gestión de Bodega' para asignarlo a depósito."; break;
                         case 'age': newStatus = 'En Crianza'; alertMessage = "Lote preparado. Ve a 'Gestión de Bodega' para moverlo a barricas."; break;
-                        case 'bottle': newStatus = 'Listo para Embotellar'; alertMessage = "Lote preparado."; break;
                     }
+
                     if (newStatus && confirm(`¿Quieres mover este lote a la fase '${newStatus}'?`)) {
                         try {
                             await apiFetch(`/api/traceability/wine-lots/${lotId}/status`, { method: 'PUT', body: { new_status: newStatus } });
@@ -424,86 +658,128 @@
                         } catch (error) { alert(`Error: ${error.message}`); }
                     }
                 }
+                
                 const editTarget = e.target.closest('.edit-lot-btn');
                 if (editTarget) {
                     const allLots = [...traceabilityData.harvested, ...traceabilityData.fermenting, ...traceabilityData.aging, ...traceabilityData.bottled, ...traceabilityData.ready_to_bottle];
                     const lotData = allLots.find(l => l.id === editTarget.dataset.id);
                     if(lotData) openLotModal(lotData);
                 }
+                
                 const deleteTarget = e.target.closest('.delete-lot-btn');
                 if (deleteTarget) {
                     const lotId = deleteTarget.dataset.id;
-                     if(confirm('¿Seguro que quieres eliminar este lote? Esta acción no se puede deshacer.')) {
+                    if(confirm('¿Seguro que quieres eliminar este lote? Esta acción no se puede deshacer y liberará los contenedores que ocupa.')) {
                         try {
                             await apiFetch(`/api/traceability/wine-lots/${lotId}`, { method: 'DELETE' });
                             await loadTraceabilityView();
                         } catch (error) { alert(`Error: ${error.message}`); }
-                     }
+                    }
                 }
+                
                 const openBottlingTarget = e.target.closest('.open-bottling-modal-btn');
                 if (openBottlingTarget) {
                     const { id, name, containers } = openBottlingTarget.dataset;
+                    bottlingModalForm.reset();
                     document.getElementById('bottling-modal-lot-id').value = id;
                     document.getElementById('bottling-modal-lot-name').textContent = name;
                     document.getElementById('product-name').value = name;
                     const containerList = document.getElementById('bottling-modal-containers-list');
                     const parsedContainers = JSON.parse(containers);
+                    
                     containerList.innerHTML = parsedContainers.length ? parsedContainers.map(c => `
                         <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-warm-beige/30">
-                            <input type="checkbox" name="source_containers" value="${c.id}" class="h-5 w-5 rounded" style="color: var(--clay-red); accent-color: var(--clay-red);">
+                            <input type="checkbox" name="source_containers" value="${c.id}" class="h-5 w-5 rounded" style="color: var(--clay-red); accent-color: var(--clay-red);" checked>
                             <span class="font-semibold">${c.name}</span>
                             <span class="text-sm text-secondary ml-auto">(${parseFloat(c.current_volume).toFixed(0)} L)</span>
-                        </label>`).join('') : '<p class="text-sm text-secondary">No hay contenedores.</p>';
+                        </label>`).join('') : '<p class="text-sm text-secondary">No hay contenedores con vino de este lote.</p>';
+                    
                     bottlingModal.classList.add('modal-active');
                 }
             });
+            
             lotModalForm.addEventListener('submit', async (e) => {
-                 e.preventDefault();
-                 const id = document.getElementById('lot-id').value;
-                 const body = {
-                     name: document.getElementById('lot-name').value,
-                     initial_grape_kg: parseFloat(document.getElementById('lot-initial_grape_kg').value),
-                     grape_variety: document.getElementById('lot-grape_variety').value,
-                     vintage_year: parseInt(document.getElementById('lot-vintage_year').value) || null,
-                     origin_parcel_id: document.getElementById('lot-origin_parcel_id').value
-                 };
-                 if (!body.origin_parcel_id || !body.initial_grape_kg) { alert("Parcela y Kilos son obligatorios."); return; }
-                 try {
-                     const endpoint = id ? `/api/traceability/wine-lots/${id}` : '/api/traceability/wine-lots/';
-                     const method = id ? 'PUT' : 'POST';
-                     await apiFetch(endpoint, { method, body });
-                     closeLotModal();
-                     await loadTraceabilityView();
-                 } catch (error) { alert(`Error al guardar: ${error.message}`); }
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                const lotId = data.id;
+                
+                const body = {
+                    name: data.name,
+                    origin_parcel_id: data.origin_parcel_id,
+                    initial_grape_kg: parseFloat(data.initial_grape_kg),
+                    grape_variety: data.grape_variety,
+                    vintage_year: parseInt(data.vintage_year, 10)
+                };
+                
+                try {
+                    if (lotId) {
+                        // Lógica de edición (PUT) si es necesaria en el futuro
+                    } else {
+                        await apiFetch('/api/traceability/wine-lots', { method: 'POST', body });
+                    }
+                    closeLotModal();
+                    await loadTraceabilityView();
+                } catch (error) {
+                    alert(`Error al guardar el lote: ${error.message}`);
+                }
             });
+            
+            // =================================================================
+            // INICIO DE LA CORRECCIÓN
+            // =================================================================
             bottlingModalForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const selectedContainers = Array.from(document.querySelectorAll('input[name="source_containers"]:checked')).map(cb => cb.value);
-                if (selectedContainers.length === 0) return alert('Debes seleccionar al menos un contenedor.');
-                const payload = {
-                    lot_id: document.getElementById('bottling-modal-lot-id').value,
+                const lotId = document.getElementById('bottling-modal-lot-id').value;
+                const lotName = document.getElementById('bottling-modal-lot-name').textContent;
+                const selectedContainers = Array.from(e.target.querySelectorAll('input[name="source_containers"]:checked')).map(cb => cb.value);
+                
+                if (selectedContainers.length === 0) {
+                    alert('Debes seleccionar al menos un contenedor para embotellar.');
+                    return;
+                }
+
+                const body = {
+                    lot_id: lotId,
                     source_container_ids: selectedContainers,
                     product_name: document.getElementById('product-name').value,
                     product_sku: document.getElementById('product-sku').value,
                     product_price: parseFloat(document.getElementById('product-price').value),
-                    bottles_produced: parseInt(document.getElementById('bottles-produced').value)
+                    bottles_produced: parseInt(document.getElementById('bottles-produced').value, 10)
                 };
+
                 try {
-                    const response = await apiFetch('/api/cellar/movements/bottling-and-create-product', {
-                        method: 'POST',
-                        body: payload
-                    });
-                    alert(response.message);
+                    const productData = await apiFetch('/api/cellar/movements/bottling-and-create-product', { method: 'POST', body });
+                    alert(productData.message);
+                    
                     bottlingModal.classList.remove('modal-active');
-                    await loadTraceabilityView();
+                    
+                    // Abrir el siguiente modal para el evento de embotellado
+                    openBottlingEventModal(body.lot_id, productData.new_product_id, lotName);
+                    
                 } catch (error) {
-                    alert(`Error: ${error.message}`);
+                    // El error "detail" de FastAPI puede ser un array de objetos, necesitamos formatearlo
+                    let errorMessage = error.message;
+                    try {
+                        const errorDetails = JSON.parse(error.message);
+                        if (Array.isArray(errorDetails)) {
+                             errorMessage = errorDetails.map(err => `${err.loc.join(' -> ')}: ${err.msg}`).join('\n');
+                        }
+                    } catch (parseError) {
+                        // Si no es un JSON, mostramos el mensaje tal cual
+                    }
+                    alert(`Error: ${errorMessage}`);
                 }
             });
+            // =================================================================
+            // FIN DE LA CORRECCIÓN
+            // =================================================================
+
             document.getElementById('lot-initial_grape_kg').addEventListener('input', (e) => {
                 const kg = parseFloat(e.target.value) || 0;
-                document.getElementById('calculated-liters').textContent = Math.floor(kg / 1.6);
+                document.getElementById('calculated-liters').textContent = (kg / 1.6).toFixed(0);
             });
+            
             loadTraceabilityView();
         });
     </script>

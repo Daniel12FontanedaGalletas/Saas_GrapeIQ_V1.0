@@ -5,7 +5,7 @@ from typing import Optional, List, Any, Dict
 import uuid
 from datetime import date, datetime
 
-# --- Esquemas de Autenticación y Usuarios ---
+# --- Esquemas de Autenticación y Usuarios (SIN CAMBIOS) ---
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -34,7 +34,7 @@ class UserUpdateResponse(UserInDB):
     new_access_token: str
     token_type: str = "bearer"
 
-# --- Esquemas del Cuaderno de Campo ---
+# --- Esquemas del Cuaderno de Campo (SIN CAMBIOS) ---
 class FieldLogBase(BaseModel):
     activity_type: str
     description: Optional[str] = None
@@ -53,7 +53,7 @@ class FieldLog(FieldLogBase):
     class Config:
         from_attributes = True
 
-# --- ESQUEMAS PARA LA ARQUITECTURA CENTRAL ---
+# --- ESQUEMAS PARA LA ARQUITECTURA CENTRAL (ACTUALIZADOS) ---
 class WineLotBase(BaseModel):
     name: str
     grape_variety: Optional[str] = None
@@ -82,6 +82,10 @@ class ContainerBase(BaseModel):
     capacity_liters: float
     material: Optional[str] = None
     location: Optional[str] = None
+    # --- NUEVOS CAMPOS ---
+    barrel_age: Optional[int] = None
+    toast_level: Optional[str] = None
+    cooperage: Optional[str] = None
 
 class ContainerCreate(ContainerBase):
     pass
@@ -103,6 +107,7 @@ class MovementCreate(BaseModel):
     destination_container_id: Optional[uuid.UUID] = None
     volume: float
     type: str
+    notes: Optional[str] = None # --- NUEVO CAMPO ---
 
 class ToppingUpCreate(BaseModel):
     lot_id: uuid.UUID
@@ -146,7 +151,79 @@ class BottlingToProductCreate(BaseModel):
     product_price: float
     bottles_produced: int
 
-# --- Esquemas para el "Cerebro" ---
+# --- NUEVOS ESQUEMAS PARA TRAZABILIDAD AVANZADA ---
+
+class FermentationControlBase(BaseModel):
+    container_id: uuid.UUID
+    lot_id: uuid.UUID
+    control_date: date
+    temperature: Optional[float] = None
+    density: Optional[float] = None
+    notes: Optional[str] = None
+
+class FermentationControlCreate(FermentationControlBase):
+    pass
+
+class FermentationControl(FermentationControlBase):
+    id: uuid.UUID
+    class Config:
+        from_attributes = True
+
+class LabAnalyticBase(BaseModel):
+    lot_id: uuid.UUID
+    analysis_date: date
+    alcoholic_degree: Optional[float] = None
+    total_acidity: Optional[float] = None
+    volatile_acidity: Optional[float] = None
+    ph: Optional[float] = None
+    free_so2: Optional[int] = None
+    total_so2: Optional[int] = None
+    notes: Optional[str] = None
+
+class LabAnalyticCreate(LabAnalyticBase):
+    pass
+
+class LabAnalytic(LabAnalyticBase):
+    id: uuid.UUID
+    class Config:
+        from_attributes = True
+        
+class DryGoodBase(BaseModel):
+    material_type: str
+    supplier: Optional[str] = None
+    model_reference: Optional[str] = None
+    supplier_lot_number: Optional[str] = None
+
+class DryGoodCreate(DryGoodBase):
+    pass
+
+class DryGood(DryGoodBase):
+    id: uuid.UUID
+    class Config:
+        from_attributes = True
+
+class BottlingEventBase(BaseModel):
+    lot_id: uuid.UUID
+    product_id: uuid.UUID
+    official_lot_number: str
+    dissolved_oxygen: Optional[float] = None
+    bottle_lot_id: Optional[uuid.UUID] = None
+    cork_lot_id: Optional[uuid.UUID] = None
+    capsule_lot_id: Optional[uuid.UUID] = None
+    label_lot_id: Optional[uuid.UUID] = None
+    retained_samples: int = 0
+
+class BottlingEventCreate(BottlingEventBase):
+    pass
+
+class BottlingEvent(BottlingEventBase):
+    id: uuid.UUID
+    bottling_date: datetime
+    class Config:
+        from_attributes = True
+
+
+# --- Esquemas para el "Cerebro" (SIN CAMBIOS) ---
 class ParcelBase(BaseModel):
     name: str
     variety: Optional[str] = None
@@ -211,7 +288,7 @@ class Product(ProductBase):
     class Config:
         from_attributes = True
 
-# --- Esquemas para Ventas ---
+# --- Esquemas para Ventas (SIN CAMBIOS) ---
 class SaleDetailBase(BaseModel):
     product_id: uuid.UUID
     quantity: int
@@ -301,8 +378,7 @@ class SunburstCategory(BaseModel):
     name: str
     children: List[SunburstItem]
 
-# --- ESQUEMAS PARA FORECASTING AVANZADO ---
-
+# --- ESQUEMAS PARA FORECASTING AVANZADO (SIN CAMBIOS) ---
 class ForecastPoint(BaseModel):
     date: str
     forecast: float
@@ -319,13 +395,12 @@ class ScenarioRegressor(BaseModel):
     name: str
     value: float
 
-# --- NUEVO: Esquema para añadir eventos personalizados desde la UI ---
 class FutureEvent(BaseModel):
-    holiday: str # Nombre del evento, ej: "Feria del Vino Local"
-    ds: date     # Fecha del evento
+    holiday: str 
+    ds: date     
 
 class ScenarioRequest(BaseModel):
     product_id: Optional[str] = 'total'
     periods: int = 90
     future_regressors: List[ScenarioRegressor] = []
-    future_events: List[FutureEvent] = [] # <-- Se añade la lista de eventos
+    future_events: List[FutureEvent] = []

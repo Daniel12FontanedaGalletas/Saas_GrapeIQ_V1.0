@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
   <style>
     /* --- Sistema de Temas --- */
     :root { /* Tema Claro (Blanco) por Defecto */
@@ -56,26 +57,49 @@
     .border-accent { border-color: var(--border-color); }
     .card { background-color: var(--card-bg); border: 1px solid var(--border-color); }
 
+    /* --- ESTILOS OPTIMIZADOR DE PRECIOS --- */
+    .info-icon-container { position: relative; display: inline-block; }
+    .info-icon-hover-box {
+        display: none;
+        position: absolute;
+        bottom: 125%; /* Posiciona el cuadro encima del icono */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 280px;
+        background-color: var(--header-bg-color);
+        color: white;
+        text-align: left;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        z-index: 10;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none; /* Evita que el hover se quede pegado */
+    }
+    .info-icon-container:hover .info-icon-hover-box {
+        display: block;
+        opacity: 1;
+    }
+    .info-icon-hover-box::after { /* Flecha del tooltip */
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: var(--header-bg-color) transparent transparent transparent;
+    }
+
+
     /* --- ESTILOS ORIGINALES PARA LA SECCIÓN DE COSTES (ADAPTADOS) --- */
-    .cost-card {
-        cursor: pointer;
-        overflow: hidden;
-        position: relative;
-        z-index: 1;
-        transition: box-shadow 0.4s ease;
-        border-radius: 1rem;
-        background-color: var(--card-bg); /* Adaptado */
-        border: 1px solid var(--border-color); /* Adaptado */
-    }
+    .cost-card { cursor: pointer; overflow: hidden; position: relative; z-index: 1; transition: box-shadow 0.4s ease; border-radius: 1rem; background-color: var(--card-bg); border: 1px solid var(--border-color); }
     .cost-card:hover { box-shadow: 0 15px 30px -10px rgba(0,0,0,0.2); }
-    .cost-card::before, .cost-card::after {
-        content: ''; position: absolute; left: 0; top: 100%; width: 100%; height: 100%;
-        background-color: #8C2B4F; z-index: -1; transition: top 0.6s cubic-bezier(0.7, 0, 0.3, 1);
-    }
+    .cost-card::before, .cost-card::after { content: ''; position: absolute; left: 0; top: 100%; width: 100%; height: 100%; background-color: #8C2B4F; z-index: -1; transition: top 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
     .cost-card::after { background-color: #5C1A33; transition-delay: 0.05s; }
     .cost-card:hover::before, .cost-card:hover::after { top: 0; }
-    .cost-card:hover .main-card-text, .cost-card:hover .main-card-text h3,
-    .cost-card:hover .main-card-text p, .cost-card:hover .main-card-text .font-bold { color: #FFFFFF !important; }
+    .cost-card:hover .main-card-text, .cost-card:hover .main-card-text h3, .cost-card:hover .main-card-text p, .cost-card:hover .main-card-text .font-bold { color: #FFFFFF !important; }
     .cost-card:hover .chevron { color: rgba(255,255,255,0.7) !important; }
     .cost-card .chevron { transition: transform 0.8s cubic-bezier(.2,.8,.2,1), color 0.6s ease; }
     .cost-card.expanded .chevron { transform: rotate(180deg); }
@@ -96,7 +120,7 @@
     .torch { display: flex; justify-content: center; height: 150px; }
     .head, .stick { position: absolute; width: 30px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); }
     .stick { position: relative; height: 120px; }
-    .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000000; }
+    .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000; }
     .top { transform: rotateX(90deg) translateZ(15px); } .left { transform: rotateY(-90deg) translateZ(15px); } .right { transform: rotateY(0deg) translateZ(15px); }
     .top div, .left div, .right div { width: 102%; height: 102%; }
     .top div:nth-child(1), .left div:nth-child(3), .right div:nth-child(3) { background-color: #ffff9760; } .top div:nth-child(2), .left div:nth-child(1), .right div:nth-child(1) { background-color: #ffd80060; } .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; } .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; }
@@ -159,6 +183,56 @@
       </div>
       
       <div>
+          <h2 class="text-2xl font-bold mb-4">Optimizador de Precios con IA</h2>
+          <div class="card p-6 rounded-2xl shadow-lg">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                  <div class="md:col-span-2">
+                      <label for="price-optimizer-product" class="block text-lg font-semibold mb-2">1. Selecciona un producto para analizar</label>
+                      <select id="price-optimizer-product" class="w-full bg-light-accent p-3 rounded-lg border-accent text-lg"></select>
+                  </div>
+                  <div>
+                      <button id="run-optimizer-btn" class="cta-button w-full px-8 py-3 rounded-full font-bold text-lg hover:opacity-90">Optimizar Precio</button>
+                  </div>
+              </div>
+              <div id="optimizer-results-container" class="mt-8 hidden">
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-center mb-8">
+                      <div class="bg-light-accent p-4 rounded-lg border border-accent">
+                          <p class="text-sm font-semibold text-secondary">Precio Actual</p>
+                          <p id="current-price" class="text-3xl font-bold mt-1">-</p>
+                      </div>
+                      <div class="bg-light-accent p-4 rounded-lg border border-accent relative">
+                          <p class="text-sm font-semibold text-secondary flex items-center justify-center">
+                            Precio Óptimo
+                            <span class="info-icon-container ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 cursor-pointer" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                <div class="info-icon-hover-box text-xs">
+                                    <p class="font-bold mb-2">¿Qué es el Precio Óptimo?</p>
+                                    <p>Es el precio que, según el modelo de IA entrenado con tus datos, se estima que generaría los <strong>máximos ingresos totales</strong>.</p>
+                                    <p class="mt-2">El modelo aprende la "elasticidad" de la demanda (cómo reaccionan los clientes a los cambios de precio) para encontrar el punto de equilibrio perfecto.</p>
+                                </div>
+                            </span>
+                          </p>
+                          <p id="optimal-price" class="text-3xl font-bold text-highlight mt-1">-</p>
+                      </div>
+                      <div class="bg-light-accent p-4 rounded-lg border border-accent">
+                          <p class="text-sm font-semibold text-secondary">Ingresos Estimados</p>
+                          <p id="estimated-revenue" class="text-3xl font-bold text-highlight mt-1">-</p>
+                      </div>
+                      <div class="bg-light-accent p-4 rounded-lg border border-accent">
+                          <p class="text-sm font-semibold text-secondary">Unidades Vendidas (est.)</p>
+                          <p id="estimated-units" class="text-3xl font-bold text-highlight mt-1">-</p>
+                      </div>
+                  </div>
+                  <div class="bg-light-accent p-4 rounded-lg border-accent border">
+                    <div id="price-chart-container" class="w-full h-96"></div>
+                  </div>
+              </div>
+               <div id="optimizer-loader" class="text-center p-8 hidden"><p class="text-secondary">Entrenando modelo y simulando precios...</p></div>
+               <div id="optimizer-error" class="text-center p-8 text-red-600 font-semibold hidden"></div>
+          </div>
+      </div>
+      
+      <div>
           <div id="margins-results-container" class="hidden mb-8">
               <h2 class="text-2xl font-bold mb-4">Resultados de Rentabilidad</h2>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -203,6 +277,7 @@
     const API_BASE_URL = 'http://127.0.0.1:8000';
     const TOKEN_KEY = 'accessToken';
     const ROLE_KEY = 'userRole';
+    const eChartsInstances = {};
 
     // --- LÓGICA DEL TEMA (AÑADIDA) ---
     function setupThemeToggle() {
@@ -225,6 +300,23 @@
               body.classList.remove('theme-warm');
               localStorage.setItem('theme', 'light');
           }
+          // Actualizar el gráfico si ya existe
+          if (eChartsInstances['price-chart-container']) {
+              const chart = eChartsInstances['price-chart-container'];
+              const newOption = chart.getOption();
+              const isWarm = document.body.classList.contains('theme-warm');
+              const themeColors = {
+                    revenuePrimary: isWarm ? '#D96C06' : '#5C1A33',
+                    revenueSecondary: isWarm ? '#C98C32' : '#8C2B4F',
+                    demand: isWarm ? '#6B705C' : '#3b82f6',
+                    optimal: isWarm ? '#A23E48' : '#16a34a',
+                    current: '#9ca3af'
+              };
+              newOption.series[0].itemStyle.color.colorStops[0].color = themeColors.revenuePrimary;
+              newOption.series[0].itemStyle.color.colorStops[1].color = themeColors.revenueSecondary;
+              newOption.series[1].lineStyle.color = themeColors.demand;
+              chart.setOption(newOption);
+          }
       });
     }
 
@@ -246,6 +338,16 @@
         return ct.includes('application/json') ? resp.json() : resp.text();
     }
     function updateUIVisibility() { const role = localStorage.getItem(ROLE_KEY); if (role === 'lector') document.querySelectorAll('#menu-catalogo, #menu-registro-diario').forEach(el => el.style.display = 'none'); }
+
+    function initEChart(domId, option) {
+        const chartDom = document.getElementById(domId);
+        if (eChartsInstances[domId]) eChartsInstances[domId].dispose();
+        if(!chartDom) return null;
+        const myChart = echarts.init(chartDom, null, { renderer: 'svg' });
+        myChart.setOption(option, true);
+        eChartsInstances[domId] = myChart;
+        return myChart;
+    }
 
     function setupMarginCalculator() {
         const form = document.getElementById('financials-form');
@@ -270,154 +372,144 @@
     function setupCostBreakdown() {
         const container = document.getElementById('costs-container');
         const loadingDiv = document.getElementById('loading-costs');
+        const categoryDetails = { "Viñedo y Vendimia": { title: "Costes de Viñedo y Vendimia", subtitle: "Gastos en cultivo y recolección" }, "Vinificación": { title: "Costes de Vinificación", subtitle: "Desde la uva hasta el fin de la fermentación" }, "Crianza y Almacenamiento": { title: "Costes de Crianza", subtitle: "Maduración del vino" }, "Embotellado y Empaquetado": { title: "Costes de Embotellado", subtitle: "Materiales del producto final" }, "Comerciales y de Marketing": { title: "Costes de Marketing", subtitle: "Promoción y venta" }, "Generales y Administrativos": { title: "Costes de Administración", subtitle: "Gastos estructurales" } };
+        const createCostCardHTML = (category, summary) => { const details = categoryDetails[category] || {}; const percentage = summary ? summary.percentage.toFixed(2) : '0.00'; return ` <div class="cost-card" data-category="${category}"> <div class="cost-card-header p-4 relative"> <div class="main-card-text"> <h3 class="text-xl font-bold">${details.title || category}</h3> <p class="text-secondary">${details.subtitle}</p> </div> <div class="absolute top-4 right-12 text-right main-card-text"> <div class="font-bold text-lg">${percentage}%</div> <div class="text-sm text-secondary">del total</div> </div> <div class="chevron absolute top-4 right-4 text-secondary"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg> </div> </div> <div class="parameters-container px-4 pb-4" style="display: none;"></div> </div> `; };
+        const createParameterItemHTML = (parameter) => ` <div class="parameter-item" data-parameter-name="${parameter.parameter_name}" data-current-page="1"> <div class="flex justify-between items-center"> <span class="font-semibold">${parameter.parameter_name}</span> <div class="chevron-param text-stone-500"> <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg> </div> </div> <div class="records-container" style="display: none;"></div> </div> `;
+        async function loadAndDisplayRecords(parameterItem) { const paramName = parameterItem.dataset.parameterName; const page = parseInt(parameterItem.dataset.currentPage, 10); const recordsContainer = parameterItem.querySelector('.records-container'); recordsContainer.innerHTML = `<div class="text-center text-sm text-stone-500 p-2">Cargando...</div>`; gsap.set(recordsContainer, { height: 'auto' }); try { const data = await apiFetch(`/api/financials/costs-by-parameter/${encodeURIComponent(paramName)}?page=${page}&page_size=5`); let recordsHTML = `<div class="text-center text-sm text-stone-500 p-2">No hay registros para este concepto.</div>`; if (data.records && data.records.length > 0) { recordsHTML = data.records.map(rec => ` <div class="record-item flex justify-between text-sm"> <span>${new Date(rec.cost_date).toLocaleDateString()} - ${rec.description}</span> <span class="font-bold">${rec.amount.toFixed(2)} €</span> </div> `).join(''); } const paginationHTML = ` <div class="pagination-controls"> <button class="pagination-btn prev-btn" ${data.page <= 1 ? 'disabled' : ''}>Anterior</button> <span>Pág. ${data.page} de ${data.total_pages || 1}</span> <button class="pagination-btn next-btn" ${data.page >= data.total_pages ? 'disabled' : ''}>Siguiente</button> </div> `; recordsContainer.innerHTML = recordsHTML + (data.total_pages > 1 ? paginationHTML : ''); recordsContainer.querySelector('.prev-btn')?.addEventListener('click', (e) => { e.stopPropagation(); parameterItem.dataset.currentPage = page - 1; loadAndDisplayRecords(parameterItem); }); recordsContainer.querySelector('.next-btn')?.addEventListener('click', (e) => { e.stopPropagation(); parameterItem.dataset.currentPage = page + 1; loadAndDisplayRecords(parameterItem); }); } catch (error) { recordsContainer.innerHTML = `<div class="text-center text-sm text-red-600 p-2">Error al cargar.</div>`; console.error(error); } }
+        Promise.all([ apiFetch('/api/financials/costs-summary/'), apiFetch('/api/financials/cost-categories/') ]).then(([summaryData, categoriesData]) => { loadingDiv.style.display = 'none'; const summaryMap = new Map(summaryData.details.map(item => [item.category, item])); Object.keys(categoryDetails).forEach(category => { const summary = summaryMap.get(category); container.insertAdjacentHTML('beforeend', createCostCardHTML(category, summary)); const card = container.lastElementChild; const parametersContainer = card.querySelector('.parameters-container'); const costParameters = categoriesData[category] || []; if(costParameters.length > 0) { parametersContainer.innerHTML = costParameters.map(createParameterItemHTML).join(''); } else { parametersContainer.innerHTML = `<div class="text-center text-sm text-stone-500 p-2">No hay parámetros definidos.</div>`; } card.querySelector('.cost-card-header').addEventListener('click', () => { const isExpanded = card.classList.toggle('expanded'); gsap.to(parametersContainer, { display: isExpanded ? 'block' : 'none', duration: 0.3 }); }); parametersContainer.querySelectorAll('.parameter-item').forEach(item => { item.addEventListener('click', (e) => { e.stopPropagation(); const isExpanded = item.classList.toggle('param-expanded'); const recordsContainer = item.querySelector('.records-container'); if (isExpanded && !item.dataset.loaded) { loadAndDisplayRecords(item); item.dataset.loaded = 'true'; } gsap.to(recordsContainer, { display: isExpanded ? 'block' : 'none', duration: 0.3 }); }); }); }); }).catch(error => { loadingDiv.innerHTML = `<p class="font-semibold text-highlight">Error al cargar datos de costes: ${error.message}</p>`; console.error(error); });
+    }
 
-        const categoryDetails = {
-            "Viñedo y Vendimia": { title: "Costes de Viñedo y Vendimia", subtitle: "Gastos en cultivo y recolección" },
-            "Vinificación": { title: "Costes de Vinificación", subtitle: "Desde la uva hasta el fin de la fermentación" },
-            "Crianza y Almacenamiento": { title: "Costes de Crianza", subtitle: "Maduración del vino" },
-            "Embotellado y Empaquetado": { title: "Costes de Embotellado", subtitle: "Materiales del producto final" },
-            "Comerciales y de Marketing": { title: "Costes de Marketing", subtitle: "Promoción y venta" },
-            "Generales y Administrativos": { title: "Costes de Administración", subtitle: "Gastos estructurales" }
-        };
-
-        const createCostCardHTML = (category, summary) => {
-            const details = categoryDetails[category] || {};
-            const percentage = summary ? summary.percentage.toFixed(2) : '0.00';
-            return `
-                <div class="cost-card" data-category="${category}">
-                    <div class="cost-card-header p-4 relative">
-                        <div class="main-card-text">
-                            <h3 class="text-xl font-bold">${details.title || category}</h3>
-                            <p class="text-secondary">${details.subtitle}</p>
-                        </div>
-                        <div class="absolute top-4 right-12 text-right main-card-text">
-                            <div class="font-bold text-lg">${percentage}%</div>
-                            <div class="text-sm text-secondary">del total</div>
-                        </div>
-                        <div class="chevron absolute top-4 right-4 text-secondary">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                        </div>
-                    </div>
-                    <div class="parameters-container px-4 pb-4" style="display: none;"></div>
-                </div>
-            `;
-        };
-
-        // El resto de la función setupCostBreakdown y sus funciones auxiliares permanecen idénticas...
-        const createParameterItemHTML = (parameter) => `
-            <div class="parameter-item" data-parameter-name="${parameter.parameter_name}" data-current-page="1">
-                <div class="flex justify-between items-center">
-                    <span class="font-semibold">${parameter.parameter_name}</span>
-                    <div class="chevron-param text-stone-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </div>
-                </div>
-                <div class="records-container" style="display: none;"></div>
-            </div>
-        `;
+    // --- LÓGICA DEL OPTIMIZADOR DE PRECIOS CON IA ---
+    async function setupPriceOptimizer() {
+        const productSelect = document.getElementById('price-optimizer-product');
+        const runBtn = document.getElementById('run-optimizer-btn');
+        const resultsContainer = document.getElementById('optimizer-results-container');
+        const loader = document.getElementById('optimizer-loader');
+        const errorDiv = document.getElementById('optimizer-error');
         
-        async function loadAndDisplayRecords(parameterItem) {
-            const paramName = parameterItem.dataset.parameterName;
-            const page = parseInt(parameterItem.dataset.currentPage, 10);
-            const recordsContainer = parameterItem.querySelector('.records-container');
-            
-            recordsContainer.innerHTML = `<div class="text-center text-sm text-stone-500 p-2">Cargando...</div>`;
-            gsap.set(recordsContainer, { height: 'auto' });
+        let productsData = [];
 
-            try {
-                const data = await apiFetch(`/api/financials/costs-by-parameter/${encodeURIComponent(paramName)}?page=${page}&page_size=5`);
-                
-                let recordsHTML = `<div class="text-center text-sm text-stone-500 p-2">No hay registros para este concepto.</div>`;
-                if (data.records && data.records.length > 0) {
-                    recordsHTML = data.records.map(rec => `
-                        <div class="record-item flex justify-between text-sm">
-                            <span>${new Date(rec.cost_date).toLocaleDateString()} - ${rec.description}</span>
-                            <span class="font-bold">${rec.amount.toFixed(2)} €</span>
-                        </div>
-                    `).join('');
-                }
-                
-                const paginationHTML = `
-                    <div class="pagination-controls">
-                        <button class="pagination-btn prev-btn" ${data.page <= 1 ? 'disabled' : ''}>Anterior</button>
-                        <span>Pág. ${data.page} de ${data.total_pages || 1}</span>
-                        <button class="pagination-btn next-btn" ${data.page >= data.total_pages ? 'disabled' : ''}>Siguiente</button>
-                    </div>
-                `;
-
-                recordsContainer.innerHTML = recordsHTML + (data.total_pages > 1 ? paginationHTML : '');
-                
-                recordsContainer.querySelector('.prev-btn')?.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    parameterItem.dataset.currentPage = page - 1;
-                    loadAndDisplayRecords(parameterItem);
-                });
-                recordsContainer.querySelector('.next-btn')?.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    parameterItem.dataset.currentPage = page + 1;
-                    loadAndDisplayRecords(parameterItem);
-                });
-
-            } catch (error) {
-                recordsContainer.innerHTML = `<div class="text-center text-sm text-red-600 p-2">Error al cargar.</div>`;
-                console.error(error);
-            }
+        try {
+            productsData = await apiFetch('/api/analytics/product-catalog?limit=200');
+            productSelect.innerHTML = productsData.map(p => `<option value="${p.id}">${p.ProductName}</option>`).join('');
+        } catch (error) {
+            productSelect.innerHTML = `<option>Error al cargar productos</option>`;
+            console.error(error);
         }
 
-        Promise.all([
-            apiFetch('/api/financials/costs-summary/'),
-            apiFetch('/api/financials/cost-categories/')
-        ]).then(([summaryData, categoriesData]) => {
-            loadingDiv.style.display = 'none';
-            const summaryMap = new Map(summaryData.details.map(item => [item.category, item]));
+        runBtn.addEventListener('click', async () => {
+            const selectedProductId = productSelect.value;
+            if (!selectedProductId) {
+                alert("Por favor, selecciona un producto válido.");
+                return;
+            }
 
-            Object.keys(categoryDetails).forEach(category => {
-                const summary = summaryMap.get(category);
-                container.insertAdjacentHTML('beforeend', createCostCardHTML(category, summary));
-                const card = container.lastElementChild;
-                const parametersContainer = card.querySelector('.parameters-container');
-                const costParameters = categoriesData[category] || [];
+            loader.style.display = 'block';
+            resultsContainer.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+
+            try {
+                const result = await apiFetch(`/api/analytics/optimize-price/${selectedProductId}`);
+                const { base_price, optimal_point, simulation_data } = result;
+
+                document.getElementById('current-price').textContent = `€${base_price.toFixed(2)}`;
+                document.getElementById('optimal-price').textContent = `€${optimal_point.price.toFixed(2)}`;
+                document.getElementById('estimated-revenue').textContent = `€${optimal_point.revenue.toLocaleString('es-ES', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+                document.getElementById('estimated-units').textContent = `${Math.round(optimal_point.demand)} uds.`;
                 
-                if(costParameters.length > 0) {
-                    parametersContainer.innerHTML = costParameters.map(createParameterItemHTML).join('');
-                } else {
-                    parametersContainer.innerHTML = `<div class="text-center text-sm text-stone-500 p-2">No hay parámetros definidos.</div>`;
-                }
-                
-                card.querySelector('.cost-card-header').addEventListener('click', () => {
-                    const isExpanded = card.classList.toggle('expanded');
-                    gsap.to(parametersContainer, { display: isExpanded ? 'block' : 'none', duration: 0.3 });
-                });
+                renderPriceChart(simulation_data, optimal_point.price, base_price);
 
-                parametersContainer.querySelectorAll('.parameter-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const isExpanded = item.classList.toggle('param-expanded');
-                        const recordsContainer = item.querySelector('.records-container');
-                        
-                        if (isExpanded && !item.dataset.loaded) {
-                            loadAndDisplayRecords(item);
-                            item.dataset.loaded = 'true';
-                        }
-                        
-                        gsap.to(recordsContainer, { display: isExpanded ? 'block' : 'none', duration: 0.3 });
-                    });
-                });
-            });
+                resultsContainer.classList.remove('hidden');
+                resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-        }).catch(error => {
-            loadingDiv.innerHTML = `<p class="font-semibold text-highlight">Error al cargar datos de costes: ${error.message}</p>`;
-            console.error(error);
+            } catch (error) {
+                errorDiv.textContent = `Error: ${error.message}`;
+                errorDiv.classList.remove('hidden');
+            } finally {
+                loader.style.display = 'none';
+            }
         });
     }
 
+    function renderPriceChart(results, optimalPrice, basePrice) {
+        const isWarmTheme = document.body.classList.contains('theme-warm');
+        const themeColors = {
+            revenuePrimary: isWarmTheme ? '#D96C06' : '#5C1A33',
+            revenueSecondary: isWarmTheme ? '#C98C32' : '#8C2B4F',
+            demand: isWarmTheme ? '#6B705C' : '#3b82f6',
+            optimal: isWarmTheme ? '#A23E48' : '#16a34a',
+            current: '#9ca3af'
+        };
+
+        const option = {
+            title: { text: 'Curva de Ingresos vs. Demanda', left: 'center', textStyle: { color: 'var(--text-color)' } },
+            tooltip: { trigger: 'axis', axisPointer: { type: 'cross' }, formatter: params => {
+                const price = params[0].axisValueLabel;
+                const revenue = parseFloat(params[0].value).toLocaleString('es-ES', {style:'currency', currency:'EUR'});
+                const demand = `${params[1].value} uds`;
+                return `<strong>${price}</strong><br/>Ingresos: ${revenue}<br/>Demanda: ${demand}`;
+            }},
+            legend: { data: ['Ingresos', 'Demanda'], top: '10%', textStyle: { color: 'var(--text-secondary-color)' } },
+            grid: { top: '25%', left: '10%', right: '10%', bottom: '15%' },
+            xAxis: { 
+                type: 'category', 
+                data: results.map(r => `€${r.price.toFixed(2)}`), 
+                name: 'Precio de Venta',
+                nameLocation: 'middle',
+                nameGap: 35
+            },
+            yAxis: [
+                { type: 'value', name: 'Ingresos (€)', position: 'left', axisLabel: { formatter: '€{value}' } },
+                { type: 'value', name: 'Unidades Vendidas', position: 'right', axisLabel: { formatter: '{value} uds' } }
+            ],
+            series: [
+                { 
+                    name: 'Ingresos', type: 'line', yAxisIndex: 0, data: results.map(r => r.revenue.toFixed(0)),
+                    smooth: true, showSymbol: false,
+                    lineStyle: { width: 4, shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.3)', shadowOffsetY: 5 },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: themeColors.revenuePrimary+'99' },
+                            { offset: 1, color: themeColors.revenueSecondary+'11' }
+                        ])
+                    },
+                    itemStyle: { color: themeColors.revenuePrimary },
+                    markPoint: {
+                        symbolSize: 60,
+                        data: [{ type: 'max', name: 'Máximo' }],
+                        label: {
+                            formatter: 'Óptimo\n€{c}',
+                            color: '#fff',
+                            textShadowColor: 'rgba(0,0,0,0.4)',
+                            textShadowBlur: 4,
+                        }
+                    },
+                     markLine: {
+                        symbol: 'none',
+                        animation: false,
+                        data: [
+                           { name: 'Precio Actual', xAxis: `€${basePrice.toFixed(2)}`, label: { position: 'insideStartTop', formatter: 'Actual', color: '#333' }, lineStyle: { color: themeColors.current, type: 'dashed', width: 2 } }
+                        ]
+                    } 
+                },
+                { 
+                    name: 'Demanda', type: 'line', yAxisIndex: 1, data: results.map(r => r.demand.toFixed(0)),
+                    smooth: true, showSymbol: false,
+                    lineStyle: { color: themeColors.demand, width: 2, type: 'dashed' }
+                }
+            ]
+        };
+        initEChart('price-chart-container', option);
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-        setupThemeToggle(); // Inicializar el interruptor de tema
+        setupThemeToggle();
         document.getElementById('logout-btn')?.addEventListener('click', logout);
         requireAuth();
         updateUIVisibility();
         setupCostBreakdown();
         setupMarginCalculator();
+        setupPriceOptimizer();
     });
   </script>
 </body>

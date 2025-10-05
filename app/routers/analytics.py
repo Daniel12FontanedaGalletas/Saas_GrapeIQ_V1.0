@@ -1,10 +1,13 @@
-# Saas_GrapeIQ_V1.0/app/routers/analytics.py (VERSIÓN COMPLETA Y 100% CONECTADA A LA BASE DE DATOS)
+# Saas_GrapeIQ_V1.0/app/routers/analytics.py (VERSIÓN CON OPTIMIZADOR DE PRECIOS)
 
 from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Optional, List
 import uuid
 from collections import defaultdict
 import random
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+import numpy as np
 
 # Importamos las dependencias necesarias de nuestro proyecto
 from ..services import security
@@ -19,7 +22,67 @@ router = APIRouter(
     dependencies=[Depends(security.get_current_active_user)]
 )
 
-# --- Endpoints 100% Reescritos para Usar la Base de Datos ---
+# --- NUEVO ENDPOINT CON MACHINE LEARNING ---
+@router.get("/optimize-price/{product_id}")
+def optimize_product_price(product_id: uuid.UUID, current_user: schemas.User = Depends(security.get_current_active_user)):
+    """
+    Utiliza un modelo de Regresión Lineal para encontrar el precio óptimo
+    que maximiza los ingresos para un producto específico.
+    """
+    query = """
+        SELECT sd.unit_price, sd.quantity
+        FROM sale_details sd
+        WHERE sd.tenant_id = %s AND sd.product_id = %s;
+    """
+    try:
+        with get_db_connection() as conn:
+            # 1. Obtener datos históricos de precio y cantidad para el producto
+            df = pd.read_sql(query, conn, params=(str(current_user.tenant_id), str(product_id)))
+            
+            if df.empty or len(df) < 10:
+                raise HTTPException(status_code=404, detail="No hay suficientes datos de ventas para este producto para realizar una optimización.")
+
+            # Agrupar por precio para ver la demanda media en cada nivel
+            df_agg = df.groupby('unit_price')['quantity'].mean().reset_index()
+            
+            if len(df_agg) < 2:
+                 raise HTTPException(status_code=404, detail="Se necesitan ventas a diferentes precios para poder optimizar.")
+
+            # 2. Entrenar el modelo de Regresión Lineal
+            model = LinearRegression()
+            X = df_agg[['unit_price']] # Precios
+            y = df_agg['quantity']     # Cantidad
+            model.fit(X, y)
+
+            # 3. Simular un rango de precios
+            current_price = float(df['unit_price'].median())
+            price_range = np.linspace(current_price * 0.75, current_price * 1.25, 30).reshape(-1, 1)
+
+            # 4. Predecir la demanda para cada precio
+            predicted_demand = model.predict(price_range).round()
+            predicted_demand[predicted_demand < 0] = 0 # La demanda no puede ser negativa
+
+            # 5. Calcular ingresos y encontrar el óptimo
+            simulation_results = []
+            for i, price in enumerate(price_range.flatten()):
+                revenue = price * predicted_demand[i]
+                simulation_results.append({"price": price, "demand": predicted_demand[i], "revenue": revenue})
+
+            optimal = max(simulation_results, key=lambda x: x['revenue'])
+
+            return {
+                "base_price": current_price,
+                "optimal_point": optimal,
+                "simulation_data": simulation_results
+            }
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de análisis: {e}")
+
+
+# --- Resto de endpoints de analytics.py (sin cambios) ---
 
 @router.get("/kpis-summary")
 def get_kpis_summary(current_user: schemas.User = Depends(security.get_current_active_user)):
@@ -56,7 +119,6 @@ def get_kpis_summary(current_user: schemas.User = Depends(security.get_current_a
                 profit_result = cur.fetchone()
                 kpis['Profit'] = profit_result['Profit'] if profit_result else 0
                 
-                # Para MoM change, lo simulamos ya que no tenemos datos de "este mes" vs "mes pasado" en los datos generados.
                 kpis['MonthOverMonthChange'] = random.uniform(-5.0, 15.0)
 
                 return kpis
@@ -209,6 +271,7 @@ def get_product_catalog(
     """
     base_query = """
         SELECT 
+            id as "id",
             name AS "ProductName",
             sku AS "SKU",
             price AS "UnitPrice",

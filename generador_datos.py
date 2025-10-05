@@ -1,4 +1,4 @@
-# Saas_GrapeIQ_V1.0/generador_datos.py (VERSIÓN CON TENDENCIA Y REGRESORES DINÁMICOS)
+# Saas_GrapeIQ_V1.0/generador_datos.py (VERSIÓN CON TRAZABILIDAD COMPLETA)
 
 import os
 import sys
@@ -69,6 +69,8 @@ products_base = [
     {'name': 'Verdeal', 'variety': 'Verdejo', 'base_price': 7.90}
 ]
 container_definitions = { 'Depósito': ['Inox', 'Hormigón'], 'Barrica': ['Roble Francés', 'Roble Americano'] }
+cooperages = ['Radoux', 'Seguin Moreau', 'Taransaud', 'Demptos']
+toast_levels = ['Ligero', 'Medio', 'Medio Plus', 'Fuerte']
 field_activities = ['Poda', 'Tratamiento Fitosanitario', 'Riego', 'Abonado', 'Vendimia']
 cost_types = {
     'Viñedo y Vendimia': [('Mano de Obra Campo', 'Salarios', '€/año'), ('Fitosanitarios', 'Tratamientos', '€/ha'), ('Fertilizantes', 'Abonado', '€/ha'), ('Combustible', 'Maquinaria', '€/año')],
@@ -97,7 +99,6 @@ SEASONAL_MULTIPLIER = {
 
 def get_seasonal_temperature(current_date, start_year):
     day_of_year = current_date.timetuple().tm_yday
-    # Añade una ligera tendencia de calentamiento a lo largo de los años
     warming_trend = (current_date.year - start_year) * 0.1
     temp = 15 + 10 * math.sin((day_of_year - 80) * (2 * math.pi / 365)) + warming_trend
     return round(temp + random.uniform(-2.5, 2.5), 1)
@@ -133,11 +134,15 @@ try:
     
     containers_data = []
     for i in range(NUM_CONTAINERS):
-        main_type = 'Depósito' if i < 10 else 'Barrica'
+        is_barrel = i >= 10
+        main_type = 'Barrica' if is_barrel else 'Depósito'
         defs = container_definitions[main_type]
-        capacity = 225 if main_type == 'Barrica' else random.choice([5000, 10000])
-        containers_data.append((str(uuid.uuid4()), f"{random.choice(defs)}-{i+1}", main_type, capacity, random.choice(defs), tenant_id, 'vacío', 0.0))
-    execute_values(cur, "INSERT INTO containers (id, name, type, capacity_liters, material, tenant_id, status, current_volume) VALUES %s", containers_data)
+        capacity = 225 if is_barrel else random.choice([5000, 10000])
+        barrel_age = random.randint(0, 4) if is_barrel else None
+        toast_level = random.choice(toast_levels) if is_barrel else None
+        cooperage = random.choice(cooperages) if is_barrel else None
+        containers_data.append((str(uuid.uuid4()), f"{random.choice(defs)}-{i+1}", main_type, capacity, random.choice(defs), tenant_id, 'vacío', 0.0, barrel_age, toast_level, cooperage))
+    execute_values(cur, "INSERT INTO containers (id, name, type, capacity_liters, material, tenant_id, status, current_volume, barrel_age, toast_level, cooperage) VALUES %s", containers_data)
     
     cost_parameters_data = [(str(uuid.uuid4()), tenant_id, name, random.uniform(10, 100), unit, category, datetime.now()) for category, costs in cost_types.items() for name, _, unit in costs]
     execute_values(cur, "INSERT INTO cost_parameters (id, tenant_id, parameter_name, value, unit, category, last_updated) VALUES %s", cost_parameters_data)
@@ -145,7 +150,7 @@ try:
     print("\n🔄 Simulando cosechas, costes y ciclo de vida por etapas...")
     start_year = date.today().year - SIM_YEARS + 1
     cur.execute("SELECT id, name, variety, area_hectares FROM parcels WHERE tenant_id = %s;", (tenant_id,)); db_parcels = cur.fetchall()
-    all_wine_lots_data, all_costs, all_field_logs = [], [], []
+    all_wine_lots_data, all_costs, all_field_logs, all_lab_analytics = [], [], [], []
 
     for year in range(start_year, date.today().year + 1):
         for parcel_id, parcel_name, variety, area in db_parcels:
@@ -159,6 +164,8 @@ try:
                 all_wine_lots_data.append([lot_id, f"{variety} {year} ({parcel_name})", variety, year, 'Cosechado', tenant_id, parcel_id, initial_kg, total_liters, total_liters])
                 for cost_type, desc, _ in cost_types['Vinificación']:
                     all_costs.append((str(uuid.uuid4()), tenant_id, lot_id, cost_type, round(total_liters * random.uniform(0.10, 0.25), 2), desc, date(year, 10, 5), None))
+                # Analítica post-fermentación
+                all_lab_analytics.append((str(uuid.uuid4()), lot_id, date(year, 11, 15), round(random.uniform(12.5, 14.5), 1), round(random.uniform(4.5, 6.0), 1), round(random.uniform(0.3, 0.6), 2), round(random.uniform(3.3, 3.8), 2), random.randint(15, 25), random.randint(40, 80), "Análisis post-fermentación", tenant_id))
 
     execute_values(cur, "INSERT INTO field_logs (id, start_datetime, end_datetime, activity_type, description, tenant_id, parcel_id, all_day) VALUES %s", all_field_logs)
     execute_values(cur, "INSERT INTO wine_lots (id, name, grape_variety, vintage_year, status, tenant_id, origin_parcel_id, initial_grape_kg, total_liters, liters_unassigned) VALUES %s", all_wine_lots_data)
@@ -168,6 +175,7 @@ try:
     cur.execute("SELECT id, total_liters, vintage_year FROM wine_lots WHERE tenant_id = %s AND status = 'Cosechado'", (tenant_id,)); lots_to_process = sorted(cur.fetchall(), key=lambda x: x[2])
     lots_by_age = {i: [] for i in range(SIM_YEARS)}; [lots_by_age[date.today().year - lot[2]].append(lot) for lot in lots_to_process if (date.today().year - lot[2]) in lots_by_age]
     
+    fermentation_controls = []
     for age in sorted(lots_by_age.keys(), reverse=True):
         lots_in_age = sorted(lots_by_age[age], key=lambda x: x[1])
         if age >= 2:
@@ -192,20 +200,27 @@ try:
                         cur.execute("UPDATE containers SET status = 'ocupado', current_volume = 225, current_lot_id = %s WHERE id = %s", (lot_id, b_id))
                     for cost_type, desc, _ in cost_types['Crianza y Almacenamiento']:
                         all_costs.append((str(uuid.uuid4()), tenant_id, lot_id, cost_type, round(barrels_needed * random.uniform(20, 50), 2), desc, date(vintage + 1, 6, 1), None))
+                    all_lab_analytics.append((str(uuid.uuid4()), lot_id, date(vintage + 1, 9, 10), None, None, round(random.uniform(0.5, 0.8), 2), None, random.randint(25, 35), random.randint(70, 100), "Control SO2 a mitad de crianza", tenant_id))
                 else:
                     cur.execute("UPDATE wine_lots SET status = 'Listo para Embotellar' WHERE id = %s", (lot_id,))
         elif age == 0:
-            for lot_id, total_liters, _ in lots_in_age[:len(lots_in_age)//2]:
+            for lot_id, total_liters, vintage in lots_in_age[:len(lots_in_age)//2]:
                 if deposit := next((d for d in available_deposits if d[1] >= float(total_liters)), None):
                     cur.execute("UPDATE wine_lots SET status = 'En Fermentación' WHERE id = %s", (lot_id,))
                     cur.execute("UPDATE containers SET status = 'ocupado', current_volume = %s, current_lot_id = %s WHERE id = %s", (float(total_liters), lot_id, deposit[0]))
+                    # Generar datos de fermentación para este lote
+                    for day_offset in range(15):
+                        fermentation_controls.append((str(uuid.uuid4()), deposit[0], lot_id, date(vintage, 10, 10 + day_offset), round(18 + math.sin(day_offset / 2) * 4 + random.uniform(-0.5, 0.5), 1), round(1.090 - (day_offset * 0.0065) + random.uniform(-0.001, 0.001), 4), tenant_id))
                     available_deposits.remove(deposit)
 
     for year in range(start_year, date.today().year + 1):
         for category in ['Comerciales y de Marketing', 'Generales y Administrativos']:
             for cost_type, desc, _ in cost_types[category]:
                 all_costs.append((str(uuid.uuid4()), tenant_id, None, cost_type, random.uniform(2000, 10000), desc, date(year, 12, 31), None))
-    execute_values(cur, "INSERT INTO costs (id, tenant_id, related_lot_id, cost_type, amount, description, cost_date, related_parcel_id) VALUES %s", all_costs)
+    
+    if all_costs: execute_values(cur, "INSERT INTO costs (id, tenant_id, related_lot_id, cost_type, amount, description, cost_date, related_parcel_id) VALUES %s", all_costs)
+    if fermentation_controls: execute_values(cur, "INSERT INTO fermentation_controls (id, container_id, lot_id, control_date, temperature, density, tenant_id) VALUES %s", [(fc[0], fc[1], fc[2], fc[3], fc[4], fc[5], fc[6]) for fc in fermentation_controls])
+    if all_lab_analytics: execute_values(cur, "INSERT INTO lab_analytics (id, lot_id, analysis_date, alcoholic_degree, total_acidity, volatile_acidity, ph, free_so2, total_so2, notes, tenant_id) VALUES %s", all_lab_analytics)
 
     print("\n📅 Creando eventos especiales históricos...")
     special_events_to_insert = []
@@ -216,16 +231,35 @@ try:
     execute_values(cur, "INSERT INTO special_events (id, tenant_id, event_name, start_date, end_date, description) VALUES %s", special_events_to_insert)
     events_lookup = {(e[3], e[4]): (e[2], next(ev['impact'] for ev in SPECIAL_EVENTS_BASE if ev['name'] == e[2])) for e in special_events_to_insert}
 
+    print("\n🍾 Creando materiales secos y eventos de embotellado...")
+    dry_goods_data = []
+    for material_type, supplier in [('Botella', 'Vidrala'), ('Corcho', 'Amorim'), ('Cápsula', 'Ramondin'), ('Etiqueta', 'Gráficas Lersi')]:
+        for i in range(3):
+            dry_goods_data.append((str(uuid.uuid4()), tenant_id, material_type, supplier, f"REF-{random.randint(100,999)}", f"LOTE-{supplier[:3].upper()}-{date.today().year - i}-{random.randint(1,5)}"))
+    execute_values(cur, "INSERT INTO dry_goods (id, tenant_id, material_type, supplier, model_reference, supplier_lot_number) VALUES %s", dry_goods_data)
+    
+    cur.execute("SELECT id, material_type FROM dry_goods WHERE tenant_id = %s", (tenant_id,)); all_dry_goods = cur.fetchall()
+    dry_goods_map = {mtype: [g[0] for g in all_dry_goods if g[1] == mtype] for mtype in ['Botella', 'Corcho', 'Cápsula', 'Etiqueta']}
+
     print("\n📦 Creando productos finales y su historial de ventas con PATRONES MARCADOS...")
     cur.execute("SELECT w.id, w.grape_variety, w.vintage_year, w.total_liters, w.origin_parcel_id FROM wine_lots w WHERE w.tenant_id = %s AND w.status = 'Embotellado'", (tenant_id,)); lots_for_products = cur.fetchall()
+    bottling_events_data = []
     if lots_for_products:
         products_data = []
         for lot_id, variety, vintage, liters, parcel_id in lots_for_products:
             cur.execute("SELECT SUM(amount) FROM costs WHERE related_lot_id = %s OR related_parcel_id = %s", (lot_id, parcel_id)); total_cost = (cur.fetchone()[0] or 0)
             num_bottles = int(float(liters) / 0.75) if liters else 1; unit_cost = float(total_cost) / num_bottles if num_bottles > 0 else 0
             prod_base = next(p for p in products_base if p['variety'] == variety); price = prod_base['base_price'] * random.uniform(1.0, 1.15)
-            products_data.append((str(uuid.uuid4()), tenant_id, f"{prod_base['name']} {vintage}", f"{variety[:3].upper()}{vintage}{random.randint(100,999)}", round(price, 2), round(unit_cost, 2), lot_id, num_bottles, variety))
+            product_id = str(uuid.uuid4())
+            products_data.append((product_id, tenant_id, f"{prod_base['name']} {vintage}", f"{variety[:3].upper()}{vintage}{random.randint(100,999)}", round(price, 2), round(unit_cost, 2), lot_id, num_bottles, variety))
+            
+            # ***** INICIO DE LA CORRECCIÓN *****
+            bottling_date = datetime(vintage + 2, 3, random.randint(1, 28))
+            bottling_events_data.append((str(uuid.uuid4()), lot_id, product_id, bottling_date, f"L-{vintage}-{random.randint(100, 999)}", round(random.uniform(0.1, 0.5), 2), random.choice(dry_goods_map['Botella']), random.choice(dry_goods_map['Corcho']), random.choice(dry_goods_map['Cápsula']), random.choice(dry_goods_map['Etiqueta']), random.randint(12, 24), tenant_id))
+        
         execute_values(cur, "INSERT INTO products (id, tenant_id, name, sku, price, unit_cost, wine_lot_origin_id, stock_units, variety) VALUES %s", products_data)
+        execute_values(cur, "INSERT INTO bottling_events (id, lot_id, product_id, bottling_date, official_lot_number, dissolved_oxygen, bottle_lot_id, cork_lot_id, capsule_lot_id, label_lot_id, retained_samples, tenant_id) VALUES %s", bottling_events_data)
+        # ***** FIN DE LA CORRECCIÓN *****
 
     cur.execute("SELECT id, price, variety FROM products WHERE tenant_id = %s;", (tenant_id,)); db_products = cur.fetchall()
     if db_products:
@@ -234,17 +268,16 @@ try:
         for day in range(total_days):
             current_date = date.fromisoformat(f"{start_year}-01-01") + timedelta(days=day)
             
-            # --- LÓGICA DE PATRONES MEJORADA ---
-            growth_factor = 1 + ((current_date.year - start_year) * 0.05) # 5% de crecimiento anual
+            growth_factor = 1 + ((current_date.year - start_year) * 0.05)
             is_weekend = current_date.weekday() >= 5
             holiday_name = spanish_holidays.get((current_date.month, current_date.day))
             avg_temperature = get_seasonal_temperature(current_date, start_year)
             seasonal_factor = SEASONAL_MULTIPLIER.get(current_date.month, 1.0)
             
             event_multiplier = 1.0
-            for (start, end), (name, impact) in events_lookup.items():
-                if start <= current_date <= end: 
-                    event_multiplier = impact * random.uniform(0.8, 1.2) # Impacto de evento con variabilidad
+            for (start_ev, end_ev), (name, impact) in events_lookup.items():
+                if start_ev <= current_date <= end_ev: 
+                    event_multiplier = impact * random.uniform(0.8, 1.2)
                     break
 
             base_sales_today = random.randint(1, 3)
@@ -265,10 +298,9 @@ try:
                     
                     qty = random.randint(1, 4) + random.randint(0, 2)
                     
-                    # Aplicar multiplicadores
                     if sale_channel == 'Distribuidor': qty *= 1.6
                     if sale_channel == 'Exportación': qty *= 2.2
-                    if on_promotion: qty *= (1.8 + random.uniform(-0.3, 0.3)) # Impacto de promo con variabilidad
+                    if on_promotion: qty *= (1.8 + random.uniform(-0.3, 0.3))
                     if is_weekend: qty *= 1.5
                     if avg_temperature > 25 and variety in ['Albarín', 'Verdejo']: qty *= 1.7
                     

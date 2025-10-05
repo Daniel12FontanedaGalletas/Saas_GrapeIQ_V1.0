@@ -17,6 +17,7 @@
             --cta-button-bg: linear-gradient(to right, #5C1A33, #8C2B4F); --secondary-button-bg: #e5e7eb;
             --input-bg: rgba(255, 255, 255, 0.9); --focus-ring-color: #5C1A33;
             --loader-primary-color: #5C1A33; --loader-secondary-color: #e0e0e0;
+            --success-bg: #f0fdf4; --success-text: #166534; --success-border: #86efac;
         }
         body.theme-warm {
             --bg-color: #F2E2C4; --card-bg: rgba(255, 255, 255, 0.7); --card-nested-bg: rgba(92, 64, 51, 0.05);
@@ -25,6 +26,7 @@
             --tab-active-color: #C98C32; --cta-button-bg: #D96C06; --secondary-button-bg: #A23E48;
             --input-bg: rgba(92, 64, 51, 0.08); --focus-ring-color: #D96C06;
             --loader-primary-color: #D96C06; --loader-secondary-color: rgba(92, 64, 51, 0.2);
+            --success-bg: #fffbeb; --success-text: #b45309; --success-border: #fcd34d;
         }
         body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s, color 0.3s; }
         .text-primary { color: var(--text-color); } .text-secondary { color: var(--text-secondary-color); } .bg-dark { background-color: var(--header-bg-color); }
@@ -36,7 +38,6 @@
         .loader { border-radius: 50%; width: 24px; height: 24px; animation: spin 1.5s linear infinite; border: 4px solid var(--loader-secondary-color); border-top-color: var(--loader-primary-color); } @keyframes spin { 0% {transform:rotate(0);} 100% {transform:rotate(360deg);} }
         .torch-container { position: absolute; right: 220px; top: -35px; display: flex; align-items: center; cursor: pointer; user-select: none; transform: scale(0.45); z-index: 10; } .torch-container input { position: absolute; opacity: 0; } .torch { display: flex; justify-content: center; height: 150px; } .head, .stick { position: absolute; width: 30px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); } .stick { position: relative; height: 120px; } .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000000; } .top { transform: rotateX(90deg) translateZ(15px); } .left { transform: rotateY(-90deg) translateZ(15px); } .right { transform: rotateY(0deg) translateZ(15px); } .top div, .left div, .right div { width: 102%; height: 102%; } .top div:nth-child(1), .left div:nth-child(3), .right div:nth-child(3) { background-color: #ffff9760; } .top div:nth-child(2), .left div:nth-child(1), .right div:nth-child(1) { background-color: #ffd80060; } .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; } .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; } .side { position: absolute; width: 30px; height: 120px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: repeat(8, 12.5%); cursor: pointer; translate: 0 12px; } .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); } .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); } .side-left div, .side-right div { width: 103%; height: 103%; } .side div:nth-child(1){background-color:#443622}.side div:nth-child(2){background-color:#2e2517}.side div:nth-child(3),.side div:nth-child(5){background-color:#4b3b23}.side div:nth-child(4),.side div:nth-child(10){background-color:#251e12}.side div:nth-child(6){background-color:#292115}.side div:nth-child(7){background-color:#4b3c26}.side div:nth-child(8){background-color:#292115}.side div:nth-child(9){background-color:#4b3a21}.side div:nth-child(11),.side div:nth-child(15){background-color:#3d311d}.side div:nth-child(12){background-color:#2c2315}.side div:nth-child(13){background-color:#493a22}.side div:nth-child(14){background-color:#2b2114}.side div:nth-child(16){background-color:#271e10} .torch-container input:checked~.torch .face{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 10px rgba(255,237,156,.7)) drop-shadow(0 0 25px rgba(255,227,101,.4))}.torch-container input:checked~.torch .top div:nth-child(1),.torch-container input:checked~.torch .left div:nth-child(3),.torch-container input:checked~.torch .right div:nth-child(3){background-color:#ffff97}.torch-container input:checked~.torch .top div:nth-child(2),.torch-container input:checked~.torch .left div:nth-child(1),.torch-container input:checked~.torch .right div:nth-child(1){background-color:#ffd800}.torch-container input:checked~.torch .top div:nth-child(3),.torch-container input:checked~.torch .left div:nth-child(4),.torch-container input:checked~.torch .right div:nth-child(4){background-color:#fff}.torch-container input:checked~.torch .top div:nth-child(4),.torch-container input:checked~.torch .left div:nth-child(2),.torch-container input:checked~.torch .right div:nth-child(2){background-color:#ff8f00}.torch-container input:checked~.torch .side div:nth-child(1){background-color:#7c623e}.torch-container input:checked~.torch .side div:nth-child(2){background-color:#4c3d26}.torch-container input:checked~.torch .side div:nth-child(3),.torch-container input:checked~.torch .side div:nth-child(5){background-color:#937344}.torch-container input:checked~.torch .side div:nth-child(4),.torch-container input:checked~.torch .side div:nth-child(10){background-color:#3c2f1c}.torch-container input:checked~.torch .side div:nth-child(6){background-color:#423522}.torch-container input:checked~.torch .side div:nth-child(7){background-color:#9f7f50}.torch-container input:checked~.torch .side div:nth-child(8){background-color:#403320}.torch-container input:checked~.torch .side div:nth-child(9){background-color:#977748}.torch-container input:checked~.torch .side div:nth-child(11),.torch-container input:checked~.torch .side div:nth-child(15){background-color:#675231}.torch-container input:checked~.torch .side div:nth-child(12){background-color:#3d301d}.torch-container input:checked~.torch .side div:nth-child(13){background-color:#987849}.torch-container input:checked~.torch .side div:nth-child(14){background-color:#3b2e1b}.torch-container input:checked~.torch .side div:nth-child(16){background-color:#372a17}
 
-        /* --- NUEVOS ESTILOS PARA EL DESPLEGABLE --- */
         .explanation-panel { max-height: 0; overflow: hidden; transition: all 0.5s ease-out; padding: 0 1.5rem; opacity: 0; }
         .explanation-panel.open { max-height: 500px; padding: 1.5rem; opacity: 1; }
         .switch { font-size: 17px; position: relative; display: inline-block; width: 3.5em; height: 2em; }
@@ -78,69 +79,69 @@
     </div>
 
     <main class="space-y-8">
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            <div class="section-card rounded-2xl shadow-lg p-6">
-                <h3 class="text-2xl font-bold text-primary mb-1">1. Predicción Base</h3>
-                <p class="text-sm text-secondary mb-4">Selecciona un producto para generar la predicción estándar.</p>
-                <select id="product-select" class="app-input w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2">
-                    <option selected disabled>Cargando opciones...</option>
-                </select>
-            </div>
+        <div class="section-card rounded-2xl shadow-lg p-6">
+            <h3 class="text-2xl font-bold text-primary mb-1">1. Seleccionar Predicción Base</h3>
+            <p class="text-sm text-secondary mb-4">Elige qué quieres predecir. Esta será la base para comparar escenarios.</p>
+            <select id="product-select" class="app-input w-full max-w-lg px-4 py-2 border rounded-full focus:outline-none focus:ring-2">
+                <option selected disabled>Cargando opciones...</option>
+            </select>
+        </div>
 
-            <div class="section-card rounded-2xl shadow-lg p-6">
-                <h3 class="text-2xl font-bold text-primary mb-1">2. Escenarios "What-If"</h3>
-                <p class="text-sm text-secondary mb-4">Ajusta variables para ver su impacto en la predicción.</p>
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between"><label for="temp-slider" class="font-semibold text-sm">Variación Temperatura (°C)</label><span id="temp-value" class="font-bold text-primary">+0°C</span></div>
-                    <input id="temp-slider" type="range" min="-5" max="5" value="0" step="1" class="w-full">
-                    <div class="flex items-center justify-between pt-1"><label for="promo-toggle" class="font-semibold text-sm">Activar Promoción Futura</label><input type="checkbox" id="promo-toggle" class="form-checkbox h-5 w-5 rounded"></div>
+        <div class="section-card rounded-2xl shadow-lg p-6">
+            <h3 class="text-2xl font-bold text-primary mb-1">2. Simular Escenarios de Negocio</h3>
+            <p class="text-sm text-secondary mb-6">Responde a preguntas clave simulando su impacto en la predicción base.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="nested-card border border-accent rounded-xl p-4">
+                    <h4 class="font-bold">🏷️ Promoción en Agosto</h4>
+                    <p class="text-xs text-secondary mt-1 mb-3">Calcula el aumento de ventas si lanzas una oferta durante todo el mes de agosto.</p>
+                    <button id="promo-august-btn" class="w-full secondary-button font-semibold py-2 rounded-lg text-sm">Simular Promoción</button>
+                </div>
+
+                <div class="nested-card border border-accent rounded-xl p-4">
+                    <h4 class="font-bold">☀️ Ola de Calor</h4>
+                    <p class="text-xs text-secondary mt-1 mb-3">Estima cómo cambiarían las ventas con un aumento de la temperatura media.</p>
+                    <div class="flex items-center gap-2">
+                        <input id="heatwave-slider" type="range" min="0" max="5" value="3" step="1" class="w-full">
+                        <span id="heatwave-value" class="font-bold text-primary text-sm">+3°C</span>
+                    </div>
+                </div>
+
+                <div class="nested-card border border-accent rounded-xl p-4">
+                    <h4 class="font-bold">🎉 Feria Local</h4>
+                    <p class="text-xs text-secondary mt-1 mb-3">Añade un evento futuro para ver su impacto y planificar el stock necesario.</p>
+                     <form id="event-form" class="flex items-end gap-2">
+                        <div class="flex-grow"><label for="event-name" class="text-xs font-semibold">Nombre</label><input type="text" id="event-name" placeholder="Feria Local" class="app-input w-full p-2 text-sm border rounded-md"></div>
+                        <div class="flex-grow-0 w-36"><label for="event-date" class="text-xs font-semibold">Fecha</label><input type="date" id="event-date" class="app-input w-full p-2 text-sm border rounded-md"></div>
+                        <button type="submit" class="cta-button h-10 px-4 rounded-md font-semibold text-sm">Añadir</button>
+                    </form>
                 </div>
             </div>
-            
-            <div class="section-card rounded-2xl shadow-lg p-6">
-                <h3 class="text-2xl font-bold text-primary mb-1">3. Añadir Eventos Futuros</h3>
-                <p class="text-sm text-secondary mb-4">Añade eventos como ferias o campañas para incluirlos en el modelo.</p>
-                <form id="event-form" class="flex items-end gap-2">
-                    <div class="flex-grow"><label for="event-name" class="text-xs font-semibold">Nombre</label><input type="text" id="event-name" placeholder="Feria Local" class="app-input w-full p-2 text-sm border rounded-md"></div>
-                    <div class="flex-grow-0 w-36"><label for="event-date" class="text-xs font-semibold">Fecha</label><input type="date" id="event-date" class="app-input w-full p-2 text-sm border rounded-md"></div>
-                    <button type="submit" class="cta-button h-10 px-4 rounded-md font-semibold text-sm">Añadir</button>
-                </form>
-                <div id="events-list" class="mt-2 space-y-1 max-h-20 overflow-y-auto"></div>
+             <div id="events-list" class="mt-4 space-y-2"></div>
+        </div>
+        
+        <div id="scenario-results-container" class="hidden">
+             <div class="p-6 rounded-2xl" style="background-color: var(--success-bg); border: 1px solid var(--success-border);">
+                <h3 class="text-xl font-bold" style="color: var(--success-text);">Resultados de la Simulación</h3>
+                <div id="scenario-results-content" class="text-sm mt-2" style="color: var(--success-text);"></div>
             </div>
         </div>
+
 
         <div id="forecast-loader" class="text-center my-8 hidden"><div class="loader inline-block"></div><p class="text-sm text-secondary mt-3">🧠 Entrenando modelo y calculando...</p></div>
         <p id="forecast-error" class="text-red-600 text-sm font-semibold h-5 mb-2 text-center"></p>
 
         <div id="charts-container" class="space-y-8" style="display: none;">
-            
             <div class="section-card rounded-2xl shadow-lg p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-xl font-bold text-primary">Predicción de Ventas (90 días)</h3>
-                    <label class="switch">
-                        <input type="checkbox" data-target="explanation-forecast">
-                        <span class="slider"></span>
-                    </label>
+                    <label class="switch"><input type="checkbox" data-target="explanation-forecast"><span class="slider"></span></label>
                 </div>
                 <div id="explanation-forecast" class="explanation-panel nested-card rounded-lg mb-6 border-l-4" style="border-color: var(--focus-ring-color);">
                     <h4 class="font-bold text-lg mb-2">¿Cómo funciona la predicción? 🧠</h4>
-                    <p class="text-secondary mb-3">
-                        Imagina que el modelo es como un <strong>asistente muy observador</strong> que ha estudiado todo tu historial de ventas. Su trabajo es descomponer ese historial en varios patrones y luego volver a unirlos para proyectar el futuro.
-                    </p>
-                    <h4 class="font-bold text-lg mb-2">Factores Clave</h4>
-                    <ul class="list-disc pl-5 mt-2 space-y-1 text-sm text-secondary">
-                        <li><strong class="text-primary">📈 Tendencia General:</strong> Analiza si, a lo largo de los años, tus ventas están creciendo, disminuyendo o se mantienen estables.</li>
-                        <li><strong class="text-primary">☀️ Estacionalidad Anual:</strong> El modelo sabe que las ventas no son iguales en enero que en agosto. Aprende que en verano y Navidad se vende más.</li>
-                        <li><strong class="text-primary">📅 Estacionalidad Semanal:</strong> Entiende el ritmo de la semana y sabe que los fines de semana suelen tener un comportamiento diferente.</li>
-                        <li><strong class="text-primary">🎉 Fiestas y Eventos:</strong> Considera los festivos nacionales y los eventos personalizados que tú añades (como una "Feria del Vino").</li>
-                        <li><strong class="text-primary">🌡️ Temperatura Media:</strong> Ha aprendido la correlación entre la temperatura y las ventas. Por ejemplo, que los vinos blancos se venden más con calor.</li>
-                        <li><strong class="text-primary">🛒 Canales de Venta:</strong> Analiza el comportamiento de cada canal (Tienda Física, Online, etc.) por separado.</li>
-                        <li><strong class="text-primary">🏷️ Promociones:</strong> Sabe que cuando un producto está en oferta, sus ventas tienden a aumentar.</li>
-                    </ul>
+                    <p class="text-secondary mb-3">El modelo descompone tu historial de ventas en patrones para proyectar el futuro, considerando factores como tendencia, estacionalidades (anual y semanal), festivos, eventos personalizados, temperatura y promociones.</p>
                 </div>
-                <div class="h-[450px]">
-                    <canvas id="forecastChart"></canvas>
-                </div>
+                <div class="h-[450px]"><canvas id="forecastChart"></canvas></div>
             </div>
             <div class="section-card rounded-2xl shadow-lg p-4 h-[400px]">
                 <canvas id="componentsChart"></canvas>
@@ -180,16 +181,17 @@ async function loadProducts() {
     }
 }
 
-async function fetchAndRenderForecast(selectedValue) {
+async function fetchAndRenderForecast(selectedValue, isScenario=false) {
     if (!selectedValue || selectedValue.startsWith('--')) return;
     document.getElementById('charts-container').style.display = 'none';
     document.getElementById('forecast-loader').classList.remove('hidden');
     document.getElementById('forecast-error').textContent = '';
+    document.getElementById('scenario-results-container').classList.add('hidden');
     
     const endpoint = (selectedValue === 'total') ? '/api/forecast/total' : `/api/forecast/sku/${selectedValue}`;
     try {
         const data = await apiFetch(endpoint);
-        baseForecastData = data;
+        baseForecastData = data; 
         renderCharts(data);
         document.getElementById('charts-container').style.display = 'block';
     } catch (e) {
@@ -199,53 +201,42 @@ async function fetchAndRenderForecast(selectedValue) {
     }
 }
 
-async function fetchAndRenderScenario() {
+async function runScenario(scenarioRegressors = [], customFutureEvents = []) {
     const selectedValue = document.getElementById('product-select').value;
-    if (!selectedValue || selectedValue.startsWith('--')) return;
+    if (!selectedValue || selectedValue.startsWith('--') || !baseForecastData) {
+        document.getElementById('forecast-error').textContent = 'Por favor, primero selecciona una predicción base.';
+        return;
+    }
 
     document.getElementById('forecast-loader').classList.remove('hidden');
     document.getElementById('forecast-error').textContent = '';
 
-    const tempSlider = document.getElementById('temp-slider');
-    const promoToggle = document.getElementById('promo-toggle');
-    const today = new Date();
-    const endDate = new Date(today);
-    endDate.setDate(today.getDate() + 90);
-
     const scenarioRequest = {
         product_id: selectedValue,
         periods: 90,
-        future_regressors: [],
-        future_events: futureEvents
+        future_regressors: scenarioRegressors,
+        future_events: customFutureEvents
     };
-
-    if (promoToggle.checked) {
-        scenarioRequest.future_regressors.push({
-            start_date: today.toISOString().split('T')[0], end_date: endDate.toISOString().split('T')[0],
-            name: 'on_promotion', value: 1.0
-        });
-    }
 
     try {
         const scenarioData = await apiFetch('/api/forecast/scenario', { method: 'POST', body: scenarioRequest });
-        
-        const tempEffect = parseFloat(tempSlider.value);
-        if (tempEffect !== 0) {
-            scenarioData.prediction.forEach(p => {
-                const multiplier = 1 + (tempEffect * 0.02);
-                p.forecast = Math.max(0, p.forecast * multiplier);
-                p.forecast_lower = Math.max(0, p.forecast_lower * multiplier);
-                p.forecast_upper = Math.max(0, p.forecast_upper * multiplier);
-            });
-        }
-        
         updateForecastChart(scenarioData.prediction);
+        return scenarioData.prediction;
     } catch (e) {
         document.getElementById('forecast-error').textContent = `Error en escenario: ${e.message}`;
     } finally {
         document.getElementById('forecast-loader').classList.add('hidden');
     }
+    return null;
 }
+
+function displayScenarioResults(title, message) {
+    const container = document.getElementById('scenario-results-container');
+    const content = document.getElementById('scenario-results-content');
+    content.innerHTML = `<strong>${title}:</strong> ${message}`;
+    container.classList.remove('hidden');
+}
+
 
 function renderCharts(data) {
     const theme = getChartTheme();
@@ -284,11 +275,7 @@ function renderForecastChart(predictionData, theme) {
                 { label: 'Límite Inferior', data: lowerBound, fill: false, borderColor: 'transparent', pointRadius: 0 }
             ]
         },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false }, title: { display: false } }, // Título movido al HTML
-            scales: { y: { beginAtZero: true, ticks: { color: theme.secondaryTextColor }, grid: { color: theme.gridColor }, title: { display: true, text: 'Unidades Vendidas', color: theme.secondaryTextColor } }, x: { ticks: { color: theme.secondaryTextColor }, grid: { color: theme.gridColor } } }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: theme.secondaryTextColor }, grid: { color: theme.gridColor }, title: { display: true, text: 'Unidades Vendidas', color: theme.secondaryTextColor } }, x: { ticks: { color: theme.secondaryTextColor }, grid: { color: theme.gridColor } } } }
     });
 }
 
@@ -302,23 +289,7 @@ function updateForecastChart(scenarioPrediction) {
 function renderComponentsChart(labels, components, theme) {
     if (componentsChart) componentsChart.destroy();
     const ctx = document.getElementById('componentsChart').getContext('2d');
-    componentsChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'Tendencia', data: components.trend, borderColor: theme.componentColors[0], fill: false, pointRadius: 0, borderWidth: 2 },
-                { label: 'Estacionalidad Anual', data: components.yearly, borderColor: theme.componentColors[1], fill: false, pointRadius: 0, borderWidth: 2 },
-                { label: 'Estacionalidad Semanal', data: components.weekly, borderColor: theme.componentColors[2], fill: false, pointRadius: 0, borderWidth: 2 },
-                { label: 'Regresores (Clima, Fiestas, etc.)', data: components.regressors, borderColor: theme.componentColors[3], fill: false, pointRadius: 0, borderWidth: 2 },
-            ]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: true, position: 'top', labels: { color: theme.textColor } }, title: { display: true, text: 'Componentes de la Predicción (Explicabilidad)', font: { size: 16 }, color: theme.textColor } },
-            scales: { y: { ticks: { color: theme.secondaryTextColor }, grid: { color: theme.gridColor }, title: { display: true, text: 'Impacto en Unidades', color: theme.secondaryTextColor } }, x: { ticks: { color: theme.secondaryTextColor }, grid: { color: theme.gridColor } } }
-        }
-    });
+    componentsChart = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [ { label: 'Tendencia', data: components.trend, borderColor: theme.componentColors[0], fill: false, pointRadius: 0, borderWidth: 2 }, { label: 'Estacionalidad Anual', data: components.yearly, borderColor: theme.componentColors[1], fill: false, pointRadius: 0, borderWidth: 2 }, { label: 'Estacionalidad Semanal', data: components.weekly, borderColor: theme.componentColors[2], fill: false, pointRadius: 0, borderWidth: 2 }, { label: 'Regresores (Clima, Fiestas, etc.)', data: components.regressors, borderColor: theme.componentColors[3], fill: false, pointRadius: 0, borderWidth: 2 }, ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { color: theme.textColor } }, title: { display: true, text: 'Componentes de la Predicción (Explicabilidad)', font: { size: 16 }, color: theme.textColor } }, scales: { y: { ticks: { color: theme.secondaryTextColor }, grid: { color: theme.gridColor }, title: { display: true, text: 'Impacto en Unidades', color: theme.secondaryTextColor } }, x: { ticks: { color: theme.secondaryTextColor }, grid: { color: theme.gridColor } } } } });
 }
 
 function renderEventsList() {
@@ -330,7 +301,7 @@ function renderEventsList() {
     }
     futureEvents.forEach((event, index) => {
         const eventEl = document.createElement('div');
-        eventEl.className = 'flex justify-between items-center text-sm bg-stone-100 p-1 px-2 rounded';
+        eventEl.className = 'flex justify-between items-center text-sm nested-card p-1 px-2 rounded border border-accent';
         eventEl.innerHTML = `<span>📅 <strong>${event.holiday}</strong> el ${event.ds}</span><button data-index="${index}" class="text-red-500 font-bold px-1">&times;</button>`;
         listEl.appendChild(eventEl);
     });
@@ -346,30 +317,88 @@ document.addEventListener('DOMContentLoaded', () => {
         renderEventsList();
         fetchAndRenderForecast(e.target.value);
     });
-    document.getElementById('temp-slider').addEventListener('input', (e) => {
-        document.getElementById('temp-value').textContent = `${e.target.value > 0 ? '+' : ''}${e.target.value}°C`;
-    });
-    document.getElementById('temp-slider').addEventListener('change', fetchAndRenderScenario);
-    document.getElementById('promo-toggle').addEventListener('change', fetchAndRenderScenario);
 
+    // --- Lógica de Escenarios Guiados ---
+
+    // 1. Promoción en Agosto
+    document.getElementById('promo-august-btn').addEventListener('click', async () => {
+        const augustPromo = [{
+            start_date: '2025-08-01', end_date: '2025-08-31',
+            name: 'on_promotion', value: 1.0
+        }];
+        const scenarioPrediction = await runScenario(augustPromo, futureEvents);
+        if (scenarioPrediction && baseForecastData) {
+            const baseTotal = baseForecastData.prediction.reduce((sum, p) => sum + p.forecast, 0);
+            const scenarioTotal = scenarioPrediction.reduce((sum, p) => sum + p.forecast, 0);
+            const increase = scenarioTotal - baseTotal;
+            const percentageIncrease = (increase / baseTotal) * 100;
+            displayScenarioResults(
+                "Impacto de la Promoción en Agosto",
+                `Se estima un aumento de <strong>${increase.toFixed(0)} unidades</strong> vendidas (+${percentageIncrease.toFixed(1)}%).`
+            );
+        }
+    });
+
+    // 2. Ola de Calor
+    const heatwaveSlider = document.getElementById('heatwave-slider');
+    heatwaveSlider.addEventListener('input', (e) => {
+        document.getElementById('heatwave-value').textContent = `+${e.target.value}°C`;
+    });
+    heatwaveSlider.addEventListener('change', async (e) => {
+        const tempIncrease = parseFloat(e.target.value);
+        // Simulación simplificada del impacto de la temperatura (mejora futura: regresor)
+        if (baseForecastData) {
+            const scenarioPrediction = JSON.parse(JSON.stringify(baseForecastData.prediction)); // Deep copy
+            scenarioPrediction.forEach(p => {
+                const multiplier = 1 + (tempIncrease * 0.035); // Asumimos un 3.5% de aumento por grado
+                p.forecast = Math.max(0, p.forecast * multiplier);
+            });
+            updateForecastChart(scenarioPrediction);
+            
+            const baseTotal = baseForecastData.prediction.reduce((sum, p) => sum + p.forecast, 0);
+            const scenarioTotal = scenarioPrediction.reduce((sum, p) => sum + p.forecast, 0);
+            const increase = scenarioTotal - baseTotal;
+            const percentageIncrease = (increase / baseTotal) * 100;
+
+            displayScenarioResults(
+                `Impacto de Ola de Calor de +${tempIncrease}°C`,
+                `La demanda podría aumentar un <strong>${percentageIncrease.toFixed(1)}%</strong>, resultando en <strong>${increase.toFixed(0)} unidades</strong> adicionales.`
+            );
+        }
+    });
+
+    // 3. Feria Local (Eventos)
     const eventForm = document.getElementById('event-form');
-    eventForm.addEventListener('submit', (e) => {
+    eventForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const nameInput = document.getElementById('event-name');
         const dateInput = document.getElementById('event-date');
         if (nameInput.value && dateInput.value) {
             futureEvents.push({ holiday: nameInput.value, ds: dateInput.value });
             renderEventsList();
-            fetchAndRenderScenario();
+            const scenarioPrediction = await runScenario([], futureEvents);
+             if (scenarioPrediction && baseForecastData) {
+                const eventDate = new Date(dateInput.value);
+                const baseSalesOnEventDay = baseForecastData.prediction.find(p => new Date(p.date).toDateString() === eventDate.toDateString())?.forecast || 0;
+                const scenarioSalesOnEventDay = scenarioPrediction.find(p => new Date(p.date).toDateString() === eventDate.toDateString())?.forecast || 0;
+                const increase = scenarioSalesOnEventDay - baseSalesOnEventDay;
+                 displayScenarioResults(
+                    `Impacto del Evento "${nameInput.value}"`,
+                    `Se estima una venta de <strong>${scenarioSalesOnEventDay.toFixed(0)} unidades</strong> ese día, lo que supone un aumento de <strong>${increase.toFixed(0)} unidades</strong> sobre la predicción base. ¡Prepara tu stock!`
+                );
+             }
             eventForm.reset();
         }
     });
 
-    document.getElementById('events-list').addEventListener('click', (e) => {
+    document.getElementById('events-list').addEventListener('click', async (e) => {
         if (e.target.tagName === 'BUTTON') {
             futureEvents.splice(parseInt(e.target.dataset.index, 10), 1);
             renderEventsList();
-            fetchAndRenderScenario();
+            const scenarioPrediction = await runScenario([], futureEvents);
+            if(futureEvents.length === 0){
+                 document.getElementById('scenario-results-container').classList.add('hidden');
+            }
         }
     });
 
@@ -386,13 +415,10 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme(newTheme);
     });
     
-    // --- LÓGICA PARA EL NUEVO DESPLEGABLE DE EXPLICACIÓN ---
     document.querySelectorAll('input[type="checkbox"][data-target]').forEach(checkbox => {
         checkbox.addEventListener('change', (e) => {
             const targetPanel = document.getElementById(e.target.dataset.target);
-            if (targetPanel) {
-                targetPanel.classList.toggle('open', e.target.checked);
-            }
+            if (targetPanel) targetPanel.classList.toggle('open', e.target.checked);
         });
     });
 

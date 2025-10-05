@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* --- Sistema de Temas --- */
         :root { /* Tema Blanco por Defecto */
@@ -89,8 +90,7 @@
         .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; }
         .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; }
         .side { position: absolute; width: 30px; height: 120px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: repeat(8, 12.5%); cursor: pointer; translate: 0 12px; }
-        .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); }
-        .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); }
+        .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); } .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); }
         .side-left div, .side-right div { width: 103%; height: 103%; }
         .side div:nth-child(1) { background-color: #443622; } .side div:nth-child(2) { background-color: #2e2517; } .side div:nth-child(3), .side div:nth-child(5) { background-color: #4b3b23; } .side div:nth-child(4), .side div:nth-child(10) { background-color: #251e12; } .side div:nth-child(6) { background-color: #292115; } .side div:nth-child(7) { background-color: #4b3c26; } .side div:nth-child(8) { background-color: #292115; } .side div:nth-child(9) { background-color: #4b3a21; } .side div:nth-child(11), .side div:nth-child(15) { background-color: #3d311d; } .side div:nth-child(12) { background-color: #2c2315; } .side div:nth-child(13) { background-color: #493a22; } .side div:nth-child(14) { background-color: #2b2114; } .side div:nth-child(16) { background-color: #271e10; }
         .torch-container input:checked ~ .torch .face { filter: drop-shadow(0px 0px 2px rgb(255, 255, 255)) drop-shadow(0px 0px 10px rgba(255, 237, 156, 0.7)) drop-shadow(0px 0px 25px rgba(255, 227, 101, 0.4)); }
@@ -180,9 +180,39 @@
             </div>
         </div>
     </div>
+    
+    <div id="fermentation-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-3xl m-4">
+            <h3 id="fermentation-modal-title" class="text-2xl font-bold mb-6"></h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h4 class="font-bold mb-4">Añadir Nuevo Control</h4>
+                    <form id="fermentation-form" class="space-y-4">
+                        <input type="hidden" name="lot_id">
+                        <input type="hidden" name="container_id">
+                        <div><label class="block text-sm">Fecha</label><input type="date" name="control_date" required class="w-full mt-1 p-2 border rounded modal-input"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="block text-sm">Temperatura (°C)</label><input type="number" step="0.1" name="temperature" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                            <div><label class="block text-sm">Densidad (g/mL)</label><input type="number" step="0.001" name="density" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                        </div>
+                        <div><label class="block text-sm">Notas</label><textarea name="notes" rows="2" class="w-full mt-1 p-2 border rounded modal-input"></textarea></div>
+                    </form>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Curva de Fermentación</h4>
+                    <div class="h-64"><canvas id="fermentation-chart"></canvas></div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-4 mt-8">
+                <button type="button" id="close-fermentation-modal-btn" class="bg-stone-200 text-chestnut-brown px-5 py-2 rounded-full font-semibold">Cerrar</button>
+                <button type="submit" form="fermentation-form" class="secondary-button px-5 py-2 rounded-full font-semibold">Guardar Control</button>
+            </div>
+        </div>
+    </div>
+
 
     <script>
-        // --- LÓGICA DEL TEMA ---
+        // --- Lógica del Tema ---
         const themeToggle = document.getElementById('theme-toggle');
         const body = document.body;
         const savedTheme = localStorage.getItem('theme');
@@ -202,30 +232,31 @@
             }
         });
 
-        // --- LÓGICA DE LA PÁGINA ---
+        // --- Lógica de la Página ---
         const API_BASE_URL = 'http://127.0.0.1:8000';
         const TOKEN_KEY = 'accessToken';
         function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
         function logout() { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem('theme'); window.location.href = 'login.html'; }
+        
         async function apiFetch(endpoint, options = {}) {
-             const headers = { 'Content-Type': 'application/json', ...options.headers };
-             const token = localStorage.getItem(TOKEN_KEY);
-             if (token) headers['Authorization'] = `Bearer ${token}`;
-             if (options.body && typeof options.body !== 'string') options.body = JSON.stringify(options.body);
-             const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-             if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
-             if (resp.status === 204) return null;
-             if (!resp.ok) {
-                 const data = await resp.json().catch(() => ({ detail: 'Error en la petición.' }));
-                 throw new Error(data.detail);
-             }
-             return resp.json();
+            const headers = { 'Content-Type': 'application/json', ...options.headers };
+            const token = localStorage.getItem(TOKEN_KEY);
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            if (options.body && typeof options.body !== 'string') options.body = JSON.stringify(options.body);
+            const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+            if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
+            if (resp.status === 204) return null;
+            if (!resp.ok) {
+                const data = await resp.json().catch(() => ({ detail: 'Error en la petición.' }));
+                throw new Error(data.detail);
+            }
+            return resp.json();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             requireAuth();
             document.getElementById('logout-btn').addEventListener('click', logout);
-            // ... El resto de tu script de cellar_management.html va aquí (sin cambios) ...
+            
             const allElements = {
                 statsPanel: document.getElementById('stats-panel'),
                 depositsGrid: document.getElementById('deposits-grid'),
@@ -238,9 +269,141 @@
                 closeModalBtn: document.getElementById('close-modal-btn'),
                 addContainerBtn: document.getElementById('add-container-btn'),
                 pendingActionsList: document.getElementById('pending-actions-list'),
-                pendingActionsSection: document.getElementById('pending-actions-section')
+                pendingActionsSection: document.getElementById('pending-actions-section'),
+                fermentationModal: document.getElementById('fermentation-modal'),
+                fermentationModalTitle: document.getElementById('fermentation-modal-title'),
+                fermentationForm: document.getElementById('fermentation-form'),
+                closeFermentationModalBtn: document.getElementById('close-fermentation-modal-btn'),
+                fermentationChartCanvas: document.getElementById('fermentation-chart'),
             };
-            let allContainers = [], allLots = [];
+
+            let allContainers = [], allLots = [], fermentationChart = null;
+            
+            // =================================================================
+            // INICIO DE LAS CORRECCIONES Y NUEVAS FUNCIONES
+            // =================================================================
+            function showAssignLotForm(lotId) {
+                const lot = allLots.find(l => l.id === lotId);
+                if (!lot) { alert("Error: No se encontró el lote."); return; }
+
+                const availableDeposits = allContainers.filter(c => 
+                    c.type.trim() === 'Depósito' && 
+                    c.status.trim() === 'vacío' &&
+                    parseFloat(c.capacity_liters) >= parseFloat(lot.liters_unassigned)
+                );
+
+                allElements.modalTitle.textContent = `Asignar Lote: ${lot.name}`;
+                allElements.modalForm.dataset.formType = 'assign-lot';
+                allElements.modalForm.innerHTML = `
+                    <input type="hidden" name="lot_id" value="${lot.id}">
+                    <p class="mb-4">Litros a asignar: <strong>${parseFloat(lot.liters_unassigned).toFixed(2)} L</strong></p>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Depósito de Destino</label>
+                        <select name="destination_container_id" required class="w-full mt-1 p-2 border rounded modal-input">
+                            ${availableDeposits.length > 0 
+                                ? availableDeposits.map(d => `<option value="${d.id}">${d.name} (${parseFloat(d.capacity_liters).toFixed(0)} L)</option>`).join('')
+                                : '<option disabled>No hay depósitos vacíos con capacidad suficiente.</option>'
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1 mt-4">Volumen a transferir (L)</label>
+                        <input type="number" name="volume" step="0.1" value="${parseFloat(lot.liters_unassigned).toFixed(2)}" required class="w-full mt-1 p-2 border rounded modal-input">
+                    </div>`;
+                
+                allElements.modal.classList.add('modal-active');
+            }
+
+            function showAssignToBarrelsForm(lotId, sourceContainerId) {
+                const lot = allLots.find(l => l.id === lotId);
+                const sourceContainer = allContainers.find(c => c.id === sourceContainerId);
+                if (!lot || !sourceContainer) { alert("Error: Lote o contenedor de origen no encontrado."); return; }
+
+                const availableBarrels = allContainers.filter(c => c.type.trim() === 'Barrica' && c.status.trim() === 'vacío');
+                
+                allElements.modalTitle.textContent = `Trasvasar: ${lot.name}`;
+                allElements.modalForm.dataset.formType = 'assign-to-barrels';
+                allElements.modalContent.className = 'bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl m-4'; // Hacer modal más ancho
+
+                allElements.modalForm.innerHTML = `
+                    <input type="hidden" name="lot_id" value="${lot.id}">
+                    <input type="hidden" name="source_container_id" value="${sourceContainer.id}">
+                    <div class="p-2 rounded-lg bg-gray-100 border border-accent mb-4">
+                        <p>Origen: <strong>${sourceContainer.name}</strong></p>
+                        <p>Volumen disponible: <strong id="source-volume">${parseFloat(sourceContainer.current_volume).toFixed(2)} L</strong></p>
+                        <p class="mt-2">Volumen restante: <strong id="remaining-volume" class="text-blue-600">${parseFloat(sourceContainer.current_volume).toFixed(2)} L</strong></p>
+                    </div>
+                    
+                    <h4 class="font-bold">Barricas de Destino</h4>
+                    <div id="barrel-destinations" class="space-y-3 max-h-64 overflow-y-auto pr-2"></div>
+                    <button type="button" id="add-barrel-row" class="text-sm mt-2 cta-button text-white px-3 py-1 rounded-full">+ Añadir Barrica</button>
+                `;
+
+                const barrelDestinationsContainer = allElements.modalForm.querySelector('#barrel-destinations');
+                const addBarrelRowBtn = allElements.modalForm.querySelector('#add-barrel-row');
+
+                const addBarrelRow = () => {
+                    const row = document.createElement('div');
+                    row.className = 'barrel-row grid grid-cols-1 md:grid-cols-3 gap-2 items-center';
+                    row.innerHTML = `
+                        <select name="destination_id" class="col-span-2 w-full p-2 border rounded modal-input">
+                            <option value="">-- Seleccionar Barrica --</option>
+                            ${availableBarrels.map(b => `<option value="${b.id}" data-capacity="${b.capacity_liters}">${b.name} (${parseFloat(b.capacity_liters).toFixed(0)}L)</option>`).join('')}
+                        </select>
+                        <div>
+                            <input type="number" name="volume" placeholder="Litros" class="w-full p-2 border rounded modal-input">
+                            <p class="error-message text-red-500 text-xs h-4"></p>
+                        </div>
+                        <button type="button" class="remove-barrel-row text-red-500 text-xs text-right col-start-3 -mt-4">Eliminar</button>
+                    `;
+                    barrelDestinationsContainer.appendChild(row);
+                    row.querySelector('.remove-barrel-row').onclick = () => {
+                        row.remove();
+                        updateRemainingVolume();
+                    };
+                    row.querySelector('select').addEventListener('change', updateRemainingVolume);
+                    row.querySelector('input').addEventListener('input', updateRemainingVolume);
+                };
+                
+                const updateRemainingVolume = () => {
+                    const sourceVolume = parseFloat(sourceContainer.current_volume);
+                    let assignedVolume = 0;
+                    let hasError = false;
+
+                    allElements.modalForm.querySelectorAll('.barrel-row').forEach(row => {
+                        const volumeInput = row.querySelector('input[name="volume"]');
+                        const select = row.querySelector('select');
+                        const selectedOption = select.options[select.selectedIndex];
+                        const capacity = parseFloat(selectedOption.dataset.capacity);
+                        const volume = parseFloat(volumeInput.value) || 0;
+                        const errorP = row.querySelector('.error-message');
+
+                        if (capacity && volume > capacity) {
+                            errorP.textContent = `Máx: ${capacity.toFixed(0)} L`;
+                            hasError = true;
+                        } else {
+                            errorP.textContent = '';
+                        }
+                        assignedVolume += volume;
+                    });
+
+                    const remaining = sourceVolume - assignedVolume;
+                    const remainingEl = document.getElementById('remaining-volume');
+                    remainingEl.textContent = `${remaining.toFixed(2)} L`;
+                    remainingEl.className = remaining < 0 ? 'text-red-600 font-bold' : 'text-blue-600 font-bold';
+                    
+                    document.getElementById('modal-submit-btn').disabled = hasError || remaining < 0;
+                };
+
+                addBarrelRowBtn.onclick = addBarrelRow;
+                addBarrelRow();
+                
+                allElements.modal.classList.add('modal-active');
+            }
+            // =================================================================
+            // FIN DE LA CORRECCIÓN
+            // =================================================================
+
             function renderContainers(containers, lots) {
                 const statusColors = { 'vacío': 'bg-green-100', 'ocupado': 'bg-amber-100', 'limpieza': 'bg-red-100' };
                 const renderCard = c => {
@@ -248,14 +411,21 @@
                     const canBeEdited = c.status !== 'ocupado';
                     const percentage = c.capacity_liters > 0 ? (c.current_volume / c.capacity_liters * 100).toFixed(0) : 0;
                     const gaugeIndicator = `<div class="gauge -ml-4" id="gauge-${c.id}" data-percent="${percentage}"><svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="barrel-clip-${c.id}"><circle cx="100" cy="100" r="86"/></clipPath><linearGradient id="wineGrad-${c.id}" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#b2222f" /><stop offset="60%" stop-color="#8b0f1b" /><stop offset="100%" stop-color="#4a0510" /></linearGradient></defs><circle cx="100" cy="100" r="90" fill="var(--barrel)" stroke="#3f2b18" stroke-width="6" /><circle cx="100" cy="100" r="86" fill="none" stroke="#412b1b" stroke-width="6" /><g class="barrel-decor"><path class="stave" d="M30 40 C48 80, 48 120, 30 160" fill="none"/><path class="stave" d="M50 20 C68 60, 68 140, 50 180" fill="none"/><path class="stave" d="M70 10 C88 55, 88 145, 70 190" fill="none"/><path class="stave" d="M130 10 C112 55, 112 145, 130 190" fill="none"/><path class="stave" d="M150 20 C132 60, 132 140, 150 180" fill="none"/><path class="stave" d="M170 40 C152 80, 152 120, 170 160" fill="none"/></g><g clip-path="url(#barrel-clip-${c.id})"><ellipse cx="70" cy="72" rx="36" ry="8" fill="var(--glass)" /><path id="wave-${c.id}" fill="url(#wineGrad-${c.id})" opacity="0.95"></path></g><circle cx="100" cy="100" r="86" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="10" /></svg><div class="center-text"><div id="percentText-${c.id}"><b>${percentage}%</b></div><small>lleno</small></div></div>`;
+                    
+                    const fermentationButton = lot && c.type.trim() === 'Depósito'
+                        ? `<button class="fermentation-control-btn text-xs bg-blue-500 text-white px-3 py-1 rounded-full absolute bottom-2 left-2" data-lot-id="${lot.id}" data-container-id="${c.id}" data-lot-name="${lot.name}">Control Fermentación</button>`
+                        : '';
+
                     const editIcons = `<div class="absolute top-2 right-2 flex gap-2 text-stone-400">${canBeEdited ? `<i class="fas fa-pencil-alt cursor-pointer hover:text-stone-600 edit-container-btn" data-id="${c.id}"></i><i class="fas fa-trash-alt cursor-pointer hover:text-red-600 delete-container-btn" data-id="${c.id}"></i>` : ''}</div>`;
-                    return `<div class="relative border rounded-lg p-4 ${statusColors[c.status.trim()] || 'bg-gray-100'}">${editIcons}<div class="flex justify-between items-center"><div class="flex-1"><p class="font-bold text-lg">${c.name}</p><p class="text-sm text-stone-600">${c.material || ''} - ${parseFloat(c.capacity_liters).toFixed(0)}L</p>${lot ? `<p class="text-sm font-semibold mt-2">Contiene: ${lot.name}</p><p class="text-sm">${parseFloat(c.current_volume).toFixed(0)} L</p>` : `<p class="text-sm mt-2 font-semibold">${c.status.charAt(0).toUpperCase() + c.status.slice(1)}</p>`}</div>${gaugeIndicator}</div></div>`;
+                    
+                    return `<div class="relative border rounded-lg p-4 ${statusColors[c.status.trim()] || 'bg-gray-100'}">${editIcons}<div class="flex justify-between items-center"><div class="flex-1"><p class="font-bold text-lg">${c.name}</p><p class="text-sm text-stone-600">${c.material || ''} - ${parseFloat(c.capacity_liters).toFixed(0)}L</p>${lot ? `<p class="text-sm font-semibold mt-2">Contiene: ${lot.name}</p><p class="text-sm">${parseFloat(c.current_volume).toFixed(0)} L</p>` : `<p class="text-sm mt-2 font-semibold">${c.status.charAt(0).toUpperCase() + c.status.slice(1)}</p>`}</div>${gaugeIndicator}</div>${fermentationButton}</div>`;
                 };
                 const deposits = containers.filter(c => c.type.trim() === 'Depósito');
                 const barrels = containers.filter(c => c.type.trim() === 'Barrica');
                 allElements.depositsGrid.innerHTML = deposits.length ? deposits.map(renderCard).join('') : '<p class="text-center col-span-full py-8 text-secondary">No hay depósitos.</p>';
                 allElements.barrelsGrid.innerHTML = barrels.length ? barrels.map(renderCard).join('') : '<p class="text-center col-span-full py-8 text-secondary">No hay barricas.</p>';
             }
+            
             async function loadDashboard() {
                 try {
                     [allContainers, allLots] = await Promise.all([apiFetch('/api/cellar/containers'), apiFetch('/api/traceability/wine-lots')]);
@@ -297,10 +467,13 @@
                 if (e.target.classList.contains('assign-lot-btn')) { showAssignLotForm(e.target.dataset.lotId); }
                 if (e.target.classList.contains('assign-barrels-btn')) { showAssignToBarrelsForm(e.target.dataset.lotId, e.target.dataset.sourceId); }
                 if (e.target.classList.contains('top-up-btn')) { showTopUpForm(e.target.dataset.lotId, e.target.dataset.containerId); }
-                if (e.target.classList.contains('bottle-lot-btn')) { showBottlingForm(e.target.dataset.lotId); }
                 if (e.target.classList.contains('edit-container-btn')) {
                     const containerData = allContainers.find(c => c.id === e.target.dataset.id);
                     if (containerData) showContainerForm(containerData);
+                }
+                if (e.target.classList.contains('fermentation-control-btn')) {
+                    const { lotId, containerId, lotName } = e.target.dataset;
+                    showFermentationModal(lotId, containerId, lotName);
                 }
                 if (e.target.classList.contains('delete-container-btn')) {
                     const containerId = e.target.dataset.id;
@@ -332,20 +505,165 @@
                     await loadDashboard();
                 } catch (error) { alert(`Error al guardar: ${error.message}`); }
             });
-            async function handleContainerSubmit(form) { const formData = new FormData(form); const data = Object.fromEntries(formData.entries()); const containerId = data.id; const endpoint = containerId ? `/api/cellar/containers/${containerId}` : '/api/cellar/containers'; const method = containerId ? 'PUT' : 'POST'; const body = { name: data.name, type: data.type, capacity_liters: parseFloat(data.capacity_liters), material: data.material, location: data.location }; await apiFetch(endpoint, { method, body }); }
+            async function handleContainerSubmit(form) {
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                const containerId = data.id;
+                const endpoint = containerId ? `/api/cellar/containers/${containerId}` : '/api/cellar/containers';
+                const method = containerId ? 'PUT' : 'POST';
+                const body = {
+                    name: data.name,
+                    type: data.type,
+                    capacity_liters: parseFloat(data.capacity_liters),
+                    material: data.material,
+                    location: data.location,
+                    barrel_age: data.type === 'Barrica' ? parseInt(data.barrel_age) : null,
+                    toast_level: data.type === 'Barrica' ? data.toast_level : null,
+                    cooperage: data.type === 'Barrica' ? data.cooperage : null,
+                };
+                await apiFetch(endpoint, { method, body });
+            }
             async function handleAssignLotSubmit(form) { const formData = new FormData(form); const data = Object.fromEntries(formData.entries()); const endpoint = '/api/cellar/movements'; const method = 'POST'; const body = { lot_id: data.lot_id, destination_container_id: data.destination_container_id, volume: parseFloat(data.volume), type: 'Llenado Inicial' }; await apiFetch(endpoint, { method, body }); }
             async function handleAssignToBarrelsSubmit(form) { const formData = new FormData(form); const data = Object.fromEntries(formData.entries()); const endpoint = '/api/cellar/movements/bulk-transfer'; const method = 'POST'; const destinations = [...form.querySelectorAll('.barrel-row')].map(row => ({ destination_container_id: row.querySelector('select').value, volume: parseFloat(row.querySelector('input[name="volume"]').value) })).filter(d => d.volume > 0); if (destinations.length === 0) throw new Error("Debes añadir al menos una barrica de destino."); const body = { lot_id: data.lot_id, source_container_id: data.source_container_id, destinations: destinations }; await apiFetch(endpoint, { method, body }); }
             async function handleTopUpSubmit(form) { const formData = new FormData(form); const data = Object.fromEntries(formData.entries()); const endpoint = '/api/cellar/movements/top-up'; const method = 'POST'; const body = { lot_id: data.lot_id, destination_container_id: data.destination_container_id, volume: parseFloat(data.volume) }; await apiFetch(endpoint, { method, body }); }
-            async function handleBottlingSubmit(form) { const formData = new FormData(form); const data = Object.fromEntries(formData.entries()); const endpoint = '/api/cellar/movements/bottling'; const method = 'POST'; const selectedContainers = [...form.querySelectorAll('input[name="source_container_ids"]:checked')].map(cb => cb.value); if (selectedContainers.length === 0) throw new Error("Debes seleccionar al menos un contenedor para embotellar."); const body = { lot_id: data.lot_id, source_container_ids: selectedContainers }; await apiFetch(endpoint, { method, body }); }
-            loadDashboard();
-            animateGauges();
+            
             function renderStats(containers, lots) { const totalCapacity = containers.reduce((sum, c) => sum + parseFloat(c.capacity_liters), 0); const currentVolume = containers.reduce((sum, c) => sum + parseFloat(c.current_volume), 0); const occupationPercentage = totalCapacity > 0 ? (currentVolume / totalCapacity * 100).toFixed(1) : 0; allElements.statsPanel.innerHTML = `<div class="card p-6 rounded-2xl shadow"><h3 class="font-semibold text-secondary">Nº Contenedores</h3><p class="text-3xl font-bold">${containers.length}</p></div><div class="card p-6 rounded-2xl shadow"><h3 class="font-semibold text-secondary">Capacidad Total</h3><p class="text-3xl font-bold">${totalCapacity.toLocaleString('es-ES')} L</p></div><div class="card p-6 rounded-2xl shadow"><h3 class="font-semibold text-secondary">Ocupación</h3><p class="text-3xl font-bold">${occupationPercentage}%</p></div><div class="card p-6 rounded-2xl shadow"><h3 class="font-semibold text-secondary">Lotes Activos</h3><p class="text-3xl font-bold">${lots.length}</p></div>`; }
             function renderWineLots(lots) { allElements.wineLotsTable.innerHTML = lots.length ? lots.map(lot => `<tr class="border-b border-accent"><td class="p-3">${lot.name}</td><td class="p-3">${lot.grape_variety}</td><td class="p-3">${lot.vintage_year}</td><td class="p-3"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">${lot.status}</span></td></tr>`).join('') : '<tr><td colspan="4" class="text-center p-8 text-secondary">No hay lotes.</td></tr>'; }
-            function renderPendingActions(containers, lots) { let pendingHtml = ''; const lotsToFerment = lots.filter(l => l.status === 'En Fermentación' && l.liters_unassigned > 0.1); pendingHtml += lotsToFerment.map(lot => `<div class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Faltan <span class="font-bold">${lot.liters_unassigned.toFixed(0)} L</span> por asignar a depósito.</p></div><button data-lot-id="${lot.id}" class="assign-lot-btn bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-yellow-600">Llenado Inicial</button></div>`).join(''); const lotsWithUnassignedLiters = lots.filter(l => l.liters_unassigned > 0.1); for (const lot of lotsWithUnassignedLiters) { const partiallyFullContainers = containers.filter(c => c.current_lot_id === lot.id && c.current_volume < c.capacity_liters); for (const container of partiallyFullContainers) { pendingHtml += `<div class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Puedes rellenar <span class="font-bold">${container.name}</span> con hasta <span class="font-bold">${lot.liters_unassigned.toFixed(0)} L</span> más.</p></div><button data-lot-id="${lot.id}" data-container-id="${container.id}" class="top-up-btn bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-blue-600">Rellenar</button></div>`; } } const lotsToAge = lots.filter(l => l.status === 'En Crianza'); for (const lot of lotsToAge) { const sourceContainer = containers.find(c => c.current_lot_id === lot.id && c.type === 'Depósito' && c.current_volume > 0.1); if (sourceContainer) { pendingHtml += `<div class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Listo para trasiego de <span class="font-bold">${parseFloat(sourceContainer.current_volume).toFixed(0)} L</span> a barricas.</p></div><button data-lot-id="${lot.id}" data-source-id="${sourceContainer.id}" class="assign-barrels-btn bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-orange-600">Trasvasar</button></div>`; } } const lotsToBottle = lots.filter(l => l.status === 'Listo para Embotellar'); for (const lot of lotsToBottle) { const containersInAging = containers.filter(c => c.current_lot_id === lot.id); if (containersInAging.length > 0) { pendingHtml += `<div class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Listo para embotellar desde ${containersInAging.length} contenedor(es).</p></div><button data-lot-id="${lot.id}" class="bottle-lot-btn bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-purple-700">Embotellar</button></div>`; } } if (pendingHtml) { allElements.pendingActionsSection.style.display = 'block'; allElements.pendingActionsList.innerHTML = pendingHtml; } else { allElements.pendingActionsSection.style.display = 'none'; } }
-            function showAssignLotForm(lotId) { const lot = allLots.find(l => l.id === lotId); const availableDeposits = allContainers.filter(c => c.type.trim() === 'Depósito' && c.status.trim() === 'vacío'); if (!lot) { alert("Error: Lote no encontrado."); return; } if (availableDeposits.length === 0) { alert('No hay depósitos vacíos disponibles.'); return; } allElements.modalTitle.textContent = `Asignar ${lot.name}`; allElements.modalForm.innerHTML = `<input type="hidden" name="lot_id" value="${lotId}"><div class="space-y-4"><div><label class="block text-sm">Depósito de Destino</label><select name="destination_container_id" required class="w-full mt-1 p-2 border rounded modal-input">${availableDeposits.map(d => `<option value="${d.id}" data-capacity="${d.capacity_liters}">${d.name} (${parseFloat(d.capacity_liters).toFixed(0)}L)</option>`).join('')}</select></div><div><label class="block text-sm">Volumen a Trasladar (Max: ${lot.liters_unassigned.toFixed(0)} L)</label><input type="number" step="1" name="volume" required max="${lot.liters_unassigned.toFixed(0)}" class="w-full mt-1 p-2 border rounded modal-input"><span class="error-message text-xs text-red-600 hidden"></span></div></div>`; allElements.modalForm.dataset.formType = 'assign-lot'; const volumeInput = allElements.modalForm.querySelector('input[name="volume"]'); const destSelect = allElements.modalForm.querySelector('select'); const errorSpan = allElements.modalForm.querySelector('.error-message'); const submitBtn = document.getElementById('modal-submit-btn'); function validate() { const volume = parseFloat(volumeInput.value) || 0; const maxLotVolume = parseFloat(volumeInput.max); const selectedOption = destSelect.options[destSelect.selectedIndex]; const capacity = parseFloat(selectedOption.dataset.capacity); let error = ""; if (volume <= 0) error = "El volumen debe ser mayor que cero."; else if (volume > maxLotVolume) error = `El volumen no puede superar los litros restantes del lote (${maxLotVolume.toFixed(0)} L).`; else if (volume > capacity) error = `El volumen supera la capacidad del depósito (${capacity.toFixed(0)} L).`; errorSpan.textContent = error; errorSpan.classList.toggle('hidden', !error); submitBtn.disabled = !!error; } volumeInput.addEventListener('input', validate); destSelect.addEventListener('change', validate); allElements.modal.classList.add('modal-active'); }
-            function showAssignToBarrelsForm(lotId, sourceId) { const sourceContainer = allContainers.find(c => c.id === sourceId); const availableBarrels = allContainers.filter(c => c.type === 'Barrica' && c.status === 'vacío'); if (!sourceContainer) { alert("Error: No se encontró el depósito de origen."); return; } if (availableBarrels.length === 0) { alert("No hay barricas vacías disponibles."); return; } const sourceVolume = parseFloat(sourceContainer.current_volume); allElements.modalTitle.textContent = `Trasvase de ${sourceContainer.name} (${sourceVolume.toFixed(0)} L)`; allElements.modalContent.className = 'bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl m-4'; let formHtml = `<input type="hidden" name="lot_id" value="${lotId}"><input type="hidden" name="source_container_id" value="${sourceId}"><div id="barrel-destination-list" class="space-y-3 max-h-64 overflow-y-auto pr-2"></div><button type="button" id="add-barrel-row-btn" class="mt-4 text-sm bg-gray-200 px-3 py-1 rounded-full">Añadir Barrica</button><div class="mt-4 text-right font-bold">Volumen Total: <span id="total-volume-span">0</span> / ${sourceVolume.toFixed(0)} L</div><span id="total-volume-error" class="error-message text-xs text-red-600 hidden float-right"></span>`; allElements.modalForm.innerHTML = formHtml; allElements.modalForm.dataset.formType = 'assign-to-barrels'; const barrelOptions = availableBarrels.map(b => `<option value="${b.id}" data-capacity="${b.capacity_liters}">${b.name} (${parseFloat(b.capacity_liters).toFixed(0)}L)</option>`).join(''); function addBarrelRow() { const div = document.createElement('div'); div.className = 'barrel-row flex gap-2 items-center'; div.innerHTML = `<select name="destination_container_id" class="w-full mt-1 p-2 border rounded modal-input">${barrelOptions}</select><input type="number" step="1" name="volume" placeholder="Litros" required class="w-1/3 mt-1 p-2 border rounded modal-input"><button type="button" class="remove-barrel-row-btn text-red-500">✖</button>`; document.getElementById('barrel-destination-list').appendChild(div); } addBarrelRow(); document.getElementById('add-barrel-row-btn').addEventListener('click', addBarrelRow); allElements.modalForm.addEventListener('click', e => { if (e.target.classList.contains('remove-barrel-row-btn')) { e.target.parentElement.remove(); validateTotal(); } }); const totalSpan = document.getElementById('total-volume-span'); const totalErrorSpan = document.getElementById('total-volume-error'); const submitBtn = document.getElementById('modal-submit-btn'); function validateTotal() { let totalVolume = 0; let hasError = false; const allRows = [...allElements.modalForm.querySelectorAll('.barrel-row')]; for(const row of allRows) { const volumeInput = row.querySelector('input[name="volume"]'); const select = row.querySelector('select'); const selectedOption = select.options[select.selectedIndex]; const capacity = selectedOption ? parseFloat(selectedOption.dataset.capacity) : 0; const volume = parseFloat(volumeInput.value) || 0; totalVolume += volume; if (volume > capacity || volume <= 0) { volumeInput.style.borderColor = 'red'; hasError = true; } else { volumeInput.style.borderColor = ''; } } totalSpan.textContent = totalVolume.toFixed(0); if (totalVolume > sourceVolume) { totalErrorSpan.textContent = `El total supera el volumen del depósito.`; totalErrorSpan.classList.remove('hidden'); hasError = true; } else { totalErrorSpan.classList.add('hidden'); } submitBtn.disabled = hasError; } allElements.modalForm.addEventListener('input', validateTotal); allElements.modal.classList.add('modal-active'); }
-            function showBottlingForm(lotId) { const lot = allLots.find(l => l.id === lotId); const containersToBottle = allContainers.filter(c => c.current_lot_id === lotId); if (!lot) { alert("Error: Lote no encontrado."); return; } if (containersToBottle.length === 0) { alert("No se encontraron contenedores para embotellar."); return; } allElements.modalTitle.textContent = `Embotellar ${lot.name}`; allElements.modalContent.className = 'bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg m-4'; let formHtml = `<input type="hidden" name="lot_id" value="${lotId}"><p class="mb-4">Selecciona los contenedores a embotellar:</p><div class="space-y-2 max-h-64 overflow-y-auto pr-2">${containersToBottle.map(c => `<label class="flex items-center p-2 border rounded-lg hover:bg-gray-50"><input type="checkbox" name="source_container_ids" value="${c.id}" class="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"><span class="ml-3 text-sm"><span class="font-bold">${c.name}</span> (${c.type}) - ${parseFloat(c.current_volume).toFixed(0)} L</span></label>`).join('')}</div>`; allElements.modalForm.innerHTML = formHtml; allElements.modalForm.dataset.formType = 'bottling'; allElements.modal.classList.add('modal-active');}
-            function showTopUpForm(lotId, containerId) { const lot = allLots.find(l => l.id === lotId); const container = allContainers.find(c => c.id === containerId); if (!lot || !container) { alert("Error: Datos no encontrados."); return; } const space_left = container.capacity_liters - container.current_volume; const max_to_add = Math.min(lot.liters_unassigned, space_left); allElements.modalTitle.textContent = `Rellenar ${container.name}`; allElements.modalForm.innerHTML = `<input type="hidden" name="lot_id" value="${lotId}"><input type="hidden" name="destination_container_id" value="${containerId}"><div class="space-y-4"><p class="text-sm">Este contenedor tiene ${space_left.toFixed(0)} L de espacio libre y al lote le quedan ${lot.liters_unassigned.toFixed(0)} L sin asignar.</p><div><label class="block text-sm">Volumen a Añadir (Max: ${max_to_add.toFixed(0)} L)</label><input type="number" step="1" name="volume" required max="${max_to_add.toFixed(0)}" class="w-full mt-1 p-2 border rounded modal-input"><span class="error-message text-xs text-red-600 hidden"></span></div></div>`; allElements.modalForm.dataset.formType = 'top-up'; const volumeInput = allElements.modalForm.querySelector('input[name="volume"]'); const errorSpan = allElements.modalForm.querySelector('.error-message'); const submitBtn = document.getElementById('modal-submit-btn'); function validate() { const volume = parseFloat(volumeInput.value) || 0; const max = parseFloat(volumeInput.max); let error = ""; if (volume <= 0) error = "El volumen debe ser mayor que cero."; else if (volume > max) error = `El volumen no puede superar el máximo de ${max.toFixed(0)} L.`; errorSpan.textContent = error; errorSpan.classList.toggle('hidden', !error); submitBtn.disabled = !!error; } volumeInput.addEventListener('input', validate); allElements.modal.classList.add('modal-active'); }
+            function renderPendingActions(containers, lots) { 
+                let pendingHtml = ''; 
+                const lotsToFerment = lots.filter(l => l.status === 'En Fermentación' && l.liters_unassigned > 0.1); 
+                pendingHtml += lotsToFerment.map(lot => `<div class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Faltan <span class="font-bold">${lot.liters_unassigned.toFixed(0)} L</span> por asignar a depósito.</p></div><button data-lot-id="${lot.id}" class="assign-lot-btn bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-yellow-600">Llenado Inicial</button></div>`).join(''); 
+                const lotsWithUnassignedLiters = lots.filter(l => l.liters_unassigned > 0.1); 
+                for (const lot of lotsWithUnassignedLiters) { const partiallyFullContainers = containers.filter(c => c.current_lot_id === lot.id && c.current_volume < c.capacity_liters); for (const container of partiallyFullContainers) { pendingHtml += `<div class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Puedes rellenar <span class="font-bold">${container.name}</span> con hasta <span class="font-bold">${lot.liters_unassigned.toFixed(0)} L</span> más.</p></div><button data-lot-id="${lot.id}" data-container-id="${container.id}" class="top-up-btn bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-blue-600">Rellenar</button></div>`; } } 
+                const lotsToAge = lots.filter(l => l.status === 'En Crianza'); 
+                for (const lot of lotsToAge) { const sourceContainer = containers.find(c => c.current_lot_id === lot.id && c.type === 'Depósito' && c.current_volume > 0.1); if (sourceContainer) { pendingHtml += `<div class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Listo para trasiego de <span class="font-bold">${parseFloat(sourceContainer.current_volume).toFixed(0)} L</span> a barricas.</p></div><button data-lot-id="${lot.id}" data-source-id="${sourceContainer.id}" class="assign-barrels-btn bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-orange-600">Trasvasar</button></div>`; } } 
+                if (pendingHtml) { allElements.pendingActionsSection.style.display = 'block'; allElements.pendingActionsList.innerHTML = pendingHtml; } else { allElements.pendingActionsSection.style.display = 'none'; } 
+            }
+
+            function showContainerForm(container = null) {
+                allElements.modalTitle.textContent = container ? 'Editar Contenedor' : 'Añadir Contenedor';
+                allElements.modalForm.dataset.formType = 'container';
+                
+                allElements.modalForm.innerHTML = `
+                    <input type="hidden" name="id" value="${container?.id || ''}">
+                    <div class="space-y-4">
+                        <div><label class="block text-sm">Nombre</label><input type="text" name="name" value="${container?.name || ''}" required class="w-full mt-1 p-2 border rounded modal-input"></div>
+                        <div><label class="block text-sm">Tipo</label>
+                            <select name="type" required class="w-full mt-1 p-2 border rounded modal-input">
+                                <option value="Depósito" ${container?.type === 'Depósito' ? 'selected' : ''}>Depósito</option>
+                                <option value="Barrica" ${container?.type === 'Barrica' ? 'selected' : ''}>Barrica</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="block text-sm">Capacidad (L)</label><input type="number" name="capacity_liters" value="${container?.capacity_liters || ''}" required class="w-full mt-1 p-2 border rounded modal-input"></div>
+                            <div><label class="block text-sm">Material</label><input type="text" name="material" value="${container?.material || ''}" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                        </div>
+                        <div id="barrel-fields" class="space-y-4 pt-4 border-t border-accent">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="block text-sm">Edad / Nº de Usos</label><input type="number" name="barrel_age" value="${container?.barrel_age || ''}" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                                <div><label class="block text-sm">Nivel de Tostado</label><input type="text" name="toast_level" value="${container?.toast_level || ''}" placeholder="Medio, Fuerte..." class="w-full mt-1 p-2 border rounded modal-input"></div>
+                            </div>
+                            <div><label class="block text-sm">Tonelería (Fabricante)</label><input type="text" name="cooperage" value="${container?.cooperage || ''}" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                        </div>
+                    </div>`;
+
+                const typeSelect = allElements.modalForm.querySelector('select[name="type"]');
+                const barrelFields = document.getElementById('barrel-fields');
+                
+                function toggleBarrelFields() {
+                    barrelFields.style.display = typeSelect.value === 'Barrica' ? 'block' : 'none';
+                }
+                
+                typeSelect.addEventListener('change', toggleBarrelFields);
+                toggleBarrelFields();
+                
+                allElements.modal.classList.add('modal-active');
+            }
+
+            allElements.addContainerBtn.addEventListener('click', () => showContainerForm());
+
+            async function showFermentationModal(lotId, containerId, lotName) {
+                allElements.fermentationModalTitle.textContent = `Control de Fermentación: ${lotName}`;
+                const form = allElements.fermentationForm;
+                form.reset();
+                form.querySelector('input[name="lot_id"]').value = lotId;
+                form.querySelector('input[name="container_id"]').value = containerId;
+                form.querySelector('input[name="control_date"]').value = new Date().toISOString().split('T')[0];
+
+                allElements.fermentationModal.classList.add('modal-active');
+                
+                try {
+                    const history = await apiFetch(`/api/cellar/fermentation-controls/${lotId}/${containerId}`);
+                    renderFermentationChart(history);
+                } catch(e) {
+                    console.error("Error al cargar historial de fermentación:", e);
+                }
+            }
+
+            allElements.closeFermentationModalBtn.addEventListener('click', () => {
+                allElements.fermentationModal.classList.remove('modal-active');
+            });
+
+            allElements.fermentationForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                
+                const body = {
+                    ...data,
+                    temperature: data.temperature ? parseFloat(data.temperature) : null,
+                    density: data.density ? parseFloat(data.density) : null,
+                };
+
+                try {
+                    await apiFetch('/api/cellar/fermentation-controls', { method: 'POST', body });
+                    const history = await apiFetch(`/api/cellar/fermentation-controls/${body.lot_id}/${body.container_id}`);
+                    renderFermentationChart(history);
+                    e.target.reset();
+                    e.target.querySelector('input[name="control_date"]').value = new Date().toISOString().split('T')[0];
+                } catch(error) {
+                    alert(`Error: ${error.message}`);
+                }
+            });
+
+            function renderFermentationChart(data) {
+                if (fermentationChart) fermentationChart.destroy();
+                const ctx = allElements.fermentationChartCanvas.getContext('2d');
+                fermentationChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => new Date(d.control_date).toLocaleDateString()),
+                        datasets: [
+                            {
+                                label: 'Temperatura (°C)',
+                                data: data.map(d => d.temperature),
+                                borderColor: 'red',
+                                yAxisID: 'y_temp',
+                                tension: 0.1
+                            },
+                            {
+                                label: 'Densidad (g/mL)',
+                                data: data.map(d => d.density),
+                                borderColor: 'blue',
+                                yAxisID: 'y_dens',
+                                tension: 0.1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y_temp: { type: 'linear', display: true, position: 'left', title: { display: true, text: '°C' } },
+                            y_dens: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'g/mL' }, grid: { drawOnChartArea: false } }
+                        }
+                    }
+                });
+            }
+            
+            // Carga inicial y animación
+            loadDashboard();
+            animateGauges();
         });
     </script>
 </body>

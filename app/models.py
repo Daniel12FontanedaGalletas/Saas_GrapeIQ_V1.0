@@ -71,14 +71,19 @@ class Container(Base):
     __tablename__ = "containers"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String, nullable=False)
-    type = Column(String, nullable=False)
+    type = Column(String, nullable=False) # Depósito, Barrica
     capacity_liters = Column(Numeric(10, 2), nullable=False)
-    material = Column(String)
+    material = Column(String) # Inox, Hormigón, Roble Francés, Roble Americano
     location = Column(String)
-    status = Column(String, default='vacío')
+    status = Column(String, default='vacío') # vacío, ocupado, limpieza
     current_volume = Column(Numeric(10, 2), default=0)
     current_lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=True)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+    
+    # --- NUEVOS CAMPOS PARA CRIANZA ---
+    barrel_age = Column(Integer, nullable=True) # Edad o número de usos de la barrica
+    toast_level = Column(String, nullable=True) # Nivel de tostado: Ligero, Medio, Fuerte
+    cooperage = Column(String, nullable=True) # Tonelería o fabricante
 
 class Movement(Base):
     __tablename__ = "movements"
@@ -88,8 +93,64 @@ class Movement(Base):
     destination_container_id = Column(UUID(as_uuid=True), ForeignKey("containers.id"), nullable=True)
     volume = Column(Numeric(10, 2), nullable=False)
     movement_date = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
-    type = Column(String, nullable=False)
+    type = Column(String, nullable=False) # Llenado Inicial, Trasiego, Embotellado, Rellenado
+    notes = Column(Text, nullable=True) # --- NUEVO CAMPO PARA NOTAS DE CATA ---
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+
+# --- NUEVAS TABLAS PARA TRAZABILIDAD AVANZADA ---
+
+class FermentationControl(Base):
+    __tablename__ = "fermentation_controls"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    container_id = Column(UUID(as_uuid=True), ForeignKey("containers.id"), nullable=False)
+    lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=False)
+    control_date = Column(Date, nullable=False, default=datetime.utcnow)
+    temperature = Column(Numeric(5, 2))
+    density = Column(Numeric(6, 4))
+    notes = Column(Text, nullable=True)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+
+class LabAnalytic(Base):
+    __tablename__ = "lab_analytics"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=False)
+    analysis_date = Column(Date, nullable=False, default=datetime.utcnow)
+    alcoholic_degree = Column(Numeric(4, 2), nullable=True)
+    total_acidity = Column(Numeric(5, 2), nullable=True)
+    volatile_acidity = Column(Numeric(4, 2), nullable=True)
+    ph = Column(Numeric(4, 2), nullable=True)
+    free_so2 = Column(Integer, nullable=True)
+    total_so2 = Column(Integer, nullable=True)
+    notes = Column(Text, nullable=True)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+
+class DryGood(Base):
+    __tablename__ = "dry_goods"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+    material_type = Column(String, nullable=False) # Botella, Corcho, Cápsula, Etiqueta
+    supplier = Column(String, nullable=True)
+    model_reference = Column(String, nullable=True)
+    supplier_lot_number = Column(String, nullable=True)
+    
+class BottlingEvent(Base):
+    __tablename__ = "bottling_events"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=False)
+    product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)
+    bottling_date = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    official_lot_number = Column(String, nullable=False) # Lote impreso en la botella
+    dissolved_oxygen = Column(Numeric(5, 2), nullable=True)
+    
+    bottle_lot_id = Column(UUID(as_uuid=True), ForeignKey("dry_goods.id"), nullable=True)
+    cork_lot_id = Column(UUID(as_uuid=True), ForeignKey("dry_goods.id"), nullable=True)
+    capsule_lot_id = Column(UUID(as_uuid=True), ForeignKey("dry_goods.id"), nullable=True)
+    label_lot_id = Column(UUID(as_uuid=True), ForeignKey("dry_goods.id"), nullable=True)
+    
+    retained_samples = Column(Integer, default=0)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+
+# --- TABLAS DE COSTES, PRODUCTOS Y VENTAS (SIN CAMBIOS) ---
 
 class CostParameter(Base):
     __tablename__ = "cost_parameters"
