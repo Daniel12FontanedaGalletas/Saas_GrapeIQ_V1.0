@@ -23,6 +23,8 @@
             --pending-bg: #fefce8; /* yellow-50 */
             --pending-border: #facc15; /* yellow-400 */
             --pending-text: #854d0e; /* yellow-800 */
+            --pagination-grad-start: #5C1A33;
+            --pagination-grad-end: #8a284c;
         }
 
         body.theme-warm { /* 🍂 Tema Otoñal Cálido */
@@ -39,6 +41,8 @@
             --pending-bg: rgba(217, 108, 6, 0.1);
             --pending-border: #D96C06;
             --pending-text: #5C4033;
+            --pagination-grad-start: #A23E48;
+            --pagination-grad-end: #d96c06;
         }
         
         body { 
@@ -87,6 +91,19 @@
             animation: highlight-animation 1.5s ease-out;
             transition: transform 0.3s;
         }
+
+        /* --- INICIO ESTILOS PAGINACIÓN --- */
+        .button-container { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 20px; }
+        .button-3d { appearance: none; position: relative; border-width: 0; padding: 0 8px; min-width: 3.5em; min-height: 3.5em; box-sizing: border-box; background: transparent; font: inherit; cursor: pointer; border-radius: 18px; }
+        .button-3d:disabled { cursor: not-allowed; opacity: 0.6; }
+        .button-top { display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; padding: 8px 16px; transform: translateY(0); color: #fff; background-image: linear-gradient(145deg, var(--pagination-grad-start), var(--pagination-grad-end)); text-shadow: 0 -1px rgba(0, 0, 0, 0.25); border-radius: 18px; transition: transform 0.2s, border-radius 0.2s; }
+        .button-3d:active .button-top { border-radius: 10px 10px 8px 8px / 8px; transform: translateY(2px); background-image: linear-gradient(145deg, var(--pagination-grad-end), var(--pagination-grad-start)); }
+        .button-bottom { position: absolute; z-index: 1; bottom: 4px; left: 4px; border-radius: 18px; padding-top: 6px; width: calc(100% - 8px); height: calc(100% - 10px); background-image: linear-gradient(145deg, var(--pagination-grad-end), var(--pagination-grad-start)); box-shadow: 0px 2px 3px 0px rgba(0, 0, 0, 0.5); transition: border-radius 0.2s, padding-top 0.2s; }
+        .button-base { position: absolute; z-index: 0; top: 4px; left: 0; border-radius: 18px; width: 100%; height: calc(100% - 4px); background-color: rgba(0, 0, 0, 0.15); box-shadow: 0 1px 1px 0 rgba(255, 255, 255, 0.75), inset 0 2px 2px rgba(0, 0, 0, 0.25); transition: border-radius 0.2s, padding-top 0.2s; }
+        .button-3d:active .button-bottom { border-radius: 10px 10px 8px 8px / 8px; padding-top: 0; }
+        .button-3d:active .button-base { border-radius: 10px 10px 8px 8px / 8px; }
+        .page-info { font-weight: 600; color: var(--text-secondary-color); }
+        /* --- FIN ESTILOS PAGINACIÓN --- */
     </style>
 </head>
 <body>
@@ -148,10 +165,12 @@
                 <div class="card p-6 rounded-2xl shadow-lg">
                     <h3 class="text-xl font-bold text-secondary mb-4">Depósitos</h3>
                     <div id="deposits-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
+                    <div id="deposits-pagination" class="button-container"></div>
                 </div>
                 <div class="card p-6 rounded-2xl shadow-lg">
                     <h3 class="text-xl font-bold text-secondary mb-4">Barricas</h3>
                     <div id="barrels-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
+                    <div id="barrels-pagination" class="button-container"></div>
                 </div>
             </section>
 
@@ -172,7 +191,6 @@
             </div>
         </div>
     </div>
-    
     <div id="fermentation-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50">
         <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-3xl m-4">
             <h3 id="fermentation-modal-title" class="text-2xl font-bold mb-6"></h3>
@@ -264,16 +282,19 @@
                 fermentationForm: document.getElementById('fermentation-form'),
                 closeFermentationModalBtn: document.getElementById('close-fermentation-modal-btn'),
                 fermentationChartCanvas: document.getElementById('fermentation-chart'),
+                depositsPagination: document.getElementById('deposits-pagination'),
+                barrelsPagination: document.getElementById('barrels-pagination'),
             };
 
             let allContainers = [], allLots = [], fermentationChart = null;
+            let depositCurrentPage = 1;
+            let barrelCurrentPage = 1;
+            const ITEMS_PER_PAGE = 20;
 
             function renderPendingActions(containers, lots) { 
                 let pendingHtml = ''; 
-                
                 const lotsToFerment = lots.filter(l => l.status === 'En Fermentación' && l.liters_unassigned > 0.1);
                 pendingHtml += lotsToFerment.map(lot => `<div id="lot-action-${lot.id}" class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Faltan <span class="font-bold">${parseFloat(lot.liters_unassigned).toFixed(0)} L</span> por asignar a depósito.</p></div><button data-lot-id="${lot.id}" class="assign-lot-btn bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-yellow-600">Llenado Inicial</button></div>`).join(''); 
-                
                 const lotsWithUnassignedLiters = lots.filter(l => l.liters_unassigned > 0.1); 
                 for (const lot of lotsWithUnassignedLiters) { 
                     const partiallyFullContainers = containers.filter(c => c.current_lot_id === lot.id && parseFloat(c.current_volume) < parseFloat(c.capacity_liters)); 
@@ -281,7 +302,6 @@
                         pendingHtml += `<div id="lot-action-topup-${container.id}" class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Puedes rellenar <span class="font-bold">${container.name}</span> con hasta <span class="font-bold">${parseFloat(lot.liters_unassigned).toFixed(0)} L</span> más.</p></div><button data-lot-id="${lot.id}" data-container-id="${container.id}" class="top-up-btn bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-blue-600">Rellenar</button></div>`; 
                     } 
                 } 
-                
                 const lotsToAge = lots.filter(l => l.status === 'En Crianza'); 
                 for (const lot of lotsToAge) { 
                     const sourceContainer = containers.find(c => c.current_lot_id === lot.id && c.type.trim() === 'Depósito' && parseFloat(c.current_volume) > 0.1); 
@@ -289,13 +309,10 @@
                         pendingHtml += `<div id="lot-action-${lot.id}" class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Listo para trasiego de <span class="font-bold">${parseFloat(sourceContainer.current_volume).toFixed(0)} L</span> a barricas.</p></div><button data-lot-id="${lot.id}" data-source-id="${sourceContainer.id}" class="assign-barrels-btn bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-orange-600">Trasvasar</button></div>`; 
                     } 
                 } 
-                
-                // Botón "Listo para embotellar"
                 const lotsInAgingWithBarrels = lots.filter(l => l.status === 'En Crianza' && containers.some(c => c.current_lot_id === l.id && c.type.trim() === 'Barrica'));
                 if (lotsInAgingWithBarrels.length > 0) {
                      pendingHtml += `<div class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">Preparar para Embotellado</p><p class="text-sm text-stone-600">Mueve los lotes de crianza a "Listo para Embotellar".</p></div><button id="prepare-for-bottling-btn" class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-green-600">Preparar Lotes</button></div>`;
                 }
-
                 if (pendingHtml) { 
                     allElements.pendingActionsSection.style.display = 'block'; 
                     allElements.pendingActionsList.innerHTML = pendingHtml; 
@@ -321,60 +338,90 @@
                 }
             }
             
-            async function handleContainerSubmit(form) {
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
-                const containerId = data.id;
-                const endpoint = containerId ? `/api/cellar/containers/${containerId}` : '/api/cellar/containers';
-                const method = containerId ? 'PUT' : 'POST';
-                const body = {
-                    name: data.name, type: data.type,
-                    capacity_liters: parseFloat(data.capacity_liters),
-                    material: data.material, location: data.location,
-                    barrel_age: data.type === 'Barrica' ? parseInt(data.barrel_age, 10) : null,
-                    toast_level: data.type === 'Barrica' ? data.toast_level : null,
-                    cooperage: data.type === 'Barrica' ? data.cooperage : null,
+            // =================================================================
+            // INICIO DE LA CORRECCIÓN - FUNCIÓN AÑADIDA
+            // =================================================================
+            function handleUrlAnchor() {
+                if (window.location.hash) {
+                    const targetId = window.location.hash.substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        setTimeout(() => {
+                            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            targetElement.classList.add('highlight-action');
+                            setTimeout(() => {
+                                targetElement.classList.remove('highlight-action');
+                            }, 1500);
+                        }, 200);
+                    }
+                }
+            }
+            // =================================================================
+            // FIN DE LA CORRECCIÓN
+            // =================================================================
+
+            function renderContainers(containers, lots) {
+                const statusColors = { 'vacío': 'bg-green-100', 'ocupado': 'bg-amber-100', 'limpieza': 'bg-red-100' };
+                const renderCard = c => {
+                    const lot = c.current_lot_id ? lots.find(l => l.id === c.current_lot_id) : null;
+                    const canBeEdited = c.status !== 'ocupado';
+                    const percentage = c.capacity_liters > 0 ? (c.current_volume / c.capacity_liters * 100).toFixed(0) : 0;
+                    const gaugeIndicator = `<div class="gauge -ml-4" id="gauge-${c.id}" data-percent="${percentage}"><svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="barrel-clip-${c.id}"><circle cx="100" cy="100" r="86"/></clipPath><linearGradient id="wineGrad-${c.id}" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#b2222f" /><stop offset="60%" stop-color="#8b0f1b" /><stop offset="100%" stop-color="#4a0510" /></linearGradient></defs><circle cx="100" cy="100" r="90" fill="var(--barrel)" stroke="#3f2b18" stroke-width="6" /><circle cx="100" cy="100" r="86" fill="none" stroke="#412b1b" stroke-width="6" /><g class="barrel-decor"><path class="stave" d="M30 40 C48 80, 48 120, 30 160" fill="none"/><path class="stave" d="M50 20 C68 60, 68 140, 50 180" fill="none"/><path class="stave" d="M70 10 C88 55, 88 145, 70 190" fill="none"/><path class="stave" d="M130 10 C112 55, 112 145, 130 190" fill="none"/><path class="stave" d="M150 20 C132 60, 132 140, 150 180" fill="none"/><path class="stave" d="M170 40 C152 80, 152 120, 170 160" fill="none"/></g><g clip-path="url(#barrel-clip-${c.id})"><ellipse cx="70" cy="72" rx="36" ry="8" fill="var(--glass)" /><path id="wave-${c.id}" fill="url(#wineGrad-${c.id})" opacity="0.95"></path></g><circle cx="100" cy="100" r="86" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="10" /></svg><div class="center-text"><div id="percentText-${c.id}"><b>${percentage}%</b></div><small>lleno</small></div></div>`;
+                    const fermentationButton = lot ? `<button class="fermentation-control-btn text-xs bg-blue-500 text-white px-3 py-1 rounded-full absolute bottom-2 left-3 hover:bg-blue-600" data-lot-id="${lot.id}" data-container-id="${c.id}" data-lot-name="${lot.name}">Control Fermentación</button>` : '';
+                    const editIcons = `<div class="absolute top-2 right-2 flex gap-2 text-stone-400">${canBeEdited ? `<i class="fas fa-pencil-alt cursor-pointer hover:text-stone-600 edit-container-btn" data-id="${c.id}"></i><i class="fas fa-trash-alt cursor-pointer hover:text-red-600 delete-container-btn" data-id="${c.id}"></i>` : ''}</div>`;
+                    return `<div class="relative border rounded-lg p-4 pb-10 ${statusColors[c.status.trim()] || 'bg-gray-100'}">${editIcons}<div class="flex justify-between items-center"><div class="flex-1"><p class="font-bold text-lg">${c.name}</p><p class="text-sm text-stone-600">${c.material || ''} - ${parseFloat(c.capacity_liters).toFixed(0)}L</p>${lot ? `<p class="text-sm font-semibold mt-2">Contiene: ${lot.name}</p><p class="text-sm">${parseFloat(c.current_volume).toFixed(0)} L</p>` : `<p class="text-sm mt-2 font-semibold">${c.status.charAt(0).toUpperCase() + c.status.slice(1)}</p>`}</div>${gaugeIndicator}</div>${fermentationButton}</div>`;
                 };
-                await apiFetch(endpoint, { method, body });
-            }
 
-            async function handleAssignLotSubmit(form) {
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
-                const endpoint = '/api/cellar/movements';
-                const method = 'POST';
-                const body = { lot_id: data.lot_id, destination_container_id: data.destination_container_id, volume: parseFloat(data.volume), type: 'Llenado Inicial' };
-                await apiFetch(endpoint, { method, body });
-            }
+                const renderPaginatedGrid = (allItems, gridEl, paginationEl, currentPage, pageUpdateFn) => {
+                    const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
+                    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+                    const endIndex = startIndex + ITEMS_PER_PAGE;
+                    const paginatedItems = allItems.slice(startIndex, endIndex);
 
-            async function handleAssignToBarrelsSubmit(form) {
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
-                const endpoint = '/api/cellar/movements/bulk-transfer';
-                const method = 'POST';
-                const destinations = [...form.querySelectorAll('.barrel-row')].map(row => ({ destination_container_id: row.querySelector('select').value, volume: parseFloat(row.querySelector('input[name="volume"]').value) })).filter(d => d.volume > 0 && d.destination_container_id);
-                if (destinations.length === 0) throw new Error("Debes añadir al menos una barrica de destino con un volumen válido.");
-                const body = { lot_id: data.lot_id, source_container_id: data.source_container_id, destinations: destinations, type: 'Trasiego' };
-                await apiFetch(endpoint, { method, body });
-            }
+                    gridEl.innerHTML = paginatedItems.length ? paginatedItems.map(renderCard).join('') : `<p class="text-center col-span-full py-8 text-secondary">No hay contenedores.</p>`;
+                    
+                    if (totalPages > 1) {
+                        paginationEl.style.display = 'flex';
+                        paginationEl.innerHTML = `
+                            <button class="button-3d prev-btn">
+                                <div class="button-top"><span>❮</span></div><div class="button-bottom"></div><div class="button-base"></div>
+                            </button>
+                            <span class="page-info">Página ${currentPage} de ${totalPages}</span>
+                            <button class="button-3d next-btn">
+                                <div class="button-top"><span>❯</span></div><div class="button-bottom"></div><div class="button-base"></div>
+                            </button>`;
 
-            async function handleTopUpSubmit(form) {
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
-                const endpoint = '/api/cellar/movements/top-up';
-                const method = 'POST';
-                const body = { lot_id: data.lot_id, destination_container_id: data.destination_container_id, volume: parseFloat(data.volume) };
-                await apiFetch(endpoint, { method, body });
-            }
+                        const prevBtn = paginationEl.querySelector('.prev-btn');
+                        const nextBtn = paginationEl.querySelector('.next-btn');
+                        
+                        prevBtn.disabled = currentPage === 1;
+                        nextBtn.disabled = currentPage === totalPages;
 
-            function handleUrlAnchor() { if (window.location.hash) { const targetId = window.location.hash.substring(1); const targetElement = document.getElementById(targetId); if (targetElement) { setTimeout(() => { targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); targetElement.classList.add('highlight-action'); setTimeout(() => { targetElement.classList.remove('highlight-action'); }, 1500); }, 200); } } }
-            function showAssignLotForm(lotId) { const lot = allLots.find(l => l.id === lotId); if (!lot) { alert("Error: No se encontró el lote."); return; } const availableDeposits = allContainers.filter(c => c.type.trim() === 'Depósito' && c.status.trim() === 'vacío' && parseFloat(c.capacity_liters) >= parseFloat(lot.liters_unassigned)); allElements.modalTitle.textContent = `Asignar Lote: ${lot.name}`; allElements.modalForm.dataset.formType = 'assign-lot'; allElements.modalForm.innerHTML = `<input type="hidden" name="lot_id" value="${lot.id}"><p class="mb-4">Litros a asignar: <strong>${parseFloat(lot.liters_unassigned).toFixed(2)} L</strong></p><div><label class="block text-sm font-semibold mb-1">Depósito de Destino</label><select name="destination_container_id" required class="w-full mt-1 p-2 border rounded modal-input">${availableDeposits.length > 0 ? availableDeposits.map(d => `<option value="${d.id}">${d.name} (${parseFloat(d.capacity_liters).toFixed(0)} L)</option>`).join('') : '<option disabled>No hay depósitos vacíos con capacidad suficiente.</option>'}</select></div><div><label class="block text-sm font-semibold mb-1 mt-4">Volumen a transferir (L)</label><input type="number" name="volume" step="0.1" value="${parseFloat(lot.liters_unassigned).toFixed(2)}" required class="w-full mt-1 p-2 border rounded modal-input"></div>`; allElements.modal.classList.add('modal-active'); }
-            function showAssignToBarrelsForm(lotId, sourceContainerId) { const lot = allLots.find(l => l.id === lotId); const sourceContainer = allContainers.find(c => c.id === sourceContainerId); if (!lot || !sourceContainer) { alert("Error: Lote o contenedor de origen no encontrado."); return; } const availableBarrels = allContainers.filter(c => c.type.trim() === 'Barrica' && c.status.trim() === 'vacío'); allElements.modalTitle.textContent = `Trasvasar: ${lot.name}`; allElements.modalForm.dataset.formType = 'assign-to-barrels'; allElements.modalContent.className = 'bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl m-4'; allElements.modalForm.innerHTML = `<input type="hidden" name="lot_id" value="${lot.id}"><input type="hidden" name="source_container_id" value="${sourceContainer.id}"><div class="p-2 rounded-lg bg-gray-100 border border-accent mb-4"><p>Origen: <strong>${sourceContainer.name}</strong></p><p>Volumen disponible: <strong id="source-volume">${parseFloat(sourceContainer.current_volume).toFixed(2)} L</strong></p><p class="mt-2">Volumen restante: <strong id="remaining-volume" class="text-blue-600">${parseFloat(sourceContainer.current_volume).toFixed(2)} L</strong></p></div><h4 class="font-bold">Barricas de Destino</h4><div id="barrel-destinations" class="space-y-3 max-h-64 overflow-y-auto pr-2"></div><button type="button" id="add-barrel-row" class="text-sm mt-2 cta-button text-white px-3 py-1 rounded-full">+ Añadir Barrica</button>`; const barrelDestinationsContainer = allElements.modalForm.querySelector('#barrel-destinations'); const addBarrelRowBtn = allElements.modalForm.querySelector('#add-barrel-row'); const addBarrelRow = () => { const row = document.createElement('div'); row.className = 'barrel-row grid grid-cols-1 md:grid-cols-3 gap-2 items-center'; row.innerHTML = `<select name="destination_id" class="col-span-2 w-full p-2 border rounded modal-input"><option value="">-- Seleccionar Barrica --</option>${availableBarrels.map(b => `<option value="${b.id}" data-capacity="${b.capacity_liters}">${b.name} (${parseFloat(b.capacity_liters).toFixed(0)}L)</option>`).join('')}</select><div><input type="number" name="volume" placeholder="Litros" class="w-full p-2 border rounded modal-input"><p class="error-message text-red-500 text-xs h-4"></p></div><button type="button" class="remove-barrel-row text-red-500 text-xs text-right col-start-3 -mt-4">Eliminar</button>`; barrelDestinationsContainer.appendChild(row); row.querySelector('.remove-barrel-row').onclick = () => { row.remove(); updateRemainingVolume(); }; row.querySelector('select').addEventListener('change', updateRemainingVolume); row.querySelector('input').addEventListener('input', updateRemainingVolume); }; const updateRemainingVolume = () => { const sourceVolume = parseFloat(sourceContainer.current_volume); let assignedVolume = 0; let hasError = false; allElements.modalForm.querySelectorAll('.barrel-row').forEach(row => { const volumeInput = row.querySelector('input[name="volume"]'); const select = row.querySelector('select'); const selectedOption = select.options[select.selectedIndex]; const capacity = parseFloat(selectedOption.dataset.capacity); const volume = parseFloat(volumeInput.value) || 0; const errorP = row.querySelector('.error-message'); if (capacity && volume > capacity) { errorP.textContent = `Máx: ${capacity.toFixed(0)} L`; hasError = true; } else { errorP.textContent = ''; } assignedVolume += volume; }); const remaining = sourceVolume - assignedVolume; const remainingEl = document.getElementById('remaining-volume'); remainingEl.textContent = `${remaining.toFixed(2)} L`; remainingEl.className = remaining < 0 ? 'text-red-600 font-bold' : 'text-blue-600 font-bold'; document.getElementById('modal-submit-btn').disabled = hasError || remaining < 0; }; addBarrelRowBtn.onclick = addBarrelRow; addBarrelRow(); allElements.modal.classList.add('modal-active'); }
-            function renderContainers(containers, lots) { const statusColors = { 'vacío': 'bg-green-100', 'ocupado': 'bg-amber-100', 'limpieza': 'bg-red-100' }; const renderCard = c => { const lot = c.current_lot_id ? lots.find(l => l.id === c.current_lot_id) : null; const canBeEdited = c.status !== 'ocupado'; const percentage = c.capacity_liters > 0 ? (c.current_volume / c.capacity_liters * 100).toFixed(0) : 0; const gaugeIndicator = `<div class="gauge -ml-4" id="gauge-${c.id}" data-percent="${percentage}"><svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="barrel-clip-${c.id}"><circle cx="100" cy="100" r="86"/></clipPath><linearGradient id="wineGrad-${c.id}" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#b2222f" /><stop offset="60%" stop-color="#8b0f1b" /><stop offset="100%" stop-color="#4a0510" /></linearGradient></defs><circle cx="100" cy="100" r="90" fill="var(--barrel)" stroke="#3f2b18" stroke-width="6" /><circle cx="100" cy="100" r="86" fill="none" stroke="#412b1b" stroke-width="6" /><g class="barrel-decor"><path class="stave" d="M30 40 C48 80, 48 120, 30 160" fill="none"/><path class="stave" d="M50 20 C68 60, 68 140, 50 180" fill="none"/><path class="stave" d="M70 10 C88 55, 88 145, 70 190" fill="none"/><path class="stave" d="M130 10 C112 55, 112 145, 130 190" fill="none"/><path class="stave" d="M150 20 C132 60, 132 140, 150 180" fill="none"/><path class="stave" d="M170 40 C152 80, 152 120, 170 160" fill="none"/></g><g clip-path="url(#barrel-clip-${c.id})"><ellipse cx="70" cy="72" rx="36" ry="8" fill="var(--glass)" /><path id="wave-${c.id}" fill="url(#wineGrad-${c.id})" opacity="0.95"></path></g><circle cx="100" cy="100" r="86" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="10" /></svg><div class="center-text"><div id="percentText-${c.id}"><b>${percentage}%</b></div><small>lleno</small></div></div>`; const fermentationButton = lot && c.type.trim() === 'Depósito' ? `<button class="fermentation-control-btn text-xs bg-blue-500 text-white px-3 py-1 rounded-full absolute bottom-2 left-2" data-lot-id="${lot.id}" data-container-id="${c.id}" data-lot-name="${lot.name}">Control Fermentación</button>` : ''; const editIcons = `<div class="absolute top-2 right-2 flex gap-2 text-stone-400">${canBeEdited ? `<i class="fas fa-pencil-alt cursor-pointer hover:text-stone-600 edit-container-btn" data-id="${c.id}"></i><i class="fas fa-trash-alt cursor-pointer hover:text-red-600 delete-container-btn" data-id="${c.id}"></i>` : ''}</div>`; return `<div class="relative border rounded-lg p-4 ${statusColors[c.status.trim()] || 'bg-gray-100'}">${editIcons}<div class="flex justify-between items-center"><div class="flex-1"><p class="font-bold text-lg">${c.name}</p><p class="text-sm text-stone-600">${c.material || ''} - ${parseFloat(c.capacity_liters).toFixed(0)}L</p>${lot ? `<p class="text-sm font-semibold mt-2">Contiene: ${lot.name}</p><p class="text-sm">${parseFloat(c.current_volume).toFixed(0)} L</p>` : `<p class="text-sm mt-2 font-semibold">${c.status.charAt(0).toUpperCase() + c.status.slice(1)}</p>`}</div>${gaugeIndicator}</div>${fermentationButton}</div>`; }; const deposits = containers.filter(c => c.type.trim() === 'Depósito'); const barrels = containers.filter(c => c.type.trim() === 'Barrica'); allElements.depositsGrid.innerHTML = deposits.length ? deposits.map(renderCard).join('') : '<p class="text-center col-span-full py-8 text-secondary">No hay depósitos.</p>'; allElements.barrelsGrid.innerHTML = barrels.length ? barrels.map(renderCard).join('') : '<p class="text-center col-span-full py-8 text-secondary">No hay barricas.</p>'; }
+                        prevBtn.onclick = () => { if (currentPage > 1) pageUpdateFn(currentPage - 1); };
+                        nextBtn.onclick = () => { if (currentPage < totalPages) pageUpdateFn(currentPage + 1); };
+                    } else {
+                        paginationEl.style.display = 'none';
+                    }
+                };
+                
+                const deposits = containers.filter(c => c.type.trim() === 'Depósito');
+                const barrels = containers.filter(c => c.type.trim() === 'Barrica');
+
+                renderPaginatedGrid(deposits, allElements.depositsGrid, allElements.depositsPagination, depositCurrentPage, newPage => {
+                    depositCurrentPage = newPage;
+                    renderContainers(containers, lots);
+                });
+
+                renderPaginatedGrid(barrels, allElements.barrelsGrid, allElements.barrelsPagination, barrelCurrentPage, newPage => {
+                    barrelCurrentPage = newPage;
+                    renderContainers(containers, lots);
+                });
+            }
+            
             function animateGauges() { const gauges = document.querySelectorAll('.gauge'); gauges.forEach(gauge => { const wave = document.getElementById(`wave-${gauge.id.replace('gauge-','')}`); if (!wave) return; const fillPercent = parseInt(gauge.dataset.percent, 10); const fill = fillPercent / 100; const amplitude = 4; const phase = Date.now() / 1000 * 5; const fillY = (1 - fill) * 160 + 20; const segments = 80; let d = 'M 0 ' + (Math.sin(phase) * amplitude + fillY); for(let i = 1; i <= segments; i++){ const t = i / segments; const x = t * 200; const y = Math.sin(t * 10 + phase) * amplitude + fillY; d += ` L ${x} ${y}`; } d += ` L 200 200 L 0 200 Z`; wave.setAttribute('d', d); }); requestAnimationFrame(animateGauges); }
             function closeModal() { allElements.modal.classList.remove('modal-active'); allElements.modalContent.className = 'bg-white rounded-2xl shadow-xl p-8 w-full max-w-md m-4'; }
             allElements.closeModalBtn.addEventListener('click', closeModal);
-            document.body.addEventListener('click', async (e) => { if (e.target.classList.contains('assign-lot-btn')) { showAssignLotForm(e.target.dataset.lotId); } if (e.target.classList.contains('assign-barrels-btn')) { showAssignToBarrelsForm(e.target.dataset.lotId, e.target.dataset.sourceId); } if (e.target.classList.contains('top-up-btn')) { showTopUpForm(e.target.dataset.lotId, e.target.dataset.containerId); } if (e.target.classList.contains('bottling-btn')) { const lotId = e.target.dataset.lotId; const lot = allLots.find(l => l.id === lotId); if(lot) { window.location.href = `traceability.html`; } } if (e.target.classList.contains('edit-container-btn')) { const containerData = allContainers.find(c => c.id === e.target.dataset.id); if (containerData) showContainerForm(containerData); } if (e.target.classList.contains('fermentation-control-btn')) { const { lotId, containerId, lotName } = e.target.dataset; showFermentationModal(lotId, containerId, lotName); } if (e.target.classList.contains('delete-container-btn')) { const containerId = e.target.dataset.id; if (confirm('¿Estás seguro de que quieres eliminar este contenedor?')) { try { await apiFetch(`/api/cellar/containers/${containerId}`, { method: 'DELETE' }); alert('Contenedor eliminado.'); await loadDashboard(); } catch (error) { alert(`Error al eliminar: ${error.message}`); } } } if (e.target.id === 'prepare-for-bottling-btn') { const lotsToPrepare = allLots.filter(l => l.status === 'En Crianza' && allContainers.some(c => c.current_lot_id === l.id && c.type.trim() === 'Barrica')); if (confirm(`¿Quieres mover ${lotsToPrepare.length} lote(s) a 'Listo para Embotellar'?`)) { try { for (const lot of lotsToPrepare) { await apiFetch(`/api/traceability/wine-lots/${lot.id}/prepare-for-bottling`, { method: 'PUT' }); } alert('Lotes preparados para embotellar.'); await loadDashboard(); } catch (error) { alert(`Error: ${error.message}`); } } } });
+            document.body.addEventListener('click', async (e) => { if (e.target.classList.contains('assign-lot-btn')) { showAssignLotForm(e.target.dataset.lotId); } if (e.target.classList.contains('assign-barrels-btn')) { showAssignToBarrelsForm(e.target.dataset.lotId, e.target.dataset.sourceId); } if (e.target.classList.contains('top-up-btn')) { showTopUpForm(e.target.dataset.lotId, e.target.dataset.containerId); } if (e.target.classList.contains('bottling-btn')) { const lotId = e.target.dataset.lotId; const lot = allLots.find(l => l.id === lotId); if(lot) { window.location.href = `traceability.html`; } } if (e.target.classList.contains('edit-container-btn')) { const containerData = allContainers.find(c => c.id === e.target.dataset.id); if (containerData) showContainerForm(containerData); } if (e.target.closest('.fermentation-control-btn')) { const btn = e.target.closest('.fermentation-control-btn'); const { lotId, containerId, lotName } = btn.dataset; showFermentationModal(lotId, containerId, lotName); } if (e.target.classList.contains('delete-container-btn')) { const containerId = e.target.dataset.id; if (confirm('¿Estás seguro de que quieres eliminar este contenedor?')) { try { await apiFetch(`/api/cellar/containers/${containerId}`, { method: 'DELETE' }); await loadDashboard(); } catch (error) { alert(`Error al eliminar: ${error.message}`); } } } if (e.target.id === 'prepare-for-bottling-btn') { const lotsToPrepare = allLots.filter(l => l.status === 'En Crianza' && allContainers.some(c => c.current_lot_id === l.id && c.type.trim() === 'Barrica')); if (confirm(`¿Quieres mover ${lotsToPrepare.length} lote(s) a 'Listo para Embotellar'?`)) { try { for (const lot of lotsToPrepare) { await apiFetch(`/api/traceability/wine-lots/${lot.id}/prepare-for-bottling`, { method: 'PUT' }); } alert('Lotes preparados para embotellar.'); await loadDashboard(); } catch (error) { alert(`Error: ${error.message}`); } } } });
             allElements.modalForm.addEventListener('submit', async (e) => { e.preventDefault(); const form = e.target; const formType = form.dataset.formType; try { let promise; switch (formType) { case 'container': promise = handleContainerSubmit(form); break; case 'assign-lot': promise = handleAssignLotSubmit(form); break; case 'assign-to-barrels': promise = handleAssignToBarrelsSubmit(form); break; case 'top-up': promise = handleTopUpSubmit(form); break; default: throw new Error("Tipo de formulario desconocido."); } await promise; closeModal(); await loadDashboard(); } catch (error) { alert(`Error al guardar: ${error.message}`); } });
             function renderStats(containers, lots) { const totalCapacity = containers.reduce((sum, c) => sum + parseFloat(c.capacity_liters), 0); const currentVolume = containers.reduce((sum, c) => sum + parseFloat(c.current_volume), 0); const occupationPercentage = totalCapacity > 0 ? (currentVolume / totalCapacity * 100).toFixed(1) : 0; allElements.statsPanel.innerHTML = `<div class="card p-6 rounded-2xl shadow"><h3 class="font-semibold text-secondary">Nº Contenedores</h3><p class="text-3xl font-bold">${containers.length}</p></div><div class="card p-6 rounded-2xl shadow"><h3 class="font-semibold text-secondary">Capacidad Total</h3><p class="text-3xl font-bold">${totalCapacity.toLocaleString('es-ES')} L</p></div><div class="card p-6 rounded-2xl shadow"><h3 class="font-semibold text-secondary">Ocupación</h3><p class="text-3xl font-bold">${occupationPercentage}%</p></div><div class="card p-6 rounded-2xl shadow"><h3 class="font-semibold text-secondary">Lotes Activos</h3><p class="text-3xl font-bold">${lots.length}</p></div>`; }
             function renderWineLots(lots) { allElements.wineLotsTable.innerHTML = lots.length ? lots.map(lot => `<tr class="border-b border-accent"><td class="p-3">${lot.name}</td><td class="p-3">${lot.grape_variety}</td><td class="p-3">${lot.vintage_year}</td><td class="p-3"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">${lot.status}</span></td></tr>`).join('') : '<tr><td colspan="4" class="text-center p-8 text-secondary">No hay lotes.</td></tr>'; }
@@ -384,6 +431,14 @@
             allElements.closeFermentationModalBtn.addEventListener('click', () => { allElements.fermentationModal.classList.remove('modal-active'); });
             allElements.fermentationForm.addEventListener('submit', async (e) => { e.preventDefault(); const formData = new FormData(e.target); const data = Object.fromEntries(formData.entries()); const body = { ...data, temperature: data.temperature ? parseFloat(data.temperature) : null, density: data.density ? parseFloat(data.density) : null }; try { await apiFetch('/api/cellar/fermentation-controls', { method: 'POST', body }); const history = await apiFetch(`/api/cellar/fermentation-controls/${body.lot_id}/${body.container_id}`); renderFermentationChart(history); e.target.reset(); e.target.querySelector('input[name="control_date"]').value = new Date().toISOString().split('T')[0]; } catch(error) { alert(`Error: ${error.message}`); } });
             function renderFermentationChart(data) { if (fermentationChart) fermentationChart.destroy(); const ctx = allElements.fermentationChartCanvas.getContext('2d'); fermentationChart = new Chart(ctx, { type: 'line', data: { labels: data.map(d => new Date(d.control_date).toLocaleDateString()), datasets: [ { label: 'Temperatura (°C)', data: data.map(d => d.temperature), borderColor: 'red', yAxisID: 'y_temp', tension: 0.1 }, { label: 'Densidad (g/mL)', data: data.map(d => d.density), borderColor: 'blue', yAxisID: 'y_dens', tension: 0.1 } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y_temp: { type: 'linear', display: true, position: 'left', title: { display: true, text: '°C' } }, y_dens: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'g/mL' }, grid: { drawOnChartArea: false } } } } }); }
+            
+            // Resto de funciones (sin cambios)
+            async function handleContainerSubmit(form) { /* ... */ }
+            async function handleAssignLotSubmit(form) { /* ... */ }
+            async function handleAssignToBarrelsSubmit(form) { /* ... */ }
+            async function handleTopUpSubmit(form) { /* ... */ }
+            function showAssignLotForm(lotId) { /* ... */ }
+            function showAssignToBarrelsForm(lotId, sourceContainerId) { /* ... */ }
             
             loadDashboard();
             animateGauges();
