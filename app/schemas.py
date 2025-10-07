@@ -1,11 +1,11 @@
 # Saas_GrapeIQ_V1.0/app/schemas.py
 
-from pydantic import BaseModel, Field
-from typing import Optional, List, Any, Dict
-import uuid
+from pydantic import BaseModel, Field, EmailStr
+from typing import List, Optional, Union, Dict, Any
 from datetime import date, datetime
+import uuid
 
-# --- Esquemas de Autenticación y Usuarios (SIN CAMBIOS) ---
+# --- Esquemas de Autenticación y Usuarios ---
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -16,6 +16,8 @@ class TokenData(BaseModel):
 
 class UserBase(BaseModel):
     username: str
+    email: EmailStr
+    full_name: Optional[str] = None
     role: str = "lector"
 
 class UserCreate(UserBase):
@@ -34,7 +36,7 @@ class UserUpdateResponse(UserInDB):
     new_access_token: str
     token_type: str = "bearer"
 
-# --- Esquemas del Cuaderno de Campo (SIN CAMBIOS) ---
+# --- Esquemas del Cuaderno de Campo ---
 class FieldLogBase(BaseModel):
     activity_type: str
     description: Optional[str] = None
@@ -53,7 +55,29 @@ class FieldLog(FieldLogBase):
     class Config:
         from_attributes = True
 
-# --- ESQUEMAS PARA LA ARQUITECTURA CENTRAL (ACTUALIZADOS) ---
+# =================================================================
+# INICIO DE LA CORRECCIÓN
+# Se consolidan las definiciones de Parcel en un solo lugar.
+# =================================================================
+# --- Esquemas de Parcelas ---
+class ParcelBase(BaseModel):
+    name: str
+    location: Optional[str] = None
+    area_hectares: Optional[float] = None
+    planting_year: Optional[int] = None
+    variety: Optional[str] = None  # CORRECCIÓN: Cambiado de grape_variety a variety
+    geojson_coordinates: Optional[Any] = None
+
+class ParcelCreate(ParcelBase):
+    geojson_coordinates: Optional[Any] = None
+
+class Parcel(ParcelBase):
+    id: uuid.UUID
+    tenant_id: uuid.UUID
+    geojson_coordinates: Optional[Any] = None
+    class Config:
+        from_attributes = True
+# --- Esquemas para la Arquitectura Central ---
 class WineLotBase(BaseModel):
     name: str
     grape_variety: Optional[str] = None
@@ -82,7 +106,6 @@ class ContainerBase(BaseModel):
     capacity_liters: float
     material: Optional[str] = None
     location: Optional[str] = None
-    # --- NUEVOS CAMPOS ---
     barrel_age: Optional[int] = None
     toast_level: Optional[str] = None
     cooperage: Optional[str] = None
@@ -107,13 +130,13 @@ class MovementCreate(BaseModel):
     destination_container_id: Optional[uuid.UUID] = None
     volume: float
     type: str
-    notes: Optional[str] = None # --- NUEVO CAMPO ---
+    notes: Optional[str] = None
 
 class ToppingUpCreate(BaseModel):
     lot_id: uuid.UUID
     destination_container_id: uuid.UUID
     volume: float
-    type: str = "Rellenado"
+    type: str = "Relleno"
 
 class WineLotInContainer(WineLot):
     containers: List[Container] = []
@@ -151,8 +174,7 @@ class BottlingToProductCreate(BaseModel):
     product_price: float
     bottles_produced: int
 
-# --- NUEVOS ESQUEMAS PARA TRAZABILIDAD AVANZADA ---
-
+# --- Esquemas para Trazabilidad Avanzada ---
 class FermentationControlBase(BaseModel):
     container_id: uuid.UUID
     lot_id: uuid.UUID
@@ -222,22 +244,7 @@ class BottlingEvent(BottlingEventBase):
     class Config:
         from_attributes = True
 
-
-# --- Esquemas para el "Cerebro" (SIN CAMBIOS) ---
-class ParcelBase(BaseModel):
-    name: str
-    variety: Optional[str] = None
-    area_hectares: Optional[float] = None
-    geojson_coordinates: Optional[Any] = None
-
-class ParcelCreate(ParcelBase):
-    pass
-
-class Parcel(ParcelBase):
-    id: uuid.UUID
-    class Config:
-        from_attributes = True
-
+# --- Esquemas para el "Cerebro" (Finanzas, Costes, etc.) ---
 class CostParameterBase(BaseModel):
     parameter_name: str
     category: str
@@ -279,6 +286,15 @@ class ProductBase(BaseModel):
 class ProductCreate(ProductBase):
     wine_lot_origin_id: Optional[uuid.UUID] = None
     stock_units: int = 0
+    unit_cost: Optional[float] = None
+
+class ProductUpdate(BaseModel):
+    name: Optional[str] = None
+    sku: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[float] = None
+    stock_units: Optional[int] = None
+    variety: Optional[str] = None
 
 class Product(ProductBase):
     id: uuid.UUID
@@ -288,7 +304,7 @@ class Product(ProductBase):
     class Config:
         from_attributes = True
 
-# --- Esquemas para Ventas (SIN CAMBIOS) ---
+# --- Esquemas para Ventas ---
 class SaleDetailBase(BaseModel):
     product_id: uuid.UUID
     quantity: int
@@ -378,7 +394,7 @@ class SunburstCategory(BaseModel):
     name: str
     children: List[SunburstItem]
 
-# --- ESQUEMAS PARA FORECASTING AVANZADO (SIN CAMBIOS) ---
+# --- Esquemas para Forecasting Avanzado ---
 class ForecastPoint(BaseModel):
     date: str
     forecast: float

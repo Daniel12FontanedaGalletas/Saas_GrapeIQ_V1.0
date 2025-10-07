@@ -126,21 +126,33 @@ def update_wine_lot_status(lot_id: uuid.UUID, status_update: schemas.WineLotStat
 @router.delete("/wine-lots/{lot_id}", status_code=204)
 def delete_wine_lot(lot_id: uuid.UUID, current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
     """
-    Elimina un lote de vino y toda su información asociada, liberando los contenedores.
+    Elimina un lote de vino y toda su información asociada, incluyendo el producto del catálogo.
     """
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
+                # Eliminar el producto asociado al lote de vino
+                cur.execute("DELETE FROM products WHERE wine_lot_origin_id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
+                
+                # Liberar contenedores
                 cur.execute("UPDATE containers SET current_lot_id = NULL, current_volume = 0, status = 'vacío' WHERE current_lot_id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
-                cur.execute("UPDATE products SET wine_lot_origin_id = NULL WHERE wine_lot_origin_id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
+                
+                # Eliminar información relacionada (movimientos, analíticas, costes)
                 cur.execute("DELETE FROM movements WHERE lot_id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
                 cur.execute("DELETE FROM lab_analytics WHERE lot_id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
                 cur.execute("DELETE FROM costs WHERE related_lot_id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
+                
+                # Finalmente, eliminar el lote de vino
                 cur.execute("DELETE FROM wine_lots WHERE id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
+                
                 conn.commit()
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Error al eliminar lote: {e}")
+
+# =================================================================
+# FIN DE LA CORRECCIÓN
+# =================================================================
 
 @router.put("/wine-lots/{lot_id}/prepare-for-bottling", response_model=schemas.WineLot)
 def prepare_lot_for_bottling(lot_id: uuid.UUID, current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
@@ -208,11 +220,8 @@ def prepare_lot_for_bottling(lot_id: uuid.UUID, current_user: schemas.UserInDB =
         conn.rollback()
         if isinstance(error, HTTPException): raise error
         raise HTTPException(status_code=500, detail=f"Error en la base de datos: {str(error)}")
-# =================================================================
-# FIN DE LA CORRECCIÓN
-# =================================================================
 
-# --- NUEVOS ENDPOINTS PARA TRAZABILIDAD AVANZADA ---
+# --- ENDPOINTS PARA TRAZABILIDAD AVANZADA ---
 
 @router.post("/lab-analytics/", response_model=schemas.LabAnalytic, status_code=201)
 def add_lab_analytic(analytic: schemas.LabAnalyticCreate, current_user: schemas.UserInDB = Depends(security.get_current_active_user)):

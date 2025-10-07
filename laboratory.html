@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Laboratorio y Enología - GrapeIQ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        :root { /* Tema Claro (Por Defecto) */
+            --bg-color: #F8F7F4; --text-color: #1c1917; --text-secondary-color: #57534e;
+            --header-bg-color: #292524; --tab-active-color: #5C1A33; --border-color: #e5e7eb;
+            --card-bg: #FFFFFF; --modal-input-bg: #FFFFFF; --cta-button-bg: #5C1A33; --secondary-button-bg: #e5e7eb;
+        }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-color); color: var(--text-color); }
+        .tab-active { border-color: var(--tab-active-color) !important; color: var(--tab-active-color) !important; font-weight: 700; }
+        .text-secondary { color: var(--text-secondary-color); } .bg-dark { background-color: var(--header-bg-color); }
+        .border-accent { border-color: var(--border-color); } .card { background-color: var(--card-bg); }
+        .modal-input { background-color: var(--modal-input-bg); border-color: var(--border-color); }
+        .cta-button { background-color: var(--cta-button-bg); color: white; }
+        .secondary-button { background-color: var(--secondary-button-bg); }
+        .modal { display: none; } .modal-active { display: flex; }
+    </style>
+</head>
+<body>
+    <div class="p-4 sm:p-8">
+        <header class="flex justify-between items-center mb-6">
+            <a href="performance.html" class="flex items-center gap-4">
+                <img src="assets/GrapeIQ.png" alt="GrapeIQ Logo" class="h-10">
+                <span class="text-3xl font-light text-secondary">|</span>
+                <h1 class="text-3xl font-semibold">Laboratorio</h1>
+            </a>
+            <button id="logout-btn" class="bg-dark text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
+        </header>
+        <div class="mb-8 border-b border-accent">
+             <nav class="flex space-x-8 overflow-x-auto pb-2">
+                <a href="performance.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Análisis de Rendimiento</a>
+                <a href="forecast.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Predicciones</a>
+                <a href="catalog.html" id="menu-catalogo" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Catálogo</a>
+                <a href="daily-log.html" id="menu-registro-diario" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Registro Diario</a>
+                <a href="financials.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Finanzas</a>
+                <a href="field_log.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Cuaderno de Campo</a>
+                <a href="traceability.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Trazabilidad</a>
+                <a href="cellar_management.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Gestión de Bodega</a>
+                <a href="laboratory.html" class="px-1 py-4 border-b-2 font-semibold text-lg tab-active">Laboratorio</a>
+                <a href="parcels.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Parcelas</a>
+                <a href="weather.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Clima</a>
+                <a href="settings.html" class="px-1 py-4 border-b-2 font-semibold text-lg text-secondary hover:text-primary border-transparent">Configuración</a>
+            </nav>
+        </div>
+
+        <main class="space-y-8">
+            <div class="card p-6 rounded-2xl shadow-lg flex justify-between items-start">
+                <div>
+                    <h2 class="text-3xl font-bold" id="lot-name-title">Cargando...</h2>
+                    <p class="text-secondary mt-1" id="lot-details"></p>
+                </div>
+                <div class="flex flex-col items-end gap-2">
+                     <button id="add-analytic-btn" class="cta-button px-4 py-2 rounded-full font-semibold text-sm">Añadir Analítica</button>
+                     <button id="add-action-btn" class="secondary-button px-4 py-2 rounded-full font-semibold text-sm">Registrar Acción</button>
+                </div>
+            </div>
+
+            <div id="vinification-section" class="hidden">
+                <h3 class="text-2xl font-bold mb-4">Fase de Vinificación</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 card p-6 rounded-2xl shadow-lg">
+                        <h4 class="text-xl font-bold mb-4">Historial y Controles</h4>
+                        <div id="vinification-history" class="space-y-4 max-h-[60vh] overflow-y-auto pr-4"></div>
+                    </div>
+                    <div class="space-y-8">
+                        <div id="vinification-containers" class="card p-6 rounded-2xl shadow-lg"></div>
+                        <div class="card p-6 rounded-2xl shadow-lg">
+                             <h4 class="text-xl font-bold mb-4">Curva de Fermentación</h4>
+                             <div id="fermentation-chart" style="width: 100%; height: 300px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="aging-section" class="hidden">
+                <h3 class="text-2xl font-bold mb-4">Fase de Crianza</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 card p-6 rounded-2xl shadow-lg">
+                        <h4 class="text-xl font-bold mb-4">Barricas Asignadas</h4>
+                        <div id="aging-containers" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
+                     <div class="card p-6 rounded-2xl shadow-lg">
+                        <h4 class="text-xl font-bold mb-4">Historial de Crianza</h4>
+                        <div id="aging-history" class="space-y-4 max-h-[60vh] overflow-y-auto pr-4"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div id="analytic-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50">
+        <div class="card p-8 rounded-2xl shadow-xl w-full max-w-lg m-4">
+            <h3 class="text-2xl font-bold mb-6">Nueva Analítica para: <span id="analytic-modal-lot-name"></span></h3>
+            <form id="analytic-form" class="space-y-4">
+                <input type="hidden" name="lot_id">
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm">Fecha</label><input type="date" name="analysis_date" required class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Grado Alc. (%)</label><input type="number" step="0.01" name="alcoholic_degree" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm">Acidez Total (g/L)</label><input type="number" step="0.01" name="total_acidity" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Acidez Volátil (g/L)</label><input type="number" step="0.01" name="volatile_acidity" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div><label class="block text-sm">pH</label><input type="number" step="0.01" name="ph" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">SO₂ Libre (mg/L)</label><input type="number" name="free_so2" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">SO₂ Total (mg/L)</label><input type="number" name="total_so2" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                </div>
+                <div><label class="block text-sm">Notas Enólogo</label><textarea name="notes" rows="3" class="w-full mt-1 p-2 border rounded modal-input"></textarea></div>
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" class="modal-close-btn secondary-button px-5 py-2 rounded-full font-semibold">Cancelar</button>
+                    <button type="submit" class="cta-button px-5 py-2 rounded-full font-semibold">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="action-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50">
+         <div class="card p-8 rounded-2xl shadow-xl w-full max-w-lg m-4">
+            <h3 class="text-2xl font-bold mb-6">Registrar Acción de Vinificación</h3>
+            <form id="action-form" class="space-y-4">
+                 <input type="hidden" name="lot_id">
+                 <input type="hidden" name="container_id">
+                 <div><label class="block text-sm">Fecha</label><input type="date" name="control_date" required class="w-full mt-1 p-2 border rounded modal-input"></div>
+                 <div>
+                    <label class="block text-sm">Tipo de Acción</label>
+                    <select name="action_type" class="w-full mt-1 p-2 border rounded modal-input">
+                        <option value="remontado">Remontado</option>
+                        <option value="bazuqueo">Bazuqueo</option>
+                        <option value="adicion">Adición Enológica</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                 </div>
+                 <div id="remontado-fields">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-sm">Frecuencia (veces/día)</label><input type="number" name="remontado_freq" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                        <div><label class="block text-sm">Duración (minutos)</label><input type="number" name="remontado_dur" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    </div>
+                 </div>
+                 <div id="adicion-fields" class="hidden">
+                    <label class="block text-sm">Descripción de la Adición</label>
+                    <input type="text" name="adicion_desc" placeholder="Ej: 20g/hL de levadura X" class="w-full mt-1 p-2 border rounded modal-input">
+                 </div>
+                 <div><label class="block text-sm">Notas</label><textarea name="notes" rows="2" class="w-full mt-1 p-2 border rounded modal-input"></textarea></div>
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" class="modal-close-btn secondary-button px-5 py-2 rounded-full font-semibold">Cancelar</button>
+                    <button type="submit" class="cta-button px-5 py-2 rounded-full font-semibold">Guardar Acción</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        const TOKEN_KEY = 'accessToken';
+        let lotData = null;
+        let containersData = [];
+        let analyticsData = [];
+        let fermentationData = [];
+        let movementsData = [];
+
+        function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+        
+        async function apiFetch(endpoint, options = {}) {
+            const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}` };
+            const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+            if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
+            if (!resp.ok) { const data = await resp.json().catch(() => ({ detail: `Error HTTP ${resp.status}` })); throw new Error(data.detail); }
+            return resp.status === 204 ? null : resp.json();
+        }
+
+        function renderUI() {
+            if (!lotData) return;
+            document.getElementById('lot-name-title').textContent = lotData.name;
+            document.getElementById('lot-details').textContent = `Variedad: ${lotData.grape_variety || 'N/A'} | Año: ${lotData.vintage_year || 'N/A'} | Estado: ${lotData.status}`;
+
+            if (lotData.status === 'En Fermentación') {
+                document.getElementById('vinification-section').classList.remove('hidden');
+                document.getElementById('aging-section').classList.add('hidden');
+                renderVinificationView();
+            } else if (lotData.status === 'En Crianza' || lotData.status === 'Listo para Embotellar') {
+                 document.getElementById('vinification-section').classList.add('hidden');
+                document.getElementById('aging-section').classList.remove('hidden');
+                renderAgingView();
+            }
+        }
+        
+        function renderVinificationView() {
+            const historyContainer = document.getElementById('vinification-history');
+            const containersContainer = document.getElementById('vinification-containers');
+            const fermentationChartContainer = document.getElementById('fermentation-chart');
+
+            const tank = containersData.find(c => c.type.trim() === 'Depósito');
+            if (tank) {
+                containersContainer.innerHTML = `<h4 class="text-xl font-bold mb-2">Depósito Asignado</h4>
+                    <p><strong>Nombre:</strong> ${tank.name}</p>
+                    <p><strong>Volumen Actual:</strong> ${parseFloat(tank.current_volume).toFixed(0)} L</p>
+                    <p><strong>Material:</strong> ${tank.material}</p>`;
+            } else {
+                 containersContainer.innerHTML = `<h4 class="text-xl font-bold mb-2">Depósito Asignado</h4><p class="text-secondary">Sin depósito asignado.</p>`;
+            }
+            
+            const combinedHistory = [
+                ...analyticsData.map(a => ({ ...a, type: 'analytic', date: a.analysis_date })),
+                ...fermentationData.map(f => ({ ...f, type: 'control', date: f.control_date }))
+            ].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            historyContainer.innerHTML = combinedHistory.length ? combinedHistory.map(renderHistoryItem).join('') : '<p class="text-secondary text-center">Sin historial.</p>';
+            renderFermentationChart(fermentationData, fermentationChartContainer);
+        }
+
+        function renderAgingView() {
+            const containersContainer = document.getElementById('aging-containers');
+            const historyContainer = document.getElementById('aging-history');
+
+            const barrels = containersData.filter(c => c.type.trim() === 'Barrica');
+            containersContainer.innerHTML = barrels.length ? barrels.map(b => `
+                <div class="card p-4 rounded-lg border-accent">
+                    <p class="font-bold">${b.name}</p>
+                    <p class="text-sm"><strong>Volumen:</strong> ${parseFloat(b.current_volume).toFixed(0)} L</p>
+                    <p class="text-sm"><strong>Material:</strong> ${b.material} (${b.toast_level})</p>
+                    <p class="text-sm"><strong>Tonelería:</strong> ${b.cooperage || 'N/A'}</p>
+                </div>
+            `).join('') : '<p class="text-secondary">No hay barricas asignadas.</p>';
+
+            historyContainer.innerHTML = analyticsData.length ? analyticsData.map(renderHistoryItem).join('') : '<p class="text-secondary text-center">Sin historial.</p>';
+        }
+
+        function renderHistoryItem(item) {
+             const itemDate = new Date(item.date).toLocaleDateString();
+             let content = '';
+             switch(item.type) {
+                case 'analytic':
+                    content = `<div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                        <span><strong>pH:</strong> ${item.ph || '-'}</span>
+                        <span><strong>Ac. Total:</strong> ${item.total_acidity || '-'} g/L</span>
+                        <span><strong>SO₂ Libre:</strong> ${item.free_so2 || '-'} mg/L</span>
+                        <span><strong>SO₂ Total:</strong> ${item.total_so2 || '-'} mg/L</span>
+                       </div>`;
+                    break;
+                case 'control':
+                     content = `<p class="text-sm">Control de fermentación: Temp ${item.temperature}°C, Densidad ${item.density}</p>`;
+                     if(item.notes) content += `<p class="text-xs text-secondary italic mt-1">Nota: ${item.notes}</p>`;
+                    break;
+             }
+            return `<div class="border-l-4 pl-4 py-2 border-accent">
+                        <p class="font-bold text-sm">${itemDate} - <span class="capitalize font-medium text-secondary">${item.type}</span></p>
+                        <div class="mt-2">${content}</div>
+                    </div>`;
+        }
+        
+        function renderFermentationChart(data, container) {
+            let chart = echarts.getInstanceByDom(container);
+            if (!chart) chart = echarts.init(container);
+            
+            const option = {
+                tooltip: { trigger: 'axis' },
+                legend: { data: ['Temperatura', 'Densidad'] },
+                xAxis: { type: 'category', data: data.map(d => new Date(d.control_date).toLocaleDateString()) },
+                yAxis: [
+                    { type: 'value', name: '°C', position: 'left' },
+                    { type: 'value', name: 'g/mL', position: 'right', splitLine: { show: false } }
+                ],
+                series: [
+                    { name: 'Temperatura', type: 'line', yAxisIndex: 0, data: data.map(d => d.temperature) },
+                    { name: 'Densidad', type: 'line', yAxisIndex: 1, data: data.map(d => d.density) }
+                ]
+            };
+            chart.setOption(option);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            requireAuth();
+            document.getElementById('logout-btn').addEventListener('click', logout);
+            const urlParams = new URLSearchParams(window.location.search);
+            const lotId = urlParams.get('lotId');
+
+            if (!lotId) {
+                document.getElementById('lot-name-title').textContent = "Error";
+                document.getElementById('lot-details').textContent = "No se ha especificado un lote.";
+                return;
+            }
+
+            try {
+                const [lots, allContainers] = await Promise.all([
+                    apiFetch('/api/traceability/wine-lots'),
+                    apiFetch('/api/cellar/containers')
+                ]);
+                lotData = lots.find(l => l.id === lotId);
+                containersData = allContainers.filter(c => c.current_lot_id === lotId);
+                
+                if (lotData.status === 'En Fermentación' && containersData.length > 0) {
+                    const tank = containersData.find(c => c.type.trim() === 'Depósito');
+                    if (tank) {
+                       fermentationData = await apiFetch(`/api/cellar/fermentation-controls/${lotId}/${tank.id}`);
+                    }
+                }
+                analyticsData = await apiFetch(`/api/traceability/lab-analytics/${lotId}`);
+                
+                renderUI();
+
+            } catch(e) { alert(`Error al cargar los datos: ${e.message}`); }
+            
+            // Lógica de Modales
+            const analyticModal = document.getElementById('analytic-modal');
+            const actionModal = document.getElementById('action-modal');
+
+            document.getElementById('add-analytic-btn').addEventListener('click', () => {
+                const form = document.getElementById('analytic-form');
+                form.reset();
+                form.querySelector('input[name="lot_id"]').value = lotId;
+                document.getElementById('analytic-modal-lot-name').textContent = lotData.name;
+                form.querySelector('input[name="analysis_date"]').value = new Date().toISOString().split('T')[0];
+                analyticModal.classList.add('modal-active');
+            });
+            
+             document.getElementById('add-action-btn').addEventListener('click', () => {
+                const form = document.getElementById('action-form');
+                form.reset();
+                const tank = containersData.find(c => c.type.trim() === 'Depósito');
+                if(!tank) { alert("No hay un depósito asignado a este lote para registrar acciones."); return; }
+                form.querySelector('input[name="lot_id"]').value = lotId;
+                form.querySelector('input[name="container_id"]').value = tank.id;
+                form.querySelector('input[name="control_date"]').value = new Date().toISOString().split('T')[0];
+                actionModal.classList.add('modal-active');
+            });
+
+            document.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', () => {
+                analyticModal.classList.remove('modal-active');
+                actionModal.classList.remove('modal-active');
+            }));
+
+            document.getElementById('analytic-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const body = Object.fromEntries(new FormData(e.target).entries());
+                Object.keys(body).forEach(key => { if(key !== 'lot_id' && key !== 'analysis_date' && key !== 'notes') body[key] = body[key] ? parseFloat(body[key]) : null; });
+                try {
+                    await apiFetch('/api/traceability/lab-analytics/', { method: 'POST', body });
+                    analyticModal.classList.remove('modal-active');
+                    analyticsData = await apiFetch(`/api/traceability/lab-analytics/${lotId}`);
+                    renderUI();
+                } catch (error) { alert(`Error: ${error.message}`); }
+            });
+            
+             document.getElementById('action-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                const body = {
+                    container_id: data.container_id, lot_id: data.lot_id, control_date: data.control_date, notes: data.notes,
+                    // Aquí empaquetamos los datos específicos de la acción
+                    pump_overs: { frequency: data.remontado_freq, duration: data.remontado_dur },
+                    enological_additions: { description: data.adicion_desc }
+                };
+                
+                try {
+                    // El endpoint es el de fermentation-controls, que ahora acepta más datos
+                    await apiFetch('/api/cellar/fermentation-controls/', { method: 'POST', body });
+                    actionModal.classList.remove('modal-active');
+                    const tank = containersData.find(c => c.type.trim() === 'Depósito');
+                    fermentationData = await apiFetch(`/api/cellar/fermentation-controls/${lotId}/${tank.id}`);
+                    renderUI();
+                } catch(error){ alert(`Error: ${error.message}`); }
+             });
+
+            document.querySelector('select[name="action_type"]').addEventListener('change', e => {
+                document.getElementById('remontado-fields').style.display = e.target.value === 'remontado' || e.target.value === 'bazuqueo' ? 'block' : 'none';
+                document.getElementById('adicion-fields').style.display = e.target.value === 'adicion' ? 'block' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

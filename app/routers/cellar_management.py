@@ -240,45 +240,6 @@ def record_movement(movement: schemas.MovementCreate, current_user: schemas.User
             
     return {"message": "Movimiento registrado con éxito"}
 
-@router.post("/movements/bottling", status_code=201)
-def record_bottling(
-    bottling_request: schemas.BottlingCreate,
-    current_user: schemas.UserInDB = Depends(security.get_current_active_user)
-):
-    """ (Versión Antigua) Registra el embotellado. """
-    if not bottling_request.source_container_ids:
-        raise HTTPException(status_code=400, detail="Se debe especificar al menos un contenedor de origen.")
-    try:
-        with get_db_connection() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                total_bottled_volume = 0
-                for source_id in bottling_request.source_container_ids:
-                    cur.execute("SELECT current_volume FROM containers WHERE id = %s", (str(source_id),))
-                    volume_rec = cur.fetchone()
-                    if not volume_rec: continue
-                    
-                    volume_to_bottle = float(volume_rec['current_volume'])
-                    total_bottled_volume += volume_to_bottle
-                    
-                    cur.execute(
-                        "INSERT INTO movements (id, lot_id, source_container_id, volume, type, tenant_id, movement_date) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-                        (str(uuid.uuid4()), str(bottling_request.lot_id), str(source_id), volume_to_bottle, 'Embotellado', str(current_user.tenant_id), datetime.utcnow())
-                    )
-                    cur.execute("UPDATE containers SET current_volume = 0, status = 'vacío', current_lot_id = NULL WHERE id = %s", (str(source_id),))
-                
-                cur.execute("SELECT SUM(current_volume) as total FROM containers WHERE current_lot_id = %s AND tenant_id = %s", (str(bottling_request.lot_id), str(current_user.tenant_id)))
-                remaining_volume_rec = cur.fetchone()
-                remaining_volume = (remaining_volume_rec['total'] or 0) if remaining_volume_rec else 0
-
-                if remaining_volume < 0.01:
-                    cur.execute("UPDATE wine_lots SET status = 'Embotellado' WHERE id = %s", (str(bottling_request.lot_id),))
-                
-                conn.commit()
-    except (Exception, psycopg2.Error) as error:
-        conn.rollback()
-        raise HTTPException(status_code=500, detail=f"Error en la base de datos: {error}")
-    return {"message": f"Embotellado simple de {total_bottled_volume}L registrado."}
-    
 # =================================================================
 # INICIO DE LA CORRECCIÓN
 # =================================================================
@@ -287,7 +248,10 @@ def bottling_and_create_product(
     request: schemas.BottlingToProductCreate,
     current_user: schemas.UserInDB = Depends(security.get_current_active_user)
 ):
-    """ Registra un embotellado, calcula el coste y crea el producto. """
+    """
+    Registra un embotellado. Si el SKU ya existe, actualiza el stock.
+    Si no existe, calcula el coste y crea el nuevo producto.
+    """
     if not request.source_container_ids:
         raise HTTPException(status_code=400, detail="Se debe especificar al menos un contenedor de origen.")
     if request.bottles_produced <= 0:
@@ -296,68 +260,73 @@ def bottling_and_create_product(
     try:
         with get_db_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute("SELECT origin_parcel_id FROM wine_lots WHERE id = %s", (str(request.lot_id),))
-                origin_parcel_record = cur.fetchone()
-                
-                total_cost_parcel = 0
-                if origin_parcel_record and origin_parcel_record['origin_parcel_id']:
-                    origin_parcel_id = str(origin_parcel_record['origin_parcel_id'])
-                    cur.execute("SELECT COALESCE(SUM(amount), 0) as total FROM costs WHERE related_parcel_id = %s", (origin_parcel_id,))
-                    total_cost_parcel = cur.fetchone()['total']
-
-                cur.execute("SELECT COALESCE(SUM(amount), 0) as total FROM costs WHERE related_lot_id = %s", (str(request.lot_id),))
-                total_cost_lot = cur.fetchone()['total']
-                
-                total_production_cost = float(total_cost_lot) + float(total_cost_parcel)
-                unit_cost = total_production_cost / request.bottles_produced if request.bottles_produced > 0 else 0
-
-                total_bottled_volume = 0
-                for source_id in request.source_container_ids:
-                    cur.execute("SELECT current_volume FROM containers WHERE id = %s AND tenant_id = %s", (str(source_id), str(current_user.tenant_id)))
-                    volume_rec = cur.fetchone()
-                    if not volume_rec:
-                        raise HTTPException(status_code=404, detail=f"Contenedor de origen {source_id} no encontrado.")
-                    
-                    volume_to_bottle = float(volume_rec['current_volume'])
-                    total_bottled_volume += volume_to_bottle
-                    
-                    cur.execute(
-                        "INSERT INTO movements (id, lot_id, source_container_id, volume, type, tenant_id, movement_date) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-                        (str(uuid.uuid4()), str(request.lot_id), str(source_id), volume_to_bottle, 'Embotellado y Creación de Producto', str(current_user.tenant_id), datetime.utcnow())
-                    )
-                    
-                    cur.execute("UPDATE containers SET current_volume = 0, status = 'vacío', current_lot_id = NULL WHERE id = %s", (str(source_id),))
-                
-                cur.execute("SELECT SUM(current_volume) as total FROM containers WHERE current_lot_id = %s AND tenant_id = %s", (str(request.lot_id), str(current_user.tenant_id)))
-                remaining_volume_rec = cur.fetchone()
-                remaining_volume = float(remaining_volume_rec['total'] or 0) if remaining_volume_rec else 0
-
-                if remaining_volume < 0.01:
-                    cur.execute("UPDATE wine_lots SET status = 'Embotellado' WHERE id = %s", (str(request.lot_id),))
-
-                new_product_id = uuid.uuid4()
+                # 1. Comprobar si el producto ya existe por SKU
                 cur.execute(
-                    """
-                    INSERT INTO products (id, tenant_id, name, sku, price, unit_cost, wine_lot_origin_id, stock_units)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (str(new_product_id), str(current_user.tenant_id), request.product_name, request.product_sku, request.product_price, unit_cost, str(request.lot_id), request.bottles_produced)
+                    "SELECT id, name FROM products WHERE sku = %s AND tenant_id = %s",
+                    (request.product_sku, str(current_user.tenant_id))
                 )
-                conn.commit()
+                existing_product = cur.fetchone()
+
+                # 2. Vaciar contenedores y registrar movimientos (común para ambos casos)
+                for source_id in request.source_container_ids:
+                    cur.execute(
+                        "INSERT INTO movements (id, lot_id, source_container_id, volume, type, tenant_id, movement_date) "
+                        "SELECT %s, %s, %s, current_volume, 'Embotellado', %s, %s FROM containers WHERE id = %s",
+                        (str(uuid.uuid4()), str(request.lot_id), str(source_id), str(current_user.tenant_id), datetime.utcnow(), str(source_id))
+                    )
+                    cur.execute("UPDATE containers SET current_volume = 0, status = 'vacío', current_lot_id = NULL WHERE id = %s", (str(source_id),))
+
+                # 3. Actualizar estado del lote
+                cur.execute("UPDATE wine_lots SET status = 'Embotellado' WHERE id = %s", (str(request.lot_id),))
+                
+                if existing_product:
+                    # 4a. Si el producto existe, actualizar stock
+                    cur.execute(
+                        "UPDATE products SET stock_units = stock_units + %s WHERE id = %s",
+                        (request.bottles_produced, str(existing_product['id']))
+                    )
+                    conn.commit()
+                    return {
+                        "message": f"Embotellado completado. Se han añadido {request.bottles_produced} unidades al stock del producto existente '{existing_product['name']}'.",
+                        "updated_product_id": str(existing_product['id'])
+                    }
+                else:
+                    # 4b. Si el producto no existe, calcular costes y crearlo
+                    cur.execute("SELECT origin_parcel_id FROM wine_lots WHERE id = %s", (str(request.lot_id),))
+                    origin_parcel_record = cur.fetchone()
+                    
+                    total_cost_parcel = 0
+                    if origin_parcel_record and origin_parcel_record['origin_parcel_id']:
+                        origin_parcel_id = str(origin_parcel_record['origin_parcel_id'])
+                        cur.execute("SELECT COALESCE(SUM(amount), 0) as total FROM costs WHERE related_parcel_id = %s", (origin_parcel_id,))
+                        total_cost_parcel = cur.fetchone()['total']
+
+                    cur.execute("SELECT COALESCE(SUM(amount), 0) as total FROM costs WHERE related_lot_id = %s", (str(request.lot_id),))
+                    total_cost_lot = cur.fetchone()['total']
+                    
+                    total_production_cost = float(total_cost_lot) + float(total_cost_parcel)
+                    unit_cost = total_production_cost / request.bottles_produced if request.bottles_produced > 0 else 0
+
+                    new_product_id = uuid.uuid4()
+                    cur.execute(
+                        """
+                        INSERT INTO products (id, tenant_id, name, sku, price, unit_cost, wine_lot_origin_id, stock_units)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                        """,
+                        (str(new_product_id), str(current_user.tenant_id), request.product_name, request.product_sku, request.product_price, unit_cost, str(request.lot_id), request.bottles_produced)
+                    )
+                    conn.commit()
+                    return {
+                        "message": f"Embotellado completado. Producto '{request.product_name}' creado con {request.bottles_produced} unidades.",
+                        "calculated_unit_cost": f"{unit_cost:.4f}",
+                        "new_product_id": str(new_product_id)
+                    }
 
     except (Exception, psycopg2.Error) as error:
         conn.rollback()
-        if isinstance(error, HTTPException):
-            raise error
-        if "duplicate key" in str(error).lower():
-            raise HTTPException(status_code=409, detail=f"El SKU '{request.product_sku}' ya existe.")
+        if isinstance(error, HTTPException): raise error
         raise HTTPException(status_code=500, detail=f"Error en la transacción de base de datos: {error}")
 
-    return {
-        "message": f"Embotellado completado. Producto '{request.product_name}' creado con {request.bottles_produced} unidades.",
-        "calculated_unit_cost": f"{unit_cost:.4f}",
-        "new_product_id": str(new_product_id)
-    }
 # =================================================================
 # FIN DE LA CORRECCIÓN
 # =================================================================

@@ -1,9 +1,10 @@
-from .. import crud
+# Saas_GrapeIQ_V1.0/app/routers/auth.py
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from ..services import security
-from .. import schemas
+from .. import schemas, crud
 
 router = APIRouter(
     prefix="/api/auth",
@@ -24,9 +25,6 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Si el usuario no tiene un rol en la base de datos (porque es antiguo),
-    # le asignamos 'admin' por defecto para que pueda iniciar sesión.
-    # Esto hace que el sistema sea retrocompatible.
     user_role = user.role or "admin"
 
     access_token = security.create_access_token(
@@ -42,4 +40,3 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
         "token_type": "bearer",
         "role": user_role
     }
-

@@ -1,19 +1,21 @@
+# Saas_GrapeIQ_V1.0/app/services/security.py
+
 import os
 from datetime import datetime, timedelta
 from typing import List
-from .. import crud
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from dotenv import load_dotenv
-from .. import models, schemas
+
+from .. import crud, schemas
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
+SECRET_KEY = os.getenv("SECRET_KEY", "un_valor_secreto_por_defecto_muy_largo")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
@@ -53,19 +55,11 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> schemas.UserInDB:
     
     return user
 
-# --- MODIFICACIÓN: Añadimos la función que faltaba ---
 def get_current_active_user(current_user: schemas.UserInDB = Depends(get_current_user)) -> schemas.UserInDB:
-    """
-    Esta función es una dependencia que simplemente reenvía el usuario actual.
-    Sirve para mantener la consistencia con el router de usuarios que la estaba pidiendo.
-    """
-    # En un futuro, aquí se podría añadir lógica para comprobar si el usuario está "activo".
-    # Por ahora, simplemente lo devolvemos.
     return current_user
 
-
 def role_checker(required_roles: List[str]):
-    def check_user_role(current_user: schemas.User = Depends(get_current_user)) -> schemas.User:
+    def check_user_role(current_user: schemas.UserInDB = Depends(get_current_user)) -> schemas.UserInDB:
         if current_user.role not in required_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

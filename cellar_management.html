@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* --- Sistema de Temas --- */
         :root { /* Tema Blanco por Defecto */
             --bg-color: #F8F7F4;
             --text-color: #1c1917; /* stone-900 */
@@ -42,18 +41,13 @@
             --pending-text: #5C4033;
         }
         
-        /* --- Estilos Generales con Variables --- */
         body { 
             font-family: 'Montserrat', sans-serif; 
             background-color: var(--bg-color); 
             color: var(--text-color);
             transition: background-color 0.3s, color 0.3s;
         }
-        .tab-active { 
-            border-color: var(--tab-active-color) !important; 
-            color: var(--tab-active-color) !important; 
-            font-weight: 700; 
-        }
+        .tab-active { border-color: var(--tab-active-color) !important; color: var(--tab-active-color) !important; font-weight: 700; }
         .text-secondary { color: var(--text-secondary-color); }
         .bg-dark { background-color: var(--header-bg-color); }
         .border-accent { border-color: var(--border-color); }
@@ -61,11 +55,9 @@
         .secondary-button { background-color: var(--secondary-button-bg); color: white; }
         .card { background-color: var(--card-bg); }
         .modal-input { background-color: var(--modal-input-bg); border-color: var(--border-color); }
-
         .modal { display: none; }
         .modal-active { display: flex; }
 
-        /* --- ESTILOS PARA EL MEDIDOR DE BARRIL --- */
         :root{ --barrel: #6b4a2a; --stave: rgba(0,0,0,0.12); --glass: rgba(255,255,255,0.06); }
         .gauge{ width: 120px; height: 120px; position: relative; user-select: none; }
         .barrel-decor{pointer-events:none}
@@ -73,28 +65,28 @@
         .center-text{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; pointer-events:none; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);}
         .center-text b{font-size:1.4rem;}
         .center-text small{font-size: 0.7rem; color:#f0e6e6;}
-
-        /* --- CSS DE LA ANTORCHA DE MINECRAFT --- */
+        
         .torch-container { position: absolute; right: 220px; top: -35px; display: flex; flex-direction: column; align-items: center; cursor: pointer; user-select: none; transform: scale(0.45); }
-        .torch-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
-        .torch { display: flex; justify-content: center; height: 150px; }
+        .torch-container input { position: absolute; opacity: 0; } .torch { display: flex; justify-content: center; height: 150px; }
         .head, .stick { position: absolute; width: 30px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); }
-        .stick { position: relative; height: 120px; }
-        .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000000; }
-        .top { transform: rotateX(90deg) translateZ(15px); }
-        .left { transform: rotateY(-90deg) translateZ(15px); }
-        .right { transform: rotateY(0deg) translateZ(15px); }
-        .top div, .left div, .right div { width: 102%; height: 102%; }
-        .top div:nth-child(1), .left div:nth-child(3), .right div:nth-child(3) { background-color: #ffff9760; }
-        .top div:nth-child(2), .left div:nth-child(1), .right div:nth-child(1) { background-color: #ffd80060; }
-        .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; }
-        .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; }
+        .stick { position: relative; height: 120px; } .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000000; }
+        .top { transform: rotateX(90deg) translateZ(15px); } .left { transform: rotateY(-90deg) translateZ(15px); } .right { transform: rotateY(0deg) translateZ(15px); }
+        .top div, .left div, .right div { width: 102%; height: 102%; } .top div:nth-child(1), .left div:nth-child(3), .right div:nth-child(3) { background-color: #ffff9760; } .top div:nth-child(2), .left div:nth-child(1), .right div:nth-child(1) { background-color: #ffd80060; } .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; } .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; }
         .side { position: absolute; width: 30px; height: 120px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: repeat(8, 12.5%); cursor: pointer; translate: 0 12px; }
-        .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); } .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); }
-        .side-left div, .side-right div { width: 103%; height: 103%; }
-        .side div:nth-child(1) { background-color: #443622; } .side div:nth-child(2) { background-color: #2e2517; } .side div:nth-child(3), .side div:nth-child(5) { background-color: #4b3b23; } .side div:nth-child(4), .side div:nth-child(10) { background-color: #251e12; } .side div:nth-child(6) { background-color: #292115; } .side div:nth-child(7) { background-color: #4b3c26; } .side div:nth-child(8) { background-color: #292115; } .side div:nth-child(9) { background-color: #4b3a21; } .side div:nth-child(11), .side div:nth-child(15) { background-color: #3d311d; } .side div:nth-child(12) { background-color: #2c2315; } .side div:nth-child(13) { background-color: #493a22; } .side div:nth-child(14) { background-color: #2b2114; } .side div:nth-child(16) { background-color: #271e10; }
-        .torch-container input:checked ~ .torch .face { filter: drop-shadow(0px 0px 2px rgb(255, 255, 255)) drop-shadow(0px 0px 10px rgba(255, 237, 156, 0.7)) drop-shadow(0px 0px 25px rgba(255, 227, 101, 0.4)); }
-        .torch-container input:checked ~ .torch .top div:nth-child(1), .torch-container input:checked ~ .torch .left div:nth-child(3), .torch-container input:checked ~ .torch .right div:nth-child(3) { background-color: #ffff97; } .torch-container input:checked ~ .torch .top div:nth-child(2), .torch-container input:checked ~ .torch .left div:nth-child(1), .torch-container input:checked ~ .torch .right div:nth-child(1) { background-color: #ffd800; } .torch-container input:checked ~ .torch .top div:nth-child(3), .torch-container input:checked ~ .torch .left div:nth-child(4), .torch-container input:checked ~ .torch .right div:nth-child(4) { background-color: #ffffff; } .torch-container input:checked ~ .torch .top div:nth-child(4), .torch-container input:checked ~ .torch .left div:nth-child(2), .torch-container input:checked ~ .torch .right div:nth-child(2) { background-color: #ff8f00; } .torch-container input:checked ~ .torch .side div:nth-child(1) { background-color: #7c623e; } .torch-container input:checked ~ .torch .side div:nth-child(2) { background-color: #4c3d26; } .torch-container input:checked ~ .torch .side div:nth-child(3), .torch-container input:checked ~ .torch .side div:nth-child(5) { background-color: #937344; } .torch-container input:checked ~ .torch .side div:nth-child(4), .torch-container input:checked ~ .torch .side div:nth-child(10) { background-color: #3c2f1c; } .torch-container input:checked ~ .torch .side div:nth-child(6) { background-color: #423522; } .torch-container input:checked ~ .torch .side div:nth-child(7) { background-color: #9f7f50; } .torch-container input:checked ~ .torch .side div:nth-child(8) { background-color: #403320; } .torch-container input:checked ~ .torch .side div:nth-child(9) { background-color: #977748; } .torch-container input:checked ~ .torch .side div:nth-child(11), .torch-container input:checked ~ .torch .side div:nth-child(15) { background-color: #675231; } .torch-container input:checked ~ .torch .side div:nth-child(12) { background-color: #3d301d; } .torch-container input:checked ~ .torch .side div:nth-child(13) { background-color: #987849; } .torch-container input:checked ~ .torch .side div:nth-child(14) { background-color: #3b2e1b; } .torch-container input:checked ~ .torch .side div:nth-child(16) { background-color: #372a17; }
+        .side-left { transform: rotateY(-90deg) translateZ(15px) translateY(8px); } .side-right { transform: rotateY(0deg) translateZ(15px) translateY(8px); } .side-left div, .side-right div { width: 103%; height: 103%; }
+        .side div:nth-child(1){background-color:#443622}.side div:nth-child(2){background-color:#2e2517}.side div:nth-child(3),.side div:nth-child(5){background-color:#4b3b23}.side div:nth-child(4),.side div:nth-child(10){background-color:#251e12}.side div:nth-child(6){background-color:#292115}.side div:nth-child(7){background-color:#4b3c26}.side div:nth-child(8){background-color:#292115}.side div:nth-child(9){background-color:#4b3a21}.side div:nth-child(11),.side div:nth-child(15){background-color:#3d311d}.side div:nth-child(12){background-color:#2c2315}.side div:nth-child(13){background-color:#493a22}.side div:nth-child(14){background-color:#2b2114}.side div:nth-child(16){background-color:#271e10}
+        .torch-container input:checked~.torch .face{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 10px rgba(255,237,156,.7)) drop-shadow(0 0 25px rgba(255,227,101,.4))}.torch-container input:checked~.torch .top div:nth-child(1),.torch-container input:checked~.torch .left div:nth-child(3),.torch-container input:checked~.torch .right div:nth-child(3){background-color:#ffff97}.torch-container input:checked~.torch .top div:nth-child(2),.torch-container input:checked~.torch .left div:nth-child(1),.torch-container input:checked~.torch .right div:nth-child(1){background-color:#ffd800}.torch-container input:checked~.torch .top div:nth-child(3),.torch-container input:checked~.torch .left div:nth-child(4),.torch-container input:checked~.torch .right div:nth-child(4){background-color:#fff}.torch-container input:checked~.torch .top div:nth-child(4),.torch-container input:checked~.torch .left div:nth-child(2),.torch-container input:checked~.torch .right div:nth-child(2){background-color:#ff8f00}.torch-container input:checked~.torch .side div:nth-child(1){background-color:#7c623e}.torch-container input:checked~.torch .side div:nth-child(2){background-color:#4c3d26}.torch-container input:checked~.torch .side div:nth-child(3),.torch-container input:checked~.torch .side div:nth-child(5){background-color:#937344}.torch-container input:checked~.torch .side div:nth-child(4),.torch-container input:checked~.torch .side div:nth-child(10){background-color:#3c2f1c}.torch-container input:checked~.torch .side div:nth-child(6){background-color:#423522}.torch-container input:checked~.torch .side div:nth-child(7){background-color:#9f7f50}.torch-container input:checked~.torch .side div:nth-child(8){background-color:#403320}.torch-container input:checked~.torch .side div:nth-child(9){background-color:#977748}.torch-container input:checked~.torch .side div:nth-child(11),.torch-container input:checked~.torch .side div:nth-child(15){background-color:#675231}.torch-container input:checked~.torch .side div:nth-child(12){background-color:#3d301d}.torch-container input:checked~.torch .side div:nth-child(13){background-color:#987849}.torch-container input:checked~.torch .side div:nth-child(14){background-color:#3b2e1b}.torch-container input:checked~.torch .side div:nth-child(16){background-color:#372a17}
+
+        @keyframes highlight-animation {
+            0% { box-shadow: 0 0 0 0 rgba(201, 140, 50, 0.7); transform: scale(1); }
+            50% { transform: scale(1.03); }
+            70% { box-shadow: 0 0 0 20px rgba(201, 140, 50, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(201, 140, 50, 0); transform: scale(1); }
+        }
+        .highlight-action {
+            animation: highlight-animation 1.5s ease-out;
+            transition: transform 0.3s;
+        }
     </style>
 </head>
 <body>
@@ -210,9 +202,7 @@
         </div>
     </div>
 
-
     <script>
-        // --- Lógica del Tema ---
         const themeToggle = document.getElementById('theme-toggle');
         const body = document.body;
         const savedTheme = localStorage.getItem('theme');
@@ -232,7 +222,6 @@
             }
         });
 
-        // --- Lógica de la Página ---
         const API_BASE_URL = 'http://127.0.0.1:8000';
         const TOKEN_KEY = 'accessToken';
         function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
@@ -247,7 +236,7 @@
             if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
             if (resp.status === 204) return null;
             if (!resp.ok) {
-                const data = await resp.json().catch(() => ({ detail: 'Error en la petición.' }));
+                const data = await resp.json().catch(() => ({ detail: `Error en la petición a ${endpoint}` }));
                 throw new Error(data.detail);
             }
             return resp.json();
@@ -278,233 +267,60 @@
             };
 
             let allContainers = [], allLots = [], fermentationChart = null;
-            
-            // =================================================================
-            // INICIO DE LAS CORRECCIONES Y NUEVAS FUNCIONES
-            // =================================================================
-            function showAssignLotForm(lotId) {
-                const lot = allLots.find(l => l.id === lotId);
-                if (!lot) { alert("Error: No se encontró el lote."); return; }
 
-                const availableDeposits = allContainers.filter(c => 
-                    c.type.trim() === 'Depósito' && 
-                    c.status.trim() === 'vacío' &&
-                    parseFloat(c.capacity_liters) >= parseFloat(lot.liters_unassigned)
-                );
-
-                allElements.modalTitle.textContent = `Asignar Lote: ${lot.name}`;
-                allElements.modalForm.dataset.formType = 'assign-lot';
-                allElements.modalForm.innerHTML = `
-                    <input type="hidden" name="lot_id" value="${lot.id}">
-                    <p class="mb-4">Litros a asignar: <strong>${parseFloat(lot.liters_unassigned).toFixed(2)} L</strong></p>
-                    <div>
-                        <label class="block text-sm font-semibold mb-1">Depósito de Destino</label>
-                        <select name="destination_container_id" required class="w-full mt-1 p-2 border rounded modal-input">
-                            ${availableDeposits.length > 0 
-                                ? availableDeposits.map(d => `<option value="${d.id}">${d.name} (${parseFloat(d.capacity_liters).toFixed(0)} L)</option>`).join('')
-                                : '<option disabled>No hay depósitos vacíos con capacidad suficiente.</option>'
-                            }
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-1 mt-4">Volumen a transferir (L)</label>
-                        <input type="number" name="volume" step="0.1" value="${parseFloat(lot.liters_unassigned).toFixed(2)}" required class="w-full mt-1 p-2 border rounded modal-input">
-                    </div>`;
+            function renderPendingActions(containers, lots) { 
+                let pendingHtml = ''; 
                 
-                allElements.modal.classList.add('modal-active');
+                const lotsToFerment = lots.filter(l => l.status === 'En Fermentación' && l.liters_unassigned > 0.1);
+                pendingHtml += lotsToFerment.map(lot => `<div id="lot-action-${lot.id}" class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Faltan <span class="font-bold">${parseFloat(lot.liters_unassigned).toFixed(0)} L</span> por asignar a depósito.</p></div><button data-lot-id="${lot.id}" class="assign-lot-btn bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-yellow-600">Llenado Inicial</button></div>`).join(''); 
+                
+                const lotsWithUnassignedLiters = lots.filter(l => l.liters_unassigned > 0.1); 
+                for (const lot of lotsWithUnassignedLiters) { 
+                    const partiallyFullContainers = containers.filter(c => c.current_lot_id === lot.id && parseFloat(c.current_volume) < parseFloat(c.capacity_liters)); 
+                    for (const container of partiallyFullContainers) { 
+                        pendingHtml += `<div id="lot-action-topup-${container.id}" class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Puedes rellenar <span class="font-bold">${container.name}</span> con hasta <span class="font-bold">${parseFloat(lot.liters_unassigned).toFixed(0)} L</span> más.</p></div><button data-lot-id="${lot.id}" data-container-id="${container.id}" class="top-up-btn bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-blue-600">Rellenar</button></div>`; 
+                    } 
+                } 
+                
+                const lotsToAge = lots.filter(l => l.status === 'En Crianza'); 
+                for (const lot of lotsToAge) { 
+                    const sourceContainer = containers.find(c => c.current_lot_id === lot.id && c.type.trim() === 'Depósito' && parseFloat(c.current_volume) > 0.1); 
+                    if (sourceContainer) { 
+                        pendingHtml += `<div id="lot-action-${lot.id}" class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Listo para trasiego de <span class="font-bold">${parseFloat(sourceContainer.current_volume).toFixed(0)} L</span> a barricas.</p></div><button data-lot-id="${lot.id}" data-source-id="${sourceContainer.id}" class="assign-barrels-btn bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-orange-600">Trasvasar</button></div>`; 
+                    } 
+                } 
+                
+                // Botón "Listo para embotellar"
+                const lotsInAgingWithBarrels = lots.filter(l => l.status === 'En Crianza' && containers.some(c => c.current_lot_id === l.id && c.type.trim() === 'Barrica'));
+                if (lotsInAgingWithBarrels.length > 0) {
+                     pendingHtml += `<div class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">Preparar para Embotellado</p><p class="text-sm text-stone-600">Mueve los lotes de crianza a "Listo para Embotellar".</p></div><button id="prepare-for-bottling-btn" class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-green-600">Preparar Lotes</button></div>`;
+                }
+
+                if (pendingHtml) { 
+                    allElements.pendingActionsSection.style.display = 'block'; 
+                    allElements.pendingActionsList.innerHTML = pendingHtml; 
+                } else { 
+                    allElements.pendingActionsSection.style.display = 'none'; 
+                } 
             }
 
-            function showAssignToBarrelsForm(lotId, sourceContainerId) {
-                const lot = allLots.find(l => l.id === lotId);
-                const sourceContainer = allContainers.find(c => c.id === sourceContainerId);
-                if (!lot || !sourceContainer) { alert("Error: Lote o contenedor de origen no encontrado."); return; }
-
-                const availableBarrels = allContainers.filter(c => c.type.trim() === 'Barrica' && c.status.trim() === 'vacío');
-                
-                allElements.modalTitle.textContent = `Trasvasar: ${lot.name}`;
-                allElements.modalForm.dataset.formType = 'assign-to-barrels';
-                allElements.modalContent.className = 'bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl m-4'; // Hacer modal más ancho
-
-                allElements.modalForm.innerHTML = `
-                    <input type="hidden" name="lot_id" value="${lot.id}">
-                    <input type="hidden" name="source_container_id" value="${sourceContainer.id}">
-                    <div class="p-2 rounded-lg bg-gray-100 border border-accent mb-4">
-                        <p>Origen: <strong>${sourceContainer.name}</strong></p>
-                        <p>Volumen disponible: <strong id="source-volume">${parseFloat(sourceContainer.current_volume).toFixed(2)} L</strong></p>
-                        <p class="mt-2">Volumen restante: <strong id="remaining-volume" class="text-blue-600">${parseFloat(sourceContainer.current_volume).toFixed(2)} L</strong></p>
-                    </div>
-                    
-                    <h4 class="font-bold">Barricas de Destino</h4>
-                    <div id="barrel-destinations" class="space-y-3 max-h-64 overflow-y-auto pr-2"></div>
-                    <button type="button" id="add-barrel-row" class="text-sm mt-2 cta-button text-white px-3 py-1 rounded-full">+ Añadir Barrica</button>
-                `;
-
-                const barrelDestinationsContainer = allElements.modalForm.querySelector('#barrel-destinations');
-                const addBarrelRowBtn = allElements.modalForm.querySelector('#add-barrel-row');
-
-                const addBarrelRow = () => {
-                    const row = document.createElement('div');
-                    row.className = 'barrel-row grid grid-cols-1 md:grid-cols-3 gap-2 items-center';
-                    row.innerHTML = `
-                        <select name="destination_id" class="col-span-2 w-full p-2 border rounded modal-input">
-                            <option value="">-- Seleccionar Barrica --</option>
-                            ${availableBarrels.map(b => `<option value="${b.id}" data-capacity="${b.capacity_liters}">${b.name} (${parseFloat(b.capacity_liters).toFixed(0)}L)</option>`).join('')}
-                        </select>
-                        <div>
-                            <input type="number" name="volume" placeholder="Litros" class="w-full p-2 border rounded modal-input">
-                            <p class="error-message text-red-500 text-xs h-4"></p>
-                        </div>
-                        <button type="button" class="remove-barrel-row text-red-500 text-xs text-right col-start-3 -mt-4">Eliminar</button>
-                    `;
-                    barrelDestinationsContainer.appendChild(row);
-                    row.querySelector('.remove-barrel-row').onclick = () => {
-                        row.remove();
-                        updateRemainingVolume();
-                    };
-                    row.querySelector('select').addEventListener('change', updateRemainingVolume);
-                    row.querySelector('input').addEventListener('input', updateRemainingVolume);
-                };
-                
-                const updateRemainingVolume = () => {
-                    const sourceVolume = parseFloat(sourceContainer.current_volume);
-                    let assignedVolume = 0;
-                    let hasError = false;
-
-                    allElements.modalForm.querySelectorAll('.barrel-row').forEach(row => {
-                        const volumeInput = row.querySelector('input[name="volume"]');
-                        const select = row.querySelector('select');
-                        const selectedOption = select.options[select.selectedIndex];
-                        const capacity = parseFloat(selectedOption.dataset.capacity);
-                        const volume = parseFloat(volumeInput.value) || 0;
-                        const errorP = row.querySelector('.error-message');
-
-                        if (capacity && volume > capacity) {
-                            errorP.textContent = `Máx: ${capacity.toFixed(0)} L`;
-                            hasError = true;
-                        } else {
-                            errorP.textContent = '';
-                        }
-                        assignedVolume += volume;
-                    });
-
-                    const remaining = sourceVolume - assignedVolume;
-                    const remainingEl = document.getElementById('remaining-volume');
-                    remainingEl.textContent = `${remaining.toFixed(2)} L`;
-                    remainingEl.className = remaining < 0 ? 'text-red-600 font-bold' : 'text-blue-600 font-bold';
-                    
-                    document.getElementById('modal-submit-btn').disabled = hasError || remaining < 0;
-                };
-
-                addBarrelRowBtn.onclick = addBarrelRow;
-                addBarrelRow();
-                
-                allElements.modal.classList.add('modal-active');
-            }
-            // =================================================================
-            // FIN DE LA CORRECCIÓN
-            // =================================================================
-
-            function renderContainers(containers, lots) {
-                const statusColors = { 'vacío': 'bg-green-100', 'ocupado': 'bg-amber-100', 'limpieza': 'bg-red-100' };
-                const renderCard = c => {
-                    const lot = c.current_lot_id ? lots.find(l => l.id === c.current_lot_id) : null;
-                    const canBeEdited = c.status !== 'ocupado';
-                    const percentage = c.capacity_liters > 0 ? (c.current_volume / c.capacity_liters * 100).toFixed(0) : 0;
-                    const gaugeIndicator = `<div class="gauge -ml-4" id="gauge-${c.id}" data-percent="${percentage}"><svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="barrel-clip-${c.id}"><circle cx="100" cy="100" r="86"/></clipPath><linearGradient id="wineGrad-${c.id}" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#b2222f" /><stop offset="60%" stop-color="#8b0f1b" /><stop offset="100%" stop-color="#4a0510" /></linearGradient></defs><circle cx="100" cy="100" r="90" fill="var(--barrel)" stroke="#3f2b18" stroke-width="6" /><circle cx="100" cy="100" r="86" fill="none" stroke="#412b1b" stroke-width="6" /><g class="barrel-decor"><path class="stave" d="M30 40 C48 80, 48 120, 30 160" fill="none"/><path class="stave" d="M50 20 C68 60, 68 140, 50 180" fill="none"/><path class="stave" d="M70 10 C88 55, 88 145, 70 190" fill="none"/><path class="stave" d="M130 10 C112 55, 112 145, 130 190" fill="none"/><path class="stave" d="M150 20 C132 60, 132 140, 150 180" fill="none"/><path class="stave" d="M170 40 C152 80, 152 120, 170 160" fill="none"/></g><g clip-path="url(#barrel-clip-${c.id})"><ellipse cx="70" cy="72" rx="36" ry="8" fill="var(--glass)" /><path id="wave-${c.id}" fill="url(#wineGrad-${c.id})" opacity="0.95"></path></g><circle cx="100" cy="100" r="86" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="10" /></svg><div class="center-text"><div id="percentText-${c.id}"><b>${percentage}%</b></div><small>lleno</small></div></div>`;
-                    
-                    const fermentationButton = lot && c.type.trim() === 'Depósito'
-                        ? `<button class="fermentation-control-btn text-xs bg-blue-500 text-white px-3 py-1 rounded-full absolute bottom-2 left-2" data-lot-id="${lot.id}" data-container-id="${c.id}" data-lot-name="${lot.name}">Control Fermentación</button>`
-                        : '';
-
-                    const editIcons = `<div class="absolute top-2 right-2 flex gap-2 text-stone-400">${canBeEdited ? `<i class="fas fa-pencil-alt cursor-pointer hover:text-stone-600 edit-container-btn" data-id="${c.id}"></i><i class="fas fa-trash-alt cursor-pointer hover:text-red-600 delete-container-btn" data-id="${c.id}"></i>` : ''}</div>`;
-                    
-                    return `<div class="relative border rounded-lg p-4 ${statusColors[c.status.trim()] || 'bg-gray-100'}">${editIcons}<div class="flex justify-between items-center"><div class="flex-1"><p class="font-bold text-lg">${c.name}</p><p class="text-sm text-stone-600">${c.material || ''} - ${parseFloat(c.capacity_liters).toFixed(0)}L</p>${lot ? `<p class="text-sm font-semibold mt-2">Contiene: ${lot.name}</p><p class="text-sm">${parseFloat(c.current_volume).toFixed(0)} L</p>` : `<p class="text-sm mt-2 font-semibold">${c.status.charAt(0).toUpperCase() + c.status.slice(1)}</p>`}</div>${gaugeIndicator}</div>${fermentationButton}</div>`;
-                };
-                const deposits = containers.filter(c => c.type.trim() === 'Depósito');
-                const barrels = containers.filter(c => c.type.trim() === 'Barrica');
-                allElements.depositsGrid.innerHTML = deposits.length ? deposits.map(renderCard).join('') : '<p class="text-center col-span-full py-8 text-secondary">No hay depósitos.</p>';
-                allElements.barrelsGrid.innerHTML = barrels.length ? barrels.map(renderCard).join('') : '<p class="text-center col-span-full py-8 text-secondary">No hay barricas.</p>';
-            }
-            
             async function loadDashboard() {
                 try {
-                    [allContainers, allLots] = await Promise.all([apiFetch('/api/cellar/containers'), apiFetch('/api/traceability/wine-lots')]);
+                    [allContainers, allLots] = await Promise.all([
+                        apiFetch('/api/cellar/containers'), 
+                        apiFetch('/api/traceability/wine-lots')
+                    ]);
                     renderStats(allContainers, allLots);
                     renderContainers(allContainers, allLots);
                     renderWineLots(allLots);
                     renderPendingActions(allContainers, allLots);
-                } catch(e) { document.getElementById('dashboard-content').innerHTML = `<p class="text-center text-red-600 p-8">${e.message}</p>`; }
-            }
-            function animateGauges() {
-                const gauges = document.querySelectorAll('.gauge');
-                gauges.forEach(gauge => {
-                    const wave = document.getElementById(`wave-${gauge.id.replace('gauge-','')}`);
-                    if (!wave) return;
-                    const fillPercent = parseInt(gauge.dataset.percent, 10);
-                    const fill = fillPercent / 100;
-                    const amplitude = 4;
-                    const phase = Date.now() / 1000 * 5;
-                    const fillY = (1 - fill) * 160 + 20;
-                    const segments = 80;
-                    let d = 'M 0 ' + (Math.sin(phase) * amplitude + fillY);
-                    for(let i = 1; i <= segments; i++){
-                        const t = i / segments;
-                        const x = t * 200;
-                        const y = Math.sin(t * 10 + phase) * amplitude + fillY;
-                        d += ` L ${x} ${y}`;
-                    }
-                    d += ` L 200 200 L 0 200 Z`;
-                    wave.setAttribute('d', d);
-                });
-                requestAnimationFrame(animateGauges);
-            }
-            function closeModal() {
-                allElements.modal.classList.remove('modal-active');
-                allElements.modalContent.className = 'bg-white rounded-2xl shadow-xl p-8 w-full max-w-md m-4';
-            }
-            allElements.closeModalBtn.addEventListener('click', closeModal);
-            document.body.addEventListener('click', async (e) => {
-                if (e.target.classList.contains('assign-lot-btn')) { showAssignLotForm(e.target.dataset.lotId); }
-                if (e.target.classList.contains('assign-barrels-btn')) { showAssignToBarrelsForm(e.target.dataset.lotId, e.target.dataset.sourceId); }
-                if (e.target.classList.contains('top-up-btn')) { showTopUpForm(e.target.dataset.lotId, e.target.dataset.containerId); }
-                if (e.target.classList.contains('edit-container-btn')) {
-                    const containerData = allContainers.find(c => c.id === e.target.dataset.id);
-                    if (containerData) showContainerForm(containerData);
+                    handleUrlAnchor();
+                } catch(e) { 
+                    console.error("Error al cargar el dashboard:", e);
+                    document.getElementById('dashboard-content').innerHTML = `<p class="text-center text-red-600 p-8">Error al cargar datos: ${e.message}</p>`; 
                 }
-                if (e.target.classList.contains('fermentation-control-btn')) {
-                    const { lotId, containerId, lotName } = e.target.dataset;
-                    showFermentationModal(lotId, containerId, lotName);
-                }
-                if (e.target.classList.contains('delete-container-btn')) {
-                    const containerId = e.target.dataset.id;
-                    if (confirm('¿Estás seguro de que quieres eliminar este contenedor?')) {
-                        try {
-                            await apiFetch(`/api/cellar/containers/${containerId}`, { method: 'DELETE' });
-                            alert('Contenedor eliminado.');
-                            await loadDashboard();
-                        } catch (error) { alert(`Error al eliminar: ${error.message}`); }
-                    }
-                }
-            });
-            allElements.modalForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const form = e.target;
-                const formType = form.dataset.formType;
-                try {
-                    let promise;
-                    switch (formType) {
-                        case 'container': promise = handleContainerSubmit(form); break;
-                        case 'assign-lot': promise = handleAssignLotSubmit(form); break;
-                        case 'assign-to-barrels': promise = handleAssignToBarrelsSubmit(form); break;
-                        case 'top-up': promise = handleTopUpSubmit(form); break;
-                        case 'bottling': promise = handleBottlingSubmit(form); break;
-                        default: throw new Error("Tipo de formulario desconocido.");
-                    }
-                    await promise;
-                    closeModal();
-                    await loadDashboard();
-                } catch (error) { alert(`Error al guardar: ${error.message}`); }
-            });
+            }
+            
             async function handleContainerSubmit(form) {
                 const formData = new FormData(form);
                 const data = Object.fromEntries(formData.entries());
@@ -512,156 +328,63 @@
                 const endpoint = containerId ? `/api/cellar/containers/${containerId}` : '/api/cellar/containers';
                 const method = containerId ? 'PUT' : 'POST';
                 const body = {
-                    name: data.name,
-                    type: data.type,
+                    name: data.name, type: data.type,
                     capacity_liters: parseFloat(data.capacity_liters),
-                    material: data.material,
-                    location: data.location,
-                    barrel_age: data.type === 'Barrica' ? parseInt(data.barrel_age) : null,
+                    material: data.material, location: data.location,
+                    barrel_age: data.type === 'Barrica' ? parseInt(data.barrel_age, 10) : null,
                     toast_level: data.type === 'Barrica' ? data.toast_level : null,
                     cooperage: data.type === 'Barrica' ? data.cooperage : null,
                 };
                 await apiFetch(endpoint, { method, body });
             }
-            async function handleAssignLotSubmit(form) { const formData = new FormData(form); const data = Object.fromEntries(formData.entries()); const endpoint = '/api/cellar/movements'; const method = 'POST'; const body = { lot_id: data.lot_id, destination_container_id: data.destination_container_id, volume: parseFloat(data.volume), type: 'Llenado Inicial' }; await apiFetch(endpoint, { method, body }); }
-            async function handleAssignToBarrelsSubmit(form) { const formData = new FormData(form); const data = Object.fromEntries(formData.entries()); const endpoint = '/api/cellar/movements/bulk-transfer'; const method = 'POST'; const destinations = [...form.querySelectorAll('.barrel-row')].map(row => ({ destination_container_id: row.querySelector('select').value, volume: parseFloat(row.querySelector('input[name="volume"]').value) })).filter(d => d.volume > 0); if (destinations.length === 0) throw new Error("Debes añadir al menos una barrica de destino."); const body = { lot_id: data.lot_id, source_container_id: data.source_container_id, destinations: destinations }; await apiFetch(endpoint, { method, body }); }
-            async function handleTopUpSubmit(form) { const formData = new FormData(form); const data = Object.fromEntries(formData.entries()); const endpoint = '/api/cellar/movements/top-up'; const method = 'POST'; const body = { lot_id: data.lot_id, destination_container_id: data.destination_container_id, volume: parseFloat(data.volume) }; await apiFetch(endpoint, { method, body }); }
-            
+
+            async function handleAssignLotSubmit(form) {
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                const endpoint = '/api/cellar/movements';
+                const method = 'POST';
+                const body = { lot_id: data.lot_id, destination_container_id: data.destination_container_id, volume: parseFloat(data.volume), type: 'Llenado Inicial' };
+                await apiFetch(endpoint, { method, body });
+            }
+
+            async function handleAssignToBarrelsSubmit(form) {
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                const endpoint = '/api/cellar/movements/bulk-transfer';
+                const method = 'POST';
+                const destinations = [...form.querySelectorAll('.barrel-row')].map(row => ({ destination_container_id: row.querySelector('select').value, volume: parseFloat(row.querySelector('input[name="volume"]').value) })).filter(d => d.volume > 0 && d.destination_container_id);
+                if (destinations.length === 0) throw new Error("Debes añadir al menos una barrica de destino con un volumen válido.");
+                const body = { lot_id: data.lot_id, source_container_id: data.source_container_id, destinations: destinations, type: 'Trasiego' };
+                await apiFetch(endpoint, { method, body });
+            }
+
+            async function handleTopUpSubmit(form) {
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                const endpoint = '/api/cellar/movements/top-up';
+                const method = 'POST';
+                const body = { lot_id: data.lot_id, destination_container_id: data.destination_container_id, volume: parseFloat(data.volume) };
+                await apiFetch(endpoint, { method, body });
+            }
+
+            function handleUrlAnchor() { if (window.location.hash) { const targetId = window.location.hash.substring(1); const targetElement = document.getElementById(targetId); if (targetElement) { setTimeout(() => { targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); targetElement.classList.add('highlight-action'); setTimeout(() => { targetElement.classList.remove('highlight-action'); }, 1500); }, 200); } } }
+            function showAssignLotForm(lotId) { const lot = allLots.find(l => l.id === lotId); if (!lot) { alert("Error: No se encontró el lote."); return; } const availableDeposits = allContainers.filter(c => c.type.trim() === 'Depósito' && c.status.trim() === 'vacío' && parseFloat(c.capacity_liters) >= parseFloat(lot.liters_unassigned)); allElements.modalTitle.textContent = `Asignar Lote: ${lot.name}`; allElements.modalForm.dataset.formType = 'assign-lot'; allElements.modalForm.innerHTML = `<input type="hidden" name="lot_id" value="${lot.id}"><p class="mb-4">Litros a asignar: <strong>${parseFloat(lot.liters_unassigned).toFixed(2)} L</strong></p><div><label class="block text-sm font-semibold mb-1">Depósito de Destino</label><select name="destination_container_id" required class="w-full mt-1 p-2 border rounded modal-input">${availableDeposits.length > 0 ? availableDeposits.map(d => `<option value="${d.id}">${d.name} (${parseFloat(d.capacity_liters).toFixed(0)} L)</option>`).join('') : '<option disabled>No hay depósitos vacíos con capacidad suficiente.</option>'}</select></div><div><label class="block text-sm font-semibold mb-1 mt-4">Volumen a transferir (L)</label><input type="number" name="volume" step="0.1" value="${parseFloat(lot.liters_unassigned).toFixed(2)}" required class="w-full mt-1 p-2 border rounded modal-input"></div>`; allElements.modal.classList.add('modal-active'); }
+            function showAssignToBarrelsForm(lotId, sourceContainerId) { const lot = allLots.find(l => l.id === lotId); const sourceContainer = allContainers.find(c => c.id === sourceContainerId); if (!lot || !sourceContainer) { alert("Error: Lote o contenedor de origen no encontrado."); return; } const availableBarrels = allContainers.filter(c => c.type.trim() === 'Barrica' && c.status.trim() === 'vacío'); allElements.modalTitle.textContent = `Trasvasar: ${lot.name}`; allElements.modalForm.dataset.formType = 'assign-to-barrels'; allElements.modalContent.className = 'bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl m-4'; allElements.modalForm.innerHTML = `<input type="hidden" name="lot_id" value="${lot.id}"><input type="hidden" name="source_container_id" value="${sourceContainer.id}"><div class="p-2 rounded-lg bg-gray-100 border border-accent mb-4"><p>Origen: <strong>${sourceContainer.name}</strong></p><p>Volumen disponible: <strong id="source-volume">${parseFloat(sourceContainer.current_volume).toFixed(2)} L</strong></p><p class="mt-2">Volumen restante: <strong id="remaining-volume" class="text-blue-600">${parseFloat(sourceContainer.current_volume).toFixed(2)} L</strong></p></div><h4 class="font-bold">Barricas de Destino</h4><div id="barrel-destinations" class="space-y-3 max-h-64 overflow-y-auto pr-2"></div><button type="button" id="add-barrel-row" class="text-sm mt-2 cta-button text-white px-3 py-1 rounded-full">+ Añadir Barrica</button>`; const barrelDestinationsContainer = allElements.modalForm.querySelector('#barrel-destinations'); const addBarrelRowBtn = allElements.modalForm.querySelector('#add-barrel-row'); const addBarrelRow = () => { const row = document.createElement('div'); row.className = 'barrel-row grid grid-cols-1 md:grid-cols-3 gap-2 items-center'; row.innerHTML = `<select name="destination_id" class="col-span-2 w-full p-2 border rounded modal-input"><option value="">-- Seleccionar Barrica --</option>${availableBarrels.map(b => `<option value="${b.id}" data-capacity="${b.capacity_liters}">${b.name} (${parseFloat(b.capacity_liters).toFixed(0)}L)</option>`).join('')}</select><div><input type="number" name="volume" placeholder="Litros" class="w-full p-2 border rounded modal-input"><p class="error-message text-red-500 text-xs h-4"></p></div><button type="button" class="remove-barrel-row text-red-500 text-xs text-right col-start-3 -mt-4">Eliminar</button>`; barrelDestinationsContainer.appendChild(row); row.querySelector('.remove-barrel-row').onclick = () => { row.remove(); updateRemainingVolume(); }; row.querySelector('select').addEventListener('change', updateRemainingVolume); row.querySelector('input').addEventListener('input', updateRemainingVolume); }; const updateRemainingVolume = () => { const sourceVolume = parseFloat(sourceContainer.current_volume); let assignedVolume = 0; let hasError = false; allElements.modalForm.querySelectorAll('.barrel-row').forEach(row => { const volumeInput = row.querySelector('input[name="volume"]'); const select = row.querySelector('select'); const selectedOption = select.options[select.selectedIndex]; const capacity = parseFloat(selectedOption.dataset.capacity); const volume = parseFloat(volumeInput.value) || 0; const errorP = row.querySelector('.error-message'); if (capacity && volume > capacity) { errorP.textContent = `Máx: ${capacity.toFixed(0)} L`; hasError = true; } else { errorP.textContent = ''; } assignedVolume += volume; }); const remaining = sourceVolume - assignedVolume; const remainingEl = document.getElementById('remaining-volume'); remainingEl.textContent = `${remaining.toFixed(2)} L`; remainingEl.className = remaining < 0 ? 'text-red-600 font-bold' : 'text-blue-600 font-bold'; document.getElementById('modal-submit-btn').disabled = hasError || remaining < 0; }; addBarrelRowBtn.onclick = addBarrelRow; addBarrelRow(); allElements.modal.classList.add('modal-active'); }
+            function renderContainers(containers, lots) { const statusColors = { 'vacío': 'bg-green-100', 'ocupado': 'bg-amber-100', 'limpieza': 'bg-red-100' }; const renderCard = c => { const lot = c.current_lot_id ? lots.find(l => l.id === c.current_lot_id) : null; const canBeEdited = c.status !== 'ocupado'; const percentage = c.capacity_liters > 0 ? (c.current_volume / c.capacity_liters * 100).toFixed(0) : 0; const gaugeIndicator = `<div class="gauge -ml-4" id="gauge-${c.id}" data-percent="${percentage}"><svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="barrel-clip-${c.id}"><circle cx="100" cy="100" r="86"/></clipPath><linearGradient id="wineGrad-${c.id}" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#b2222f" /><stop offset="60%" stop-color="#8b0f1b" /><stop offset="100%" stop-color="#4a0510" /></linearGradient></defs><circle cx="100" cy="100" r="90" fill="var(--barrel)" stroke="#3f2b18" stroke-width="6" /><circle cx="100" cy="100" r="86" fill="none" stroke="#412b1b" stroke-width="6" /><g class="barrel-decor"><path class="stave" d="M30 40 C48 80, 48 120, 30 160" fill="none"/><path class="stave" d="M50 20 C68 60, 68 140, 50 180" fill="none"/><path class="stave" d="M70 10 C88 55, 88 145, 70 190" fill="none"/><path class="stave" d="M130 10 C112 55, 112 145, 130 190" fill="none"/><path class="stave" d="M150 20 C132 60, 132 140, 150 180" fill="none"/><path class="stave" d="M170 40 C152 80, 152 120, 170 160" fill="none"/></g><g clip-path="url(#barrel-clip-${c.id})"><ellipse cx="70" cy="72" rx="36" ry="8" fill="var(--glass)" /><path id="wave-${c.id}" fill="url(#wineGrad-${c.id})" opacity="0.95"></path></g><circle cx="100" cy="100" r="86" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="10" /></svg><div class="center-text"><div id="percentText-${c.id}"><b>${percentage}%</b></div><small>lleno</small></div></div>`; const fermentationButton = lot && c.type.trim() === 'Depósito' ? `<button class="fermentation-control-btn text-xs bg-blue-500 text-white px-3 py-1 rounded-full absolute bottom-2 left-2" data-lot-id="${lot.id}" data-container-id="${c.id}" data-lot-name="${lot.name}">Control Fermentación</button>` : ''; const editIcons = `<div class="absolute top-2 right-2 flex gap-2 text-stone-400">${canBeEdited ? `<i class="fas fa-pencil-alt cursor-pointer hover:text-stone-600 edit-container-btn" data-id="${c.id}"></i><i class="fas fa-trash-alt cursor-pointer hover:text-red-600 delete-container-btn" data-id="${c.id}"></i>` : ''}</div>`; return `<div class="relative border rounded-lg p-4 ${statusColors[c.status.trim()] || 'bg-gray-100'}">${editIcons}<div class="flex justify-between items-center"><div class="flex-1"><p class="font-bold text-lg">${c.name}</p><p class="text-sm text-stone-600">${c.material || ''} - ${parseFloat(c.capacity_liters).toFixed(0)}L</p>${lot ? `<p class="text-sm font-semibold mt-2">Contiene: ${lot.name}</p><p class="text-sm">${parseFloat(c.current_volume).toFixed(0)} L</p>` : `<p class="text-sm mt-2 font-semibold">${c.status.charAt(0).toUpperCase() + c.status.slice(1)}</p>`}</div>${gaugeIndicator}</div>${fermentationButton}</div>`; }; const deposits = containers.filter(c => c.type.trim() === 'Depósito'); const barrels = containers.filter(c => c.type.trim() === 'Barrica'); allElements.depositsGrid.innerHTML = deposits.length ? deposits.map(renderCard).join('') : '<p class="text-center col-span-full py-8 text-secondary">No hay depósitos.</p>'; allElements.barrelsGrid.innerHTML = barrels.length ? barrels.map(renderCard).join('') : '<p class="text-center col-span-full py-8 text-secondary">No hay barricas.</p>'; }
+            function animateGauges() { const gauges = document.querySelectorAll('.gauge'); gauges.forEach(gauge => { const wave = document.getElementById(`wave-${gauge.id.replace('gauge-','')}`); if (!wave) return; const fillPercent = parseInt(gauge.dataset.percent, 10); const fill = fillPercent / 100; const amplitude = 4; const phase = Date.now() / 1000 * 5; const fillY = (1 - fill) * 160 + 20; const segments = 80; let d = 'M 0 ' + (Math.sin(phase) * amplitude + fillY); for(let i = 1; i <= segments; i++){ const t = i / segments; const x = t * 200; const y = Math.sin(t * 10 + phase) * amplitude + fillY; d += ` L ${x} ${y}`; } d += ` L 200 200 L 0 200 Z`; wave.setAttribute('d', d); }); requestAnimationFrame(animateGauges); }
+            function closeModal() { allElements.modal.classList.remove('modal-active'); allElements.modalContent.className = 'bg-white rounded-2xl shadow-xl p-8 w-full max-w-md m-4'; }
+            allElements.closeModalBtn.addEventListener('click', closeModal);
+            document.body.addEventListener('click', async (e) => { if (e.target.classList.contains('assign-lot-btn')) { showAssignLotForm(e.target.dataset.lotId); } if (e.target.classList.contains('assign-barrels-btn')) { showAssignToBarrelsForm(e.target.dataset.lotId, e.target.dataset.sourceId); } if (e.target.classList.contains('top-up-btn')) { showTopUpForm(e.target.dataset.lotId, e.target.dataset.containerId); } if (e.target.classList.contains('bottling-btn')) { const lotId = e.target.dataset.lotId; const lot = allLots.find(l => l.id === lotId); if(lot) { window.location.href = `traceability.html`; } } if (e.target.classList.contains('edit-container-btn')) { const containerData = allContainers.find(c => c.id === e.target.dataset.id); if (containerData) showContainerForm(containerData); } if (e.target.classList.contains('fermentation-control-btn')) { const { lotId, containerId, lotName } = e.target.dataset; showFermentationModal(lotId, containerId, lotName); } if (e.target.classList.contains('delete-container-btn')) { const containerId = e.target.dataset.id; if (confirm('¿Estás seguro de que quieres eliminar este contenedor?')) { try { await apiFetch(`/api/cellar/containers/${containerId}`, { method: 'DELETE' }); alert('Contenedor eliminado.'); await loadDashboard(); } catch (error) { alert(`Error al eliminar: ${error.message}`); } } } if (e.target.id === 'prepare-for-bottling-btn') { const lotsToPrepare = allLots.filter(l => l.status === 'En Crianza' && allContainers.some(c => c.current_lot_id === l.id && c.type.trim() === 'Barrica')); if (confirm(`¿Quieres mover ${lotsToPrepare.length} lote(s) a 'Listo para Embotellar'?`)) { try { for (const lot of lotsToPrepare) { await apiFetch(`/api/traceability/wine-lots/${lot.id}/prepare-for-bottling`, { method: 'PUT' }); } alert('Lotes preparados para embotellar.'); await loadDashboard(); } catch (error) { alert(`Error: ${error.message}`); } } } });
+            allElements.modalForm.addEventListener('submit', async (e) => { e.preventDefault(); const form = e.target; const formType = form.dataset.formType; try { let promise; switch (formType) { case 'container': promise = handleContainerSubmit(form); break; case 'assign-lot': promise = handleAssignLotSubmit(form); break; case 'assign-to-barrels': promise = handleAssignToBarrelsSubmit(form); break; case 'top-up': promise = handleTopUpSubmit(form); break; default: throw new Error("Tipo de formulario desconocido."); } await promise; closeModal(); await loadDashboard(); } catch (error) { alert(`Error al guardar: ${error.message}`); } });
             function renderStats(containers, lots) { const totalCapacity = containers.reduce((sum, c) => sum + parseFloat(c.capacity_liters), 0); const currentVolume = containers.reduce((sum, c) => sum + parseFloat(c.current_volume), 0); const occupationPercentage = totalCapacity > 0 ? (currentVolume / totalCapacity * 100).toFixed(1) : 0; allElements.statsPanel.innerHTML = `<div class="card p-6 rounded-2xl shadow"><h3 class="font-semibold text-secondary">Nº Contenedores</h3><p class="text-3xl font-bold">${containers.length}</p></div><div class="card p-6 rounded-2xl shadow"><h3 class="font-semibold text-secondary">Capacidad Total</h3><p class="text-3xl font-bold">${totalCapacity.toLocaleString('es-ES')} L</p></div><div class="card p-6 rounded-2xl shadow"><h3 class="font-semibold text-secondary">Ocupación</h3><p class="text-3xl font-bold">${occupationPercentage}%</p></div><div class="card p-6 rounded-2xl shadow"><h3 class="font-semibold text-secondary">Lotes Activos</h3><p class="text-3xl font-bold">${lots.length}</p></div>`; }
             function renderWineLots(lots) { allElements.wineLotsTable.innerHTML = lots.length ? lots.map(lot => `<tr class="border-b border-accent"><td class="p-3">${lot.name}</td><td class="p-3">${lot.grape_variety}</td><td class="p-3">${lot.vintage_year}</td><td class="p-3"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">${lot.status}</span></td></tr>`).join('') : '<tr><td colspan="4" class="text-center p-8 text-secondary">No hay lotes.</td></tr>'; }
-            function renderPendingActions(containers, lots) { 
-                let pendingHtml = ''; 
-                const lotsToFerment = lots.filter(l => l.status === 'En Fermentación' && l.liters_unassigned > 0.1); 
-                pendingHtml += lotsToFerment.map(lot => `<div class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Faltan <span class="font-bold">${lot.liters_unassigned.toFixed(0)} L</span> por asignar a depósito.</p></div><button data-lot-id="${lot.id}" class="assign-lot-btn bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-yellow-600">Llenado Inicial</button></div>`).join(''); 
-                const lotsWithUnassignedLiters = lots.filter(l => l.liters_unassigned > 0.1); 
-                for (const lot of lotsWithUnassignedLiters) { const partiallyFullContainers = containers.filter(c => c.current_lot_id === lot.id && c.current_volume < c.capacity_liters); for (const container of partiallyFullContainers) { pendingHtml += `<div class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Puedes rellenar <span class="font-bold">${container.name}</span> con hasta <span class="font-bold">${lot.liters_unassigned.toFixed(0)} L</span> más.</p></div><button data-lot-id="${lot.id}" data-container-id="${container.id}" class="top-up-btn bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-blue-600">Rellenar</button></div>`; } } 
-                const lotsToAge = lots.filter(l => l.status === 'En Crianza'); 
-                for (const lot of lotsToAge) { const sourceContainer = containers.find(c => c.current_lot_id === lot.id && c.type === 'Depósito' && c.current_volume > 0.1); if (sourceContainer) { pendingHtml += `<div class="border bg-white rounded-lg p-3 flex justify-between items-center"><div><p class="font-bold">${lot.name}</p><p class="text-sm text-stone-600">Listo para trasiego de <span class="font-bold">${parseFloat(sourceContainer.current_volume).toFixed(0)} L</span> a barricas.</p></div><button data-lot-id="${lot.id}" data-source-id="${sourceContainer.id}" class="assign-barrels-btn bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-orange-600">Trasvasar</button></div>`; } } 
-                if (pendingHtml) { allElements.pendingActionsSection.style.display = 'block'; allElements.pendingActionsList.innerHTML = pendingHtml; } else { allElements.pendingActionsSection.style.display = 'none'; } 
-            }
-
-            function showContainerForm(container = null) {
-                allElements.modalTitle.textContent = container ? 'Editar Contenedor' : 'Añadir Contenedor';
-                allElements.modalForm.dataset.formType = 'container';
-                
-                allElements.modalForm.innerHTML = `
-                    <input type="hidden" name="id" value="${container?.id || ''}">
-                    <div class="space-y-4">
-                        <div><label class="block text-sm">Nombre</label><input type="text" name="name" value="${container?.name || ''}" required class="w-full mt-1 p-2 border rounded modal-input"></div>
-                        <div><label class="block text-sm">Tipo</label>
-                            <select name="type" required class="w-full mt-1 p-2 border rounded modal-input">
-                                <option value="Depósito" ${container?.type === 'Depósito' ? 'selected' : ''}>Depósito</option>
-                                <option value="Barrica" ${container?.type === 'Barrica' ? 'selected' : ''}>Barrica</option>
-                            </select>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><label class="block text-sm">Capacidad (L)</label><input type="number" name="capacity_liters" value="${container?.capacity_liters || ''}" required class="w-full mt-1 p-2 border rounded modal-input"></div>
-                            <div><label class="block text-sm">Material</label><input type="text" name="material" value="${container?.material || ''}" class="w-full mt-1 p-2 border rounded modal-input"></div>
-                        </div>
-                        <div id="barrel-fields" class="space-y-4 pt-4 border-t border-accent">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div><label class="block text-sm">Edad / Nº de Usos</label><input type="number" name="barrel_age" value="${container?.barrel_age || ''}" class="w-full mt-1 p-2 border rounded modal-input"></div>
-                                <div><label class="block text-sm">Nivel de Tostado</label><input type="text" name="toast_level" value="${container?.toast_level || ''}" placeholder="Medio, Fuerte..." class="w-full mt-1 p-2 border rounded modal-input"></div>
-                            </div>
-                            <div><label class="block text-sm">Tonelería (Fabricante)</label><input type="text" name="cooperage" value="${container?.cooperage || ''}" class="w-full mt-1 p-2 border rounded modal-input"></div>
-                        </div>
-                    </div>`;
-
-                const typeSelect = allElements.modalForm.querySelector('select[name="type"]');
-                const barrelFields = document.getElementById('barrel-fields');
-                
-                function toggleBarrelFields() {
-                    barrelFields.style.display = typeSelect.value === 'Barrica' ? 'block' : 'none';
-                }
-                
-                typeSelect.addEventListener('change', toggleBarrelFields);
-                toggleBarrelFields();
-                
-                allElements.modal.classList.add('modal-active');
-            }
-
+            function showContainerForm(container = null) { allElements.modalTitle.textContent = container ? 'Editar Contenedor' : 'Añadir Contenedor'; allElements.modalForm.dataset.formType = 'container'; allElements.modalForm.innerHTML = `<input type="hidden" name="id" value="${container?.id || ''}"><div class="space-y-4"><div><label class="block text-sm">Nombre</label><input type="text" name="name" value="${container?.name || ''}" required class="w-full mt-1 p-2 border rounded modal-input"></div><div><label class="block text-sm">Tipo</label><select name="type" required class="w-full mt-1 p-2 border rounded modal-input"><option value="Depósito" ${container?.type === 'Depósito' ? 'selected' : ''}>Depósito</option><option value="Barrica" ${container?.type === 'Barrica' ? 'selected' : ''}>Barrica</option></select></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm">Capacidad (L)</label><input type="number" name="capacity_liters" value="${container?.capacity_liters || ''}" required class="w-full mt-1 p-2 border rounded modal-input"></div><div><label class="block text-sm">Material</label><input type="text" name="material" value="${container?.material || ''}" class="w-full mt-1 p-2 border rounded modal-input"></div></div><div id="barrel-fields" class="space-y-4 pt-4 border-t border-accent"><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm">Edad / Nº de Usos</label><input type="number" name="barrel_age" value="${container?.barrel_age || ''}" class="w-full mt-1 p-2 border rounded modal-input"></div><div><label class="block text-sm">Nivel de Tostado</label><input type="text" name="toast_level" value="${container?.toast_level || ''}" placeholder="Medio, Fuerte..." class="w-full mt-1 p-2 border rounded modal-input"></div></div><div><label class="block text-sm">Tonelería (Fabricante)</label><input type="text" name="cooperage" value="${container?.cooperage || ''}" class="w-full mt-1 p-2 border rounded modal-input"></div></div></div>`; const typeSelect = allElements.modalForm.querySelector('select[name="type"]'); const barrelFields = document.getElementById('barrel-fields'); function toggleBarrelFields() { barrelFields.style.display = typeSelect.value === 'Barrica' ? 'block' : 'none'; } typeSelect.addEventListener('change', toggleBarrelFields); toggleBarrelFields(); allElements.modal.classList.add('modal-active'); }
             allElements.addContainerBtn.addEventListener('click', () => showContainerForm());
-
-            async function showFermentationModal(lotId, containerId, lotName) {
-                allElements.fermentationModalTitle.textContent = `Control de Fermentación: ${lotName}`;
-                const form = allElements.fermentationForm;
-                form.reset();
-                form.querySelector('input[name="lot_id"]').value = lotId;
-                form.querySelector('input[name="container_id"]').value = containerId;
-                form.querySelector('input[name="control_date"]').value = new Date().toISOString().split('T')[0];
-
-                allElements.fermentationModal.classList.add('modal-active');
-                
-                try {
-                    const history = await apiFetch(`/api/cellar/fermentation-controls/${lotId}/${containerId}`);
-                    renderFermentationChart(history);
-                } catch(e) {
-                    console.error("Error al cargar historial de fermentación:", e);
-                }
-            }
-
-            allElements.closeFermentationModalBtn.addEventListener('click', () => {
-                allElements.fermentationModal.classList.remove('modal-active');
-            });
-
-            allElements.fermentationForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                const data = Object.fromEntries(formData.entries());
-                
-                const body = {
-                    ...data,
-                    temperature: data.temperature ? parseFloat(data.temperature) : null,
-                    density: data.density ? parseFloat(data.density) : null,
-                };
-
-                try {
-                    await apiFetch('/api/cellar/fermentation-controls', { method: 'POST', body });
-                    const history = await apiFetch(`/api/cellar/fermentation-controls/${body.lot_id}/${body.container_id}`);
-                    renderFermentationChart(history);
-                    e.target.reset();
-                    e.target.querySelector('input[name="control_date"]').value = new Date().toISOString().split('T')[0];
-                } catch(error) {
-                    alert(`Error: ${error.message}`);
-                }
-            });
-
-            function renderFermentationChart(data) {
-                if (fermentationChart) fermentationChart.destroy();
-                const ctx = allElements.fermentationChartCanvas.getContext('2d');
-                fermentationChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: data.map(d => new Date(d.control_date).toLocaleDateString()),
-                        datasets: [
-                            {
-                                label: 'Temperatura (°C)',
-                                data: data.map(d => d.temperature),
-                                borderColor: 'red',
-                                yAxisID: 'y_temp',
-                                tension: 0.1
-                            },
-                            {
-                                label: 'Densidad (g/mL)',
-                                data: data.map(d => d.density),
-                                borderColor: 'blue',
-                                yAxisID: 'y_dens',
-                                tension: 0.1
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y_temp: { type: 'linear', display: true, position: 'left', title: { display: true, text: '°C' } },
-                            y_dens: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'g/mL' }, grid: { drawOnChartArea: false } }
-                        }
-                    }
-                });
-            }
+            async function showFermentationModal(lotId, containerId, lotName) { allElements.fermentationModalTitle.textContent = `Control de Fermentación: ${lotName}`; const form = allElements.fermentationForm; form.reset(); form.querySelector('input[name="lot_id"]').value = lotId; form.querySelector('input[name="container_id"]').value = containerId; form.querySelector('input[name="control_date"]').value = new Date().toISOString().split('T')[0]; allElements.fermentationModal.classList.add('modal-active'); try { const history = await apiFetch(`/api/cellar/fermentation-controls/${lotId}/${containerId}`); renderFermentationChart(history); } catch(e) { console.error("Error al cargar historial de fermentación:", e); } }
+            allElements.closeFermentationModalBtn.addEventListener('click', () => { allElements.fermentationModal.classList.remove('modal-active'); });
+            allElements.fermentationForm.addEventListener('submit', async (e) => { e.preventDefault(); const formData = new FormData(e.target); const data = Object.fromEntries(formData.entries()); const body = { ...data, temperature: data.temperature ? parseFloat(data.temperature) : null, density: data.density ? parseFloat(data.density) : null }; try { await apiFetch('/api/cellar/fermentation-controls', { method: 'POST', body }); const history = await apiFetch(`/api/cellar/fermentation-controls/${body.lot_id}/${body.container_id}`); renderFermentationChart(history); e.target.reset(); e.target.querySelector('input[name="control_date"]').value = new Date().toISOString().split('T')[0]; } catch(error) { alert(`Error: ${error.message}`); } });
+            function renderFermentationChart(data) { if (fermentationChart) fermentationChart.destroy(); const ctx = allElements.fermentationChartCanvas.getContext('2d'); fermentationChart = new Chart(ctx, { type: 'line', data: { labels: data.map(d => new Date(d.control_date).toLocaleDateString()), datasets: [ { label: 'Temperatura (°C)', data: data.map(d => d.temperature), borderColor: 'red', yAxisID: 'y_temp', tension: 0.1 }, { label: 'Densidad (g/mL)', data: data.map(d => d.density), borderColor: 'blue', yAxisID: 'y_dens', tension: 0.1 } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y_temp: { type: 'linear', display: true, position: 'left', title: { display: true, text: '°C' } }, y_dens: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'g/mL' }, grid: { drawOnChartArea: false } } } } }); }
             
-            // Carga inicial y animación
             loadDashboard();
             animateGauges();
         });
