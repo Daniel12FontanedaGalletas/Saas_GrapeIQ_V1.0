@@ -73,13 +73,12 @@ class Parcel(ParcelBase):
     geojson_coordinates: Optional[Any] = None
     class Config:
         from_attributes = True
-
+        
 # --- Esquemas para la Arquitectura Central ---
 class WineLotBase(BaseModel):
     name: str
     grape_variety: Optional[str] = None
     vintage_year: Optional[int] = None
-    wine_type: Optional[str] = None
 
 class WineLotCreate(WineLotBase):
     initial_grape_kg: float
@@ -122,13 +121,28 @@ class Container(ContainerBase):
     class Config:
         from_attributes = True
 
-class MovementCreate(BaseModel):
+# =================================================================
+# INICIO DE LA CORRECCIÓN - Esquemas de Movement añadidos
+# =================================================================
+class MovementBase(BaseModel):
     lot_id: uuid.UUID
     source_container_id: Optional[uuid.UUID] = None
     destination_container_id: Optional[uuid.UUID] = None
     volume: float
     type: str
     notes: Optional[str] = None
+
+class MovementCreate(MovementBase):
+    pass
+
+class Movement(MovementBase):
+    id: uuid.UUID
+    movement_date: datetime
+    class Config:
+        from_attributes = True
+# =================================================================
+# FIN DE LA CORRECCIÓN
+# =================================================================
 
 class ToppingUpCreate(BaseModel):
     lot_id: uuid.UUID
@@ -172,7 +186,45 @@ class BottlingToProductCreate(BaseModel):
     product_price: float
     bottles_produced: int
 
-# --- Esquemas para Laboratorio ---
+# --- Esquemas para Trazabilidad Avanzada ---
+class FermentationControlBase(BaseModel):
+    container_id: uuid.UUID
+    lot_id: uuid.UUID
+    control_date: date
+    temperature: Optional[float] = None
+    density: Optional[float] = None
+    notes: Optional[str] = None
+
+class FermentationControlCreate(FermentationControlBase):
+    pass
+
+class FermentationControl(FermentationControlBase):
+    id: uuid.UUID
+    class Config:
+        from_attributes = True
+
+class LabAnalyticBase(BaseModel):
+    lot_id: uuid.UUID
+    analysis_date: date
+    alcoholic_degree: Optional[float] = None
+    total_acidity: Optional[float] = None
+    volatile_acidity: Optional[float] = None
+    ph: Optional[float] = None
+    free_so2: Optional[int] = None
+    total_so2: Optional[int] = None
+    notes: Optional[str] = None
+
+class LabAnalyticCreate(LabAnalyticBase):
+    pass
+
+class LabAnalytic(LabAnalyticBase):
+    id: uuid.UUID
+    class Config:
+        from_attributes = True
+
+# =================================================================
+# INICIO DE LA CORRECCIÓN - Esquemas de WinemakingLog añadidos
+# =================================================================
 class WinemakingLogBase(BaseModel):
     lot_id: uuid.UUID
     log_date: date
@@ -202,50 +254,9 @@ class WinemakingLog(WinemakingLogBase):
     id: uuid.UUID
     class Config:
         from_attributes = True
-
-class FermentationControlBase(BaseModel):
-    container_id: uuid.UUID
-    lot_id: uuid.UUID
-    control_date: date
-    temperature: Optional[float] = None
-    density: Optional[float] = None
-    notes: Optional[str] = None
-    residual_sugar: Optional[float] = None
-    potential_alcohol: Optional[float] = None
-    yeast_activity: Optional[str] = None
-    nutrients_added: Optional[str] = None
-    malic_acid_before: Optional[float] = None
-    malic_acid_after: Optional[float] = None
-    lactic_acid_before: Optional[float] = None
-    lactic_acid_after: Optional[float] = None
-    inoculated_bacteria: Optional[str] = None
-
-class FermentationControlCreate(FermentationControlBase):
-    pass
-
-class FermentationControl(FermentationControlBase):
-    id: uuid.UUID
-    class Config:
-        from_attributes = True
-
-class LabAnalyticBase(BaseModel):
-    lot_id: uuid.UUID
-    analysis_date: date
-    alcoholic_degree: Optional[float] = None
-    total_acidity: Optional[float] = None
-    volatile_acidity: Optional[float] = None
-    ph: Optional[float] = None
-    free_so2: Optional[int] = None
-    total_so2: Optional[int] = None
-    notes: Optional[str] = None
-
-class LabAnalyticCreate(LabAnalyticBase):
-    pass
-
-class LabAnalytic(LabAnalyticBase):
-    id: uuid.UUID
-    class Config:
-        from_attributes = True
+# =================================================================
+# FIN DE LA CORRECCIÓN
+# =================================================================
         
 class DryGoodBase(BaseModel):
     material_type: str

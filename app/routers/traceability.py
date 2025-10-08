@@ -1,14 +1,49 @@
 # Saas_GrapeIQ_V1.0/app/routers/traceability.py
 
-from fastapi import APIRouter, Depends, HTTPException
-from typing import List
+from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List, Optional, Any, Dict
 import uuid
-from psycopg2.extras import RealDictCursor
+import datetime
+from pydantic import BaseModel, Field
+from psycopg2.extras import RealDictCursor, Json
 import psycopg2
 
 from .. import schemas
 from ..services import security
 from ..database import get_db_connection
+
+
+class WinemakingLogBase(BaseModel):
+    lot_id: uuid.UUID
+    log_date: datetime.date = Field(default_factory=datetime.date.today)
+    sugar_level: Optional[float] = None
+    total_acidity: Optional[float] = None
+    ph: Optional[float] = None
+    reception_temp: Optional[float] = None
+    added_so2: Optional[int] = None
+    turbidity: Optional[str] = None
+    color_intensity: Optional[str] = None
+    aromas: Optional[str] = None
+    destemming_type: Optional[str] = None
+    maceration_time: Optional[int] = None
+    maceration_temp: Optional[float] = None
+    pumping_overs: Optional[Any] = None
+    corrections: Optional[str] = None
+    yeast_type: Optional[str] = None
+    enzymes_added: Optional[str] = None
+    must_sanitary_state: Optional[str] = None
+    sensory_observations: Optional[str] = None
+    incidents: Optional[str] = None
+
+class WinemakingLogCreate(WinemakingLogBase):
+    pass
+
+class WinemakingLog(WinemakingLogBase):
+    id: uuid.UUID
+    tenant_id: uuid.UUID
+    class Config:
+        from_attributes = True
+
 
 router = APIRouter(
     prefix="/api/traceability",
@@ -16,13 +51,40 @@ router = APIRouter(
     dependencies=[Depends(security.get_current_active_user)]
 )
 
-# --- VISTA KANBAN Y GESTIÓN DE LOTES ---
+@router.post("/winemaking-logs/", response_model=WinemakingLog, status_code=201)
+def create_winemaking_log(log: WinemakingLogCreate, current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
+    query = """
+        INSERT INTO winemaking_logs (
+            id, lot_id, log_date, sugar_level, total_acidity, ph, reception_temp, 
+            added_so2, turbidity, color_intensity, aromas, destemming_type, 
+            maceration_time, maceration_temp, pumping_overs, corrections, yeast_type, 
+            enzymes_added, must_sanitary_state, sensory_observations, incidents, tenant_id
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        RETURNING *
+    """
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                new_id = uuid.uuid4()
+                pumping_overs_json = Json({"details": log.pumping_overs}) if log.pumping_overs else None
+                
+                cur.execute(query, (
+                    str(new_id), str(log.lot_id), log.log_date, log.sugar_level, log.total_acidity, log.ph, 
+                    log.reception_temp, log.added_so2, log.turbidity, log.color_intensity, log.aromas,
+                    log.destemming_type, log.maceration_time, log.maceration_temp, pumping_overs_json,
+                    log.corrections, log.yeast_type, log.enzymes_added, log.must_sanitary_state,
+                    log.sensory_observations, log.incidents, str(current_user.tenant_id)
+                ))
+                new_log = cur.fetchone()
+                conn.commit()
+                return new_log
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al crear el registro de vinificación: {e}")
 
 @router.get("/kanban-view/", response_model=schemas.TraceabilityView)
 def get_traceability_kanban_view(current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
-    """
-    Obtiene todos los lotes de vino y los agrupa por su estado actual para la vista Kanban.
-    """
     try:
         with get_db_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -120,46 +182,24 @@ def update_wine_lot_status(lot_id: uuid.UUID, status_update: schemas.WineLotStat
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Error al actualizar estado: {e}")
 
-# =================================================================
-# INICIO DE LA CORRECCIÓN
-# =================================================================
 @router.delete("/wine-lots/{lot_id}", status_code=204)
 def delete_wine_lot(lot_id: uuid.UUID, current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
-    """
-    Elimina un lote de vino y toda su información asociada, incluyendo el producto del catálogo.
-    """
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
-                # Eliminar el producto asociado al lote de vino
                 cur.execute("DELETE FROM products WHERE wine_lot_origin_id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
-                
-                # Liberar contenedores
                 cur.execute("UPDATE containers SET current_lot_id = NULL, current_volume = 0, status = 'vacío' WHERE current_lot_id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
-                
-                # Eliminar información relacionada (movimientos, analíticas, costes)
                 cur.execute("DELETE FROM movements WHERE lot_id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
                 cur.execute("DELETE FROM lab_analytics WHERE lot_id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
                 cur.execute("DELETE FROM costs WHERE related_lot_id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
-                
-                # Finalmente, eliminar el lote de vino
                 cur.execute("DELETE FROM wine_lots WHERE id = %s AND tenant_id = %s", (str(lot_id), str(current_user.tenant_id)))
-                
                 conn.commit()
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Error al eliminar lote: {e}")
 
-# =================================================================
-# FIN DE LA CORRECCIÓN
-# =================================================================
-
 @router.put("/wine-lots/{lot_id}/prepare-for-bottling", response_model=schemas.WineLot)
 def prepare_lot_for_bottling(lot_id: uuid.UUID, current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
-    """
-    Prepara el vino en barricas para embotellar. Si queda vino en depósitos, 
-    divide el lote para gestionar las barricas de forma independiente.
-    """
     try:
         with get_db_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -221,21 +261,18 @@ def prepare_lot_for_bottling(lot_id: uuid.UUID, current_user: schemas.UserInDB =
         if isinstance(error, HTTPException): raise error
         raise HTTPException(status_code=500, detail=f"Error en la base de datos: {str(error)}")
 
-# --- ENDPOINTS PARA TRAZABILIDAD AVANZADA ---
-
 @router.post("/lab-analytics/", response_model=schemas.LabAnalytic, status_code=201)
 def add_lab_analytic(analytic: schemas.LabAnalyticCreate, current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
-    """Registra un nuevo análisis de laboratorio para un lote de vino."""
     query = """
-        INSERT INTO lab_analytics (id, lot_id, analysis_date, alcoholic_degree, total_acidity, volatile_acidity, ph, free_so2, total_so2, notes, tenant_id)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO lab_analytics (id, lot_id, container_id, analysis_date, alcoholic_degree, total_acidity, volatile_acidity, ph, free_so2, total_so2, notes, tenant_id)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING *
     """
     try:
         with get_db_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 new_id = str(uuid.uuid4())
-                cur.execute(query, (new_id, str(analytic.lot_id), analytic.analysis_date, analytic.alcoholic_degree, analytic.total_acidity, analytic.volatile_acidity, analytic.ph, analytic.free_so2, analytic.total_so2, analytic.notes, str(current_user.tenant_id)))
+                cur.execute(query, (new_id, str(analytic.lot_id), str(analytic.container_id), analytic.analysis_date, analytic.alcoholic_degree, analytic.total_acidity, analytic.volatile_acidity, analytic.ph, analytic.free_so2, analytic.total_so2, analytic.notes, str(current_user.tenant_id)))
                 new_analytic = cur.fetchone()
                 conn.commit()
                 return new_analytic
@@ -245,7 +282,6 @@ def add_lab_analytic(analytic: schemas.LabAnalyticCreate, current_user: schemas.
 
 @router.get("/dry-goods/", response_model=List[schemas.DryGood])
 def get_all_dry_goods(current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
-    """Obtiene todos los lotes de materiales secos (botellas, corchos, etc.)."""
     query = "SELECT * FROM dry_goods WHERE tenant_id = %s ORDER BY material_type"
     try:
         with get_db_connection() as conn:
@@ -257,7 +293,6 @@ def get_all_dry_goods(current_user: schemas.UserInDB = Depends(security.get_curr
 
 @router.post("/bottling-events/", response_model=schemas.BottlingEvent, status_code=201)
 def record_bottling_event(event: schemas.BottlingEventCreate, current_user: schemas.UserInDB = Depends(security.get_current_active_user)):
-    """Registra un evento de embotellado completo con todos sus detalles de trazabilidad."""
     query = """
         INSERT INTO bottling_events (id, lot_id, product_id, official_lot_number, dissolved_oxygen, bottle_lot_id, cork_lot_id, capsule_lot_id, label_lot_id, retained_samples, tenant_id)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)

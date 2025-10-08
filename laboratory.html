@@ -9,8 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <style>
-        /* --- Sistema de Temas --- */
-        :root { /* Tema Blanco por Defecto */
+        :root {
             --bg-color: #F8F7F4;
             --text-color: #1c1917;
             --text-secondary-color: #57534e;
@@ -20,13 +19,13 @@
             --secondary-button-bg: #e5e7eb;
             --secondary-button-text: #1c1917;
             --border-color: #e5e7eb;
-            --card-bg: #FFFFFF;
+            --card-bg: rgba(255, 255, 255, .92);
             --modal-input-bg: #f9fafb;
             --pagination-grad-start: #5C1A33;
             --pagination-grad-end: #8a284c;
         }
 
-        body.theme-warm { /* 🍂 Tema Otoñal Cálido */
+        body.theme-warm {
             --bg-color: #F2E2C4;
             --text-color: #5C4033;
             --text-secondary-color: #8C8C88;
@@ -42,7 +41,6 @@
             --pagination-grad-end: #d96c06;
         }
 
-        /* --- Estilos Generales con Variables --- */
         body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s, color 0.3s; }
         .tab-active { border-color: var(--tab-active-color) !important; color: var(--tab-active-color) !important; font-weight: 700; }
         .text-secondary { color: var(--text-secondary-color); }
@@ -55,22 +53,19 @@
         .modal-input { background-color: var(--modal-input-bg); border-color: var(--border-color); }
         .modal { display: none; } .modal-active { display: flex; }
 
-        /* Estilos para el Acordeón */
         .accordion-item-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; }
         .accordion-item-header:hover { background-color: rgba(0,0,0,0.02); }
         .accordion-item-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
         .accordion-item-body-content { padding: 1rem; background-color: rgba(0,0,0,0.02); border-top: 1px solid var(--border-color); }
         .accordion-item-header .icon { transition: transform 0.3s ease-out; }
         .accordion-item.open .accordion-item-header .icon { transform: rotate(180deg); }
-        .accordion-item.open .accordion-item-body { max-height: 1000px; /* Suficientemente grande */}
+        .accordion-item.open .accordion-item-body { max-height: 1000px; }
         
-        /* --- CSS DE LA ANTORCHA --- */
         .torch-container { position: absolute; right: 220px; top: -35px; display: flex; align-items: center; cursor: pointer; user-select: none; transform: scale(0.45); }
         .torch-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
         .torch { display: flex; justify-content: center; height: 150px; }
         .head, .stick { position: absolute; width: 30px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); }
-        .stick { position: relative; height: 120px; }
-        .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000; }
+        .stick { position: relative; height: 120px; } .face { position: absolute; transform-style: preserve-3d; width: 30px; height: 30px; display: grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%; background-color: #000; }
         .top { transform: rotateX(90deg) translateZ(15px); } .left { transform: rotateY(-90deg) translateZ(15px); } .right { transform: rotateY(0deg) translateZ(15px); }
         .top div, .left div, .right div { width: 102%; height: 102%; }
         .top div:nth-child(1), .left div:nth-child(3), .right div:nth-child(3) { background-color: #ffff9760; } .top div:nth-child(2), .left div:nth-child(1), .right div:nth-child(1) { background-color: #ffd80060; } .top div:nth-child(3), .left div:nth-child(4), .right div:nth-child(4) { background-color: #ffffff60; } .top div:nth-child(4), .left div:nth-child(2), .right div:nth-child(2) { background-color: #ff8f0060; }
@@ -81,7 +76,6 @@
         .torch-container input:checked ~ .torch .face { filter: drop-shadow(0px 0px 2px #fff) drop-shadow(0px 0px 10px rgba(255, 237, 156, 0.7)) drop-shadow(0px 0px 25px rgba(255, 227, 101, 0.4)); }
         .torch-container input:checked ~ .torch .top div:nth-child(1), .torch-container input:checked ~ .torch .left div:nth-child(3), .torch-container input:checked ~ .torch .right div:nth-child(3) { background-color: #ffff97; } .torch-container input:checked ~ .torch .top div:nth-child(2), .torch-container input:checked ~ .torch .left div:nth-child(1), .torch-container input:checked ~ .torch .right div:nth-child(1) { background-color: #ffd800; } .torch-container input:checked ~ .torch .top div:nth-child(3), .torch-container input:checked ~ .torch .left div:nth-child(4), .torch-container input:checked ~ .torch .right div:nth-child(4) { background-color: #fff; } .torch-container input:checked ~ .torch .top div:nth-child(4), .torch-container input:checked ~ .torch .left div:nth-child(2), .torch-container input:checked ~ .torch .right div:nth-child(2) { background-color: #ff8f00; } .torch-container input:checked ~ .torch .side div:nth-child(1) { background-color: #7c623e; } .torch-container input:checked ~ .torch .side div:nth-child(2) { background-color: #4c3d26; } .torch-container input:checked ~ .torch .side div:nth-child(3), .torch-container input:checked ~ .torch .side div:nth-child(5) { background-color: #937344; } .torch-container input:checked ~ .torch .side div:nth-child(4), .torch-container input:checked ~ .torch .side div:nth-child(10) { background-color: #3c2f1c; } .torch-container input:checked ~ .torch .side div:nth-child(6) { background-color: #423522; } .torch-container input:checked ~ .torch .side div:nth-child(7) { background-color: #9f7f50; } .torch-container input:checked ~ .torch .side div:nth-child(8) { background-color: #403320; } .torch-container input:checked ~ .torch .side div:nth-child(9) { background-color: #977748; } .torch-container input:checked ~ .torch .side div:nth-child(11), .torch-container input:checked ~ .torch .side div:nth-child(15) { background-color: #675231; } .torch-container input:checked ~ .torch .side div:nth-child(12) { background-color: #3d301d; } .torch-container input:checked ~ .torch .side div:nth-child(13) { background-color: #987849; } .torch-container input:checked ~ .torch .side div:nth-child(14) { background-color: #3b2e1b; } .torch-container input:checked ~ .torch .side div:nth-child(16) { background-color: #372a17; }
         
-        /* --- ESTILOS PAGINACIÓN --- */
         .button-container { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1rem; }
         .button-3d { appearance: none; position: relative; border-width: 0; padding: 0 8px; min-width: 3.5em; min-height: 3.5em; box-sizing: border-box; background: transparent; font: inherit; cursor: pointer; border-radius: 18px; }
         .button-3d:disabled { cursor: not-allowed; opacity: 0.6; }
@@ -106,15 +100,8 @@
                 <label class="torch-container">
                     <input id="theme-toggle" type="checkbox" />
                     <div class="torch">
-                        <div class="head">
-                            <div class="face top"><div></div><div></div><div></div><div></div></div>
-                            <div class="face left"><div></div><div></div><div></div><div></div></div>
-                            <div class="face right"><div></div><div></div><div></div><div></div></div>
-                        </div>
-                        <div class="stick">
-                            <div class="side side-left"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-                            <div class="side side-right"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-                        </div>
+                        <div class="head"><div class="face top"><div></div><div></div><div></div><div></div></div><div class="face left"><div></div><div></div><div></div><div></div></div><div class="face right"><div></div><div></div><div></div><div></div></div></div>
+                        <div class="stick"><div class="side side-left"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div><div class="side side-right"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>
                     </div>
                 </label>
                 <button id="logout-btn" class="bg-dark text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
@@ -152,14 +139,10 @@
                                 <h2 class="text-3xl font-bold" id="lot-name-title"></h2>
                                 <p class="text-secondary mt-1" id="lot-details"></p>
                             </div>
-                            <div class="flex flex-col items-end gap-2">
-                                 <button id="add-analytic-btn" class="cta-button px-4 py-2 rounded-full font-semibold text-sm">Añadir Analítica</button>
-                                 <button id="add-action-btn" class="secondary-button px-4 py-2 rounded-full font-semibold text-sm">Registrar Acción</button>
-                            </div>
+                            <div id="action-buttons" class="flex flex-col items-end gap-2"></div>
                         </div>
 
                         <div id="vinification-section" class="mt-8 hidden">
-                            <h3 class="text-2xl font-bold mb-4">Fase de Vinificación</h3>
                             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 <div class="lg:col-span-2 card p-6">
                                     <h4 class="text-xl font-bold mb-4">Historial y Controles</h4>
@@ -167,23 +150,9 @@
                                     <div id="history-pagination" class="button-container"></div>
                                 </div>
                                 <div class="space-y-8">
-                                    <div id="vinification-containers" class="card p-6"></div>
                                     <div class="card p-6">
                                          <h4 class="text-xl font-bold mb-4">Curva de Fermentación</h4>
                                          <div id="fermentation-chart" style="width: 100%; height: 300px;"></div>
-                                    </div>
-                                    <div class="card p-6">
-                                        <h4 class="text-xl font-bold mb-4">Condiciones de Bodega</h4>
-                                        <div class="flex items-center justify-around text-center">
-                                            <div>
-                                                <p class="text-3xl font-bold flex items-center gap-2"><i class="fas fa-thermometer-half text-red-500"></i> 16°C</p>
-                                                <p class="text-sm text-secondary">Temperatura</p>
-                                            </div>
-                                            <div>
-                                                <p class="text-3xl font-bold flex items-center gap-2"><i class="fas fa-tint text-blue-500"></i> 78%</p>
-                                                <p class="text-sm text-secondary">Humedad</p>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -191,17 +160,7 @@
                         
                         <div id="aging-section" class="mt-8 hidden">
                             <h3 class="text-2xl font-bold mb-4">Fase de Crianza</h3>
-                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                <div class="lg:col-span-2 card p-6">
-                                    <h4 class="text-xl font-bold mb-4">Barricas Asignadas</h4>
-                                    <div id="aging-containers" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-                                </div>
-                                 <div class="card p-6">
-                                    <h4 class="text-xl font-bold mb-4">Historial de Analíticas</h4>
-                                    <div id="aging-history" class="divide-y divide-gray-200"></div>
-                                    <div id="aging-pagination" class="button-container"></div>
-                                </div>
-                            </div>
+                            <div id="barrel-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                         </div>
                     </div>
                     <div id="no-lot-selected" class="text-center py-20">
@@ -212,83 +171,291 @@
             </div>
         </main>
     </div>
-    
-    <script>
-        const themeToggle = document.getElementById('theme-toggle');
-        const body = document.body;
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'warm') {
-            body.classList.add('theme-warm');
-            themeToggle.checked = true;
-        } else {
-            themeToggle.checked = false;
-        }
-        themeToggle.addEventListener('change', () => {
-            if (themeToggle.checked) {
-                body.classList.add('theme-warm');
-                localStorage.setItem('theme', 'warm');
-            } else {
-                body.classList.remove('theme-warm');
-                localStorage.setItem('theme', 'light');
-            }
-        });
 
+    <div id="vinification-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50 overflow-auto">
+        <div class="card p-8 rounded-2xl shadow-xl w-full max-w-2xl m-4">
+            <h3 class="text-2xl font-bold mb-6">Registro de Vinificación</h3>
+            <form id="vinification-form" class="space-y-4 max-h-[80vh] overflow-y-auto pr-4">
+                <h4 class="text-lg font-semibold border-b pb-2">Identificación del Lote</h4>
+                <div>
+                    <label class="block text-sm">Seleccionar Lote</label>
+                    <select name="lot_id" class="w-full mt-1 p-2 border rounded modal-input" required>
+                        <option value="">-- Elige un lote --</option>
+                    </select>
+                </div>
+                <div id="vinification-lot-details" class="text-sm p-3 bg-gray-100 rounded-lg hidden"></div>
+
+                <h4 class="text-lg font-semibold border-b pb-2 mt-6">Parámetros de Uva/Mosto</h4>
+                <div class="grid grid-cols-3 gap-4">
+                    <div><label class="block text-sm">Grado Baumé/Brix</label><input type="number" step="0.1" name="sugar_level" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Acidez Total (g/L)</label><input type="number" step="0.01" name="total_acidity" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">pH</label><input type="number" step="0.01" name="ph" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Temp. Recepción (°C)</label><input type="number" step="0.1" name="reception_temp" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">SO₂ añadido (mg/L)</label><input type="number" name="added_so2" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Turbidez</label><input type="text" name="turbidity" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Intensidad Color</label><input type="text" name="color_intensity" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Aromas</label><input type="text" name="aromas" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                </div>
+
+                <h4 class="text-lg font-semibold border-b pb-2 mt-6">Operaciones de Vinificación</h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm">Tipo de Despalillado</label><input type="text" name="destemming_type" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Tiempo Maceración (h)</label><input type="number" name="maceration_time" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Temp. Maceración (°C)</label><input type="number" step="0.1" name="maceration_temp" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Tipo de Levadura</label><input type="text" name="yeast_type" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                </div>
+                <div><label class="block text-sm">Remontados/Bazuqueos</label><input type="text" name="pumping_overs" placeholder="Ej: 2 veces/día por 15 min" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                <div><label class="block text-sm">Enzimas</label><input type="text" name="enzymes_added" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                <div><label class="block text-sm">Correcciones Aplicadas</label><textarea name="corrections" rows="2" class="w-full mt-1 p-2 border rounded modal-input"></textarea></div>
+
+                <h4 class="text-lg font-semibold border-b pb-2 mt-6">Observaciones Generales</h4>
+                <div><label class="block text-sm">Estado Sanitario del Mosto</label><input type="text" name="must_sanitary_state" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                <div><label class="block text-sm">Observaciones Sensoriales</label><textarea name="sensory_observations" rows="2" class="w-full mt-1 p-2 border rounded modal-input"></textarea></div>
+                <div><label class="block text-sm">Incidencias</label><textarea name="incidents" rows="2" class="w-full mt-1 p-2 border rounded modal-input"></textarea></div>
+                
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" class="modal-close-btn secondary-button px-5 py-2 rounded-full font-semibold">Cancelar</button>
+                    <button type="submit" class="cta-button px-5 py-2 rounded-full font-semibold">Guardar Registro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="fermentation-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50 overflow-auto">
+        <div class="card p-8 rounded-2xl shadow-xl w-full max-w-2xl m-4">
+            <h3 class="text-2xl font-bold mb-6">Control de Fermentación</h3>
+            <form id="fermentation-form" class="space-y-4 max-h-[80vh] overflow-y-auto pr-4">
+                <input type="hidden" name="lot_id">
+                <input type="hidden" name="container_id">
+                
+                <h4 class="text-lg font-semibold border-b pb-2">Control Fermentación Alcohólica</h4>
+                <div class="grid grid-cols-3 gap-4">
+                    <div><label class="block text-sm">Fecha</label><input type="date" name="control_date" required class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Temperatura (°C)</label><input type="number" step="0.1" name="temperature" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Densidad / Brix</label><input type="number" step="0.001" name="density" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Azúcar Residual (g/L)</label><input type="number" step="0.1" name="residual_sugar" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Alcohol Potencial (%)</label><input type="number" step="0.1" name="potential_alcohol" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                </div>
+
+                <h4 class="text-lg font-semibold border-b pb-2 mt-6">Control Químico y Sensorial</h4>
+                <div class="grid grid-cols-3 gap-4">
+                    <div><label class="block text-sm">pH</label><input type="number" step="0.01" name="ph" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Acidez Volátil</label><input type="number" step="0.01" name="volatile_acidity" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">SO₂ Libre</label><input type="number" name="free_so2" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                </div>
+                 <div><label class="block text-sm">Olor y Sabor Observados</label><input type="text" name="sensory_notes" class="w-full mt-1 p-2 border rounded modal-input"></div>
+
+                <h4 class="text-lg font-semibold border-b pb-2 mt-6">Fermentación Maloláctica (Opcional)</h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm">Ácido Málico (antes/después)</label><input type="text" name="malic_acid" placeholder="Ej: 3.5 / 0.1" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Ácido Láctico (antes/después)</label><input type="text" name="lactic_acid" placeholder="Ej: 0.2 / 2.0" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                </div>
+                
+                <h4 class="text-lg font-semibold border-b pb-2 mt-6">Observaciones y Decisiones</h4>
+                <div><label class="block text-sm">Notas del Enólogo</label><textarea name="notes" rows="3" class="w-full mt-1 p-2 border rounded modal-input"></textarea></div>
+
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" class="modal-close-btn secondary-button px-5 py-2 rounded-full font-semibold">Cancelar</button>
+                    <button type="submit" class="cta-button px-5 py-2 rounded-full font-semibold">Guardar Control</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="aging-analytic-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50">
+        <div class="card p-8 rounded-2xl shadow-xl w-full max-w-lg m-4">
+            <h3 class="text-2xl font-bold mb-6">Analítica para Barrica: <span id="aging-modal-barrel-name"></span></h3>
+            <form id="aging-analytic-form" class="space-y-4">
+                <input type="hidden" name="lot_id">
+                <input type="hidden" name="container_id">
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm">Fecha</label><input type="date" name="analysis_date" required class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Grado Alc. (%)</label><input type="number" step="0.01" name="alcoholic_degree" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm">Acidez Total (g/L)</label><input type="number" step="0.01" name="total_acidity" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">Acidez Volátil (g/L)</label><input type="number" step="0.01" name="volatile_acidity" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div><label class="block text-sm">pH</label><input type="number" step="0.01" name="ph" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">SO₂ Libre (mg/L)</label><input type="number" name="free_so2" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                    <div><label class="block text-sm">SO₂ Total (mg/L)</label><input type="number" name="total_so2" class="w-full mt-1 p-2 border rounded modal-input"></div>
+                </div>
+                <div><label class="block text-sm">Notas Enólogo</label><textarea name="notes" rows="3" class="w-full mt-1 p-2 border rounded modal-input"></textarea></div>
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" class="modal-close-btn secondary-button px-5 py-2 rounded-full font-semibold">Cancelar</button>
+                    <button type="submit" class="cta-button px-5 py-2 rounded-full font-semibold">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
         const API_BASE_URL = 'http://127.0.0.1:8000';
         const TOKEN_KEY = 'accessToken';
         let lotsCache = [];
         let selectedLotId = null;
+        let lotData = null;
         let fermentationChart = null;
         let historyCurrentPage = 1;
         let allHistoryData = [];
-        const ITEMS_PER_PAGE = 10;
+        const ITEMS_PER_PAGE = 5;
 
+        document.addEventListener('DOMContentLoaded', async () => {
+            const themeToggle = document.getElementById('theme-toggle');
+            const body = document.body;
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'warm') {
+                body.classList.add('theme-warm');
+                themeToggle.checked = true;
+            } else {
+                themeToggle.checked = false;
+            }
+            themeToggle.addEventListener('change', () => {
+                body.classList.toggle('theme-warm');
+                localStorage.setItem('theme', body.classList.contains('theme-warm') ? 'warm' : 'light');
+            });
+
+            requireAuth();
+            document.getElementById('logout-btn').addEventListener('click', logout);
+            
+            try {
+                lotsCache = await apiFetch('/api/laboratory/lots');
+                renderLotsList();
+            } catch (e) {
+                document.getElementById('lots-list').innerHTML = `<p class="text-red-500 p-4">${e.message}</p>`;
+            }
+
+            document.getElementById('lots-list').addEventListener('click', (e) => {
+                const lotCard = e.target.closest('[data-lot-id]');
+                if (lotCard) selectLot(lotCard.dataset.lotId);
+            });
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const lotIdFromUrl = urlParams.get('lotId');
+            if (lotIdFromUrl) {
+                const checkLotsExist = setInterval(() => {
+                    if(lotsCache.length > 0) {
+                        clearInterval(checkLotsExist);
+                        selectLot(lotIdFromUrl);
+                    }
+                }, 100);
+            }
+
+            setupModal('vinification-modal');
+            setupModal('fermentation-modal');
+            setupModal('aging-analytic-modal');
+            
+            document.querySelector('main').addEventListener('click', (e) => {
+                const header = e.target.closest('.accordion-item-header');
+                if (header) {
+                    header.parentElement.classList.toggle('open');
+                }
+            });
+        });
+        
         function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
-        
+
         async function apiFetch(endpoint, options = {}) {
             const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}` };
             const resp = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
             if (resp.status === 401) { logout(); throw new Error('Sesión expirada.'); }
-            if (!resp.ok) { const data = await resp.json().catch(() => ({ detail: `Error HTTP ${resp.status}` })); throw new Error(data.detail); }
+            if (!resp.ok) {
+                const data = await resp.json().catch(() => ({ detail: `Error HTTP ${resp.status}` }));
+                if (resp.status === 422 && data.detail && Array.isArray(data.detail)) {
+                    const errorMsg = data.detail.map(err => `${err.loc.join('.')}: ${err.msg}`).join('\n');
+                    throw new Error(errorMsg);
+                }
+                throw new Error(data.detail || `Error HTTP ${resp.status}`);
+            }
             return resp.status === 204 ? null : resp.json();
         }
 
         function renderLotsList() {
             const listEl = document.getElementById('lots-list');
-            if (lotsCache.length === 0) {
-                listEl.innerHTML = '<p class="text-secondary text-center p-4">No hay lotes en vinificación o crianza.</p>';
-                return;
-            }
-            listEl.innerHTML = lotsCache.map(lot => `
+            listEl.innerHTML = lotsCache.length ? lotsCache.map(lot => `
                 <div class="border rounded-lg p-3 cursor-pointer hover:bg-gray-100 transition-colors ${lot.id === selectedLotId ? 'bg-indigo-100 border-indigo-400' : 'border-accent'}" data-lot-id="${lot.id}">
                     <p class="font-bold">${lot.name}</p>
                     <p class="text-sm text-secondary">${lot.status}</p>
-                </div>
-            `).join('');
+                </div>`).join('') : '<p class="text-secondary text-center p-4">No hay lotes activos.</p>';
         }
 
+        async function selectLot(lotId) {
+            if (!lotId) return;
+            selectedLotId = lotId;
+            renderLotsList();
+
+            lotData = lotsCache.find(l => l.id === lotId);
+            if (!lotData) return;
+
+            document.getElementById('no-lot-selected').classList.add('hidden');
+            document.getElementById('lot-detail-view').classList.remove('hidden');
+
+            document.getElementById('lot-name-title').textContent = lotData.name;
+            document.getElementById('lot-details').textContent = `Variedad: ${lotData.grape_variety || 'N/A'} | Año: ${lotData.vintage_year || 'N/A'} | Estado: ${lotData.status}`;
+            
+            const buttonsContainer = document.getElementById('action-buttons');
+            const vinificationSection = document.getElementById('vinification-section');
+            const agingSection = document.getElementById('aging-section');
+            const details = await apiFetch(`/api/laboratory/lot-details/${lotData.id}`);
+
+            if (lotData.status === 'En Fermentación') {
+                vinificationSection.classList.remove('hidden');
+                agingSection.classList.add('hidden');
+                buttonsContainer.innerHTML = `
+                    <button id="add-vinification-btn" class="cta-button px-4 py-2 rounded-full font-semibold text-sm">Registrar Vinificación</button>
+                    <button id="add-fermentation-btn" class="secondary-button px-4 py-2 rounded-full font-semibold text-sm">Control Fermentación</button>`;
+                
+                document.getElementById('add-vinification-btn').addEventListener('click', openVinificationModal);
+                document.getElementById('add-fermentation-btn').addEventListener('click', openFermentationModal);
+                
+                allHistoryData = [
+                    ...(details.winemaking_logs || []).map(item => ({...item, type: 'Vinificación', date: item.log_date})),
+                    ...(details.fermentation_controls || []).map(item => ({...item, type: 'Control Fermentación', date: item.control_date})),
+                    ...(details.lab_analytics || []).map(item => ({...item, type: 'Analítica General', date: item.analysis_date}))
+                ].sort((a,b) => new Date(b.date) - new Date(a.date));
+                
+                historyCurrentPage = 1;
+                renderHistory('vinification-history', 'history-pagination', historyCurrentPage);
+                renderFermentationChart(details.fermentation_controls || []);
+                
+            } else if (lotData.status === 'En Crianza') {
+                vinificationSection.classList.add('hidden');
+                agingSection.classList.remove('hidden');
+                buttonsContainer.innerHTML = '';
+                renderBarrels(lotData.containers, details.lab_analytics || []);
+            }
+        }
+        
         function renderFermentationChart(controls) {
             const chartDom = document.getElementById('fermentation-chart');
             if (fermentationChart) {
                 fermentationChart.dispose();
             }
+            if(!controls || controls.length === 0) {
+                chartDom.innerHTML = `<p class="text-center text-secondary p-4">No hay datos para la gráfica.</p>`;
+                return;
+            }
             fermentationChart = echarts.init(chartDom);
+            const sortedControls = controls.sort((a,b) => new Date(a.control_date) - new Date(b.control_date));
             const option = {
                 tooltip: { trigger: 'axis' },
                 legend: { data: ['Temperatura', 'Densidad'], bottom: 0 },
-                xAxis: { type: 'category', data: controls.map(c => new Date(c.control_date).toLocaleDateString()) },
+                xAxis: { type: 'category', data: sortedControls.map(c => new Date(c.control_date).toLocaleDateString()) },
                 yAxis: [
                     { type: 'value', name: 'Temp (°C)', position: 'left', nameTextStyle: { color: '#dc2626' } },
-                    { type: 'value', name: 'Densidad', position: 'right', nameTextStyle: { color: '#2563eb' }, axisLabel: { formatter: '{value}' } }
+                    { type: 'value', name: 'Densidad', position: 'right', nameTextStyle: { color: '#2563eb' }, axisLabel: { formatter: '{value.toFixed(3)}' } }
                 ],
-                grid: { top: '15%', left: '12%', right: '12%', bottom: '20%' },
+                grid: { top: '15%', left: '12%', right: '15%', bottom: '20%' },
                 series: [
-                    { name: 'Temperatura', type: 'line', smooth: true, data: controls.map(c => c.temperature), yAxisIndex: 0, itemStyle: { color: '#dc2626' } },
-                    { name: 'Densidad', type: 'line', smooth: true, data: controls.map(c => c.density), yAxisIndex: 1, itemStyle: { color: '#2563eb' } }
+                    { name: 'Temperatura', type: 'line', smooth: true, data: sortedControls.map(c => c.temperature), yAxisIndex: 0, itemStyle: { color: '#dc2626' } },
+                    { name: 'Densidad', type: 'line', smooth: true, data: sortedControls.map(c => c.density), yAxisIndex: 1, itemStyle: { color: '#2563eb' } }
                 ]
             };
             fermentationChart.setOption(option);
-            window.addEventListener('resize', () => fermentationChart.resize());
+            new ResizeObserver(() => fermentationChart.resize()).observe(chartDom);
         }
 
         function renderDetailGrid(details) {
@@ -298,8 +465,7 @@
                     html += `<div><strong class="text-gray-600">${key}:</strong> <span class="text-gray-800">${value}</span></div>`;
                 }
             }
-            html += '</div>';
-            return html;
+            return html + '</div>';
         }
 
         function renderHistory(containerId, paginationId, page) {
@@ -307,9 +473,7 @@
             const paginationEl = document.getElementById(paginationId);
             
             const totalPages = Math.ceil(allHistoryData.length / ITEMS_PER_PAGE);
-            const startIndex = (page - 1) * ITEMS_PER_PAGE;
-            const endIndex = startIndex + ITEMS_PER_PAGE;
-            const paginatedItems = allHistoryData.slice(startIndex, endIndex);
+            const paginatedItems = allHistoryData.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
             if (paginatedItems.length === 0) {
                 container.innerHTML = `<p class="text-secondary text-center p-4">No hay registros.</p>`;
@@ -317,32 +481,17 @@
                 return;
             }
             
-            container.innerHTML = paginatedItems.map((item, index) => {
+            container.innerHTML = paginatedItems.map(item => {
                  let content = '';
-                if (item.type === 'Vinificación') {
-                     content = renderDetailGrid({
-                        "Azúcar (Baumé/Brix)": item.sugar_level, "Acidez Total": item.total_acidity, "pH": item.ph, "Temp. Recepción": item.reception_temp,
-                        "SO₂ añadido": `${item.added_so2} mg/L`, "Turbidez": item.turbidity, "Color": item.color_intensity, "Aromas": item.aromas,
-                        "Despalillado": item.destemming_type, "T. Maceración": `${item.maceration_time}h`, "Tª Maceración": item.maceration_temp ? `${item.maceration_temp}°C` : 'N/A', "Levadura": item.yeast_type,
-                        "Enzimas": item.enzymes_added, "Correcciones": item.corrections, "Estado Sanitario": item.must_sanitary_state, "Observaciones": item.sensory_observations, "Incidencias": item.incidents
-                    });
-                } else if (item.type === 'Control Fermentación') {
-                    content = renderDetailGrid({
-                        "Temperatura": `${item.temperature}°C`, "Densidad": item.density, "Azúcar Residual": item.residual_sugar ? `${item.residual_sugar} g/L` : 'N/A', "Alcohol Potencial": item.potential_alcohol,
-                        "Actividad Levaduras": item.yeast_activity, "Nutrientes": item.nutrients_added,
-                        "Ác. Málico (Pre/Post)": item.malic_before ? `${item.malic_before} / ${item.malic_after}` : null,
-                        "Ác. Láctico (Pre/Post)": item.lactic_before ? `${item.lactic_before} / ${item.lactic_after}`: null,
-                        "Bacteria Inoculada": item.inoculated_bacteria,
-                        "Notas": item.notes
-                    });
-                } else { // Analítica
-                    content = renderDetailGrid({
-                        "Grado Alcohólico": item.alcoholic_degree, "Acidez Total": item.total_acidity, "Acidez Volátil": item.volatile_acidity, "pH": item.ph,
-                        "SO₂ Libre": item.free_so2, "SO₂ Total": item.total_so2, "Notas": item.notes
-                    });
-                }
+                 if (item.type === 'Vinificación') {
+                     content = renderDetailGrid({ "Variedad": item.grape_variety, "Fecha Vendimia": item.harvest_date, "Origen": item.origin_parcel, "Tipo Vino": item.wine_type, "Azúcar": item.sugar_level, "Acidez Total": item.total_acidity, "pH": item.ph, "Temp. Recepción": item.reception_temp ? `${item.reception_temp}°C` : '', "SO₂ añadido": item.added_so2 ? `${item.added_so2} mg/L` : '', "Turbidez": item.turbidity, "Despalillado": item.destemming_type, "T. Maceración": item.maceration_time ? `${item.maceration_time}h` : '', "Tª Maceración": item.maceration_temp ? `${item.maceration_temp}°C` : '', "Levadura": item.yeast_type, "Remontados": item.pumping_overs ? item.pumping_overs.details : '', "Correcciones": item.corrections, "Estado Sanitario": item.must_sanitary_state, "Obs. Sensoriales": item.sensory_observations, "Incidencias": item.incidents });
+                 } else if (item.type === 'Control Fermentación') {
+                     content = renderDetailGrid({ "Temperatura": item.temperature ? `${item.temperature}°C` : '', "Densidad": item.density, "Azúcar Residual": item.residual_sugar ? `${item.residual_sugar} g/L` : '', "Alcohol Potencial": item.potential_alcohol ? `${item.potential_alcohol}%` : '', "pH": item.ph, "Acidez Volátil": item.volatile_acidity, "SO₂ Libre": item.free_so2, "Obs. Sensoriales": item.sensory_notes, "Ác. Málico": item.malic_acid, "Ác. Láctico": item.lactic_acid, "Notas": item.notes });
+                 } else { 
+                     content = renderDetailGrid({ "Grado Alcohólico": item.alcoholic_degree, "Acidez Total": item.total_acidity, "Acidez Volátil": item.volatile_acidity, "pH": item.ph, "SO₂ Libre": item.free_so2, "SO₂ Total": item.total_so2, "Notas": item.notes });
+                 }
                 
-                return `<div class="accordion-item" data-index="${index}">
+                return `<div class="accordion-item">
                     <div class="accordion-item-header border-b">
                         <div>
                             <p class="font-bold">${item.type}</p>
@@ -356,17 +505,11 @@
             
             if (totalPages > 1) {
                 paginationEl.style.display = 'flex';
-                paginationEl.innerHTML = `
-                    <button class="button-3d prev-btn"><div class="button-top"><span>❮</span></div><div class="button-bottom"></div><div class="button-base"></div></button>
-                    <span class="page-info">Página ${page} de ${totalPages}</span>
-                    <button class="button-3d next-btn"><div class="button-top"><span>❯</span></div><div class="button-bottom"></div><div class="button-base"></div></button>`;
-
+                paginationEl.innerHTML = `<button class="button-3d prev-btn"><div class="button-top"><span>❮</span></div><div class="button-bottom"></div><div class="button-base"></div></button> <span class="page-info">Página ${page} de ${totalPages}</span> <button class="button-3d next-btn"><div class="button-top"><span>❯</span></div><div class="button-bottom"></div><div class="button-base"></div></button>`;
                 const prevBtn = paginationEl.querySelector('.prev-btn');
                 const nextBtn = paginationEl.querySelector('.next-btn');
-                
                 prevBtn.disabled = page === 1;
                 nextBtn.disabled = page === totalPages;
-
                 prevBtn.onclick = () => { if (page > 1) { historyCurrentPage--; renderHistory(containerId, paginationId, historyCurrentPage); } };
                 nextBtn.onclick = () => { if (page < totalPages) { historyCurrentPage++; renderHistory(containerId, paginationId, historyCurrentPage); } };
             } else {
@@ -374,89 +517,120 @@
             }
         }
         
-        async function selectLot(lotId) {
-            if (!lotId) return;
-            selectedLotId = lotId;
-            historyCurrentPage = 1; // Reset page on new lot selection
-            renderLotsList();
+        function renderBarrels(barrels, analytics) {
+            const container = document.getElementById('barrel-list');
+            container.innerHTML = barrels.map(barrel => {
+                const barrelAnalytics = analytics.filter(a => a.container_id === barrel.id).sort((a,b) => new Date(b.analysis_date) - new Date(a.analysis_date));
+                let historyHtml = '<p class="text-secondary">No hay registros aún.</p>';
+                if (barrelAnalytics.length > 0) {
+                    historyHtml = barrelAnalytics.map(a => `
+                        <div class="border-t pt-2 mt-2">
+                            <p class="font-semibold">${new Date(a.analysis_date).toLocaleDateString()}</p>
+                            <p>pH: ${a.ph || 'N/A'} | SO₂ Libre: ${a.free_so2 || 'N/A'}</p>
+                        </div>
+                    `).join('');
+                }
 
-            const lotData = lotsCache.find(l => l.id === lotId);
-            if (!lotData) return;
+                return `
+                <div class="card p-4">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-lg">${barrel.name}</h4>
+                        <button class="add-aging-analytic-btn cta-button rounded-full w-8 h-8 text-lg flex items-center justify-center" data-barrel-id="${barrel.id}" data-barrel-name="${barrel.name}">+</button>
+                    </div>
+                    <p class="text-sm text-secondary">${barrel.material} - ${barrel.capacity}L</p>
+                    <div class="mt-4 text-xs space-y-2">${historyHtml}</div>
+                </div>`;
+            }).join('');
 
-            document.getElementById('no-lot-selected').classList.add('hidden');
-            document.getElementById('lot-detail-view').classList.remove('hidden');
-
-            document.getElementById('lot-name-title').textContent = lotData.name;
-            document.getElementById('lot-details').textContent = `Variedad: ${lotData.grape_variety || 'N/A'} | Año: ${lotData.vintage_year || 'N/A'} | Estado: ${lotData.status}`;
+            document.querySelectorAll('.add-aging-analytic-btn').forEach(btn => 
+                btn.addEventListener('click', (e) => openAgingAnalyticModal(e.currentTarget.dataset.barrelId, e.currentTarget.dataset.barrelName))
+            );
+        }
+        
+        function setupModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', () => modal.classList.remove('modal-active')));
+            modal.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('modal-active'); });
             
-            const details = await apiFetch(`/api/laboratory/lot-details/${lotId}`);
-
-            if (lotData.status === 'En Fermentación') {
-                document.getElementById('vinification-section').classList.remove('hidden');
-                document.getElementById('aging-section').classList.add('hidden');
+            modal.querySelector('form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = Object.fromEntries(new FormData(e.target).entries());
                 
-                allHistoryData = [
-                    ...details.winemaking_logs.map(item => ({...item, type: 'Vinificación', date: item.log_date})),
-                    ...details.fermentation_controls.map(item => ({...item, type: 'Control Fermentación', date: item.control_date})),
-                    ...details.lab_analytics.map(item => ({...item, type: 'Analítica', date: item.analysis_date}))
-                ].sort((a,b) => new Date(b.date) - new Date(a.date));
+                Object.keys(formData).forEach(key => {
+                    if (formData[key] === '') delete formData[key];
+                });
 
-                renderHistory('vinification-history', 'history-pagination', historyCurrentPage);
-                
-                document.getElementById('vinification-containers').innerHTML = `<h4 class="text-xl font-bold mb-4">Depósitos</h4>${lotData.containers.map(c => `<p>${c.name} (${c.current_volume} L)</p>`).join('')}`;
-                renderFermentationChart(details.fermentation_controls);
+                let endpoint = '';
+                if(modalId === 'vinification-modal') endpoint = '/api/traceability/winemaking-logs/';
+                if(modalId === 'fermentation-modal') endpoint = '/api/cellar/fermentation-controls/';
+                if(modalId === 'aging-analytic-modal') endpoint = '/api/traceability/lab-analytics/';
 
-            } else if (lotData.status === 'En Crianza') {
-                document.getElementById('vinification-section').classList.add('hidden');
-                document.getElementById('aging-section').classList.remove('hidden');
-
-                document.getElementById('aging-containers').innerHTML = lotData.containers.map(c => `
-                    <div class="border p-2 rounded-lg">
-                        <p class="font-bold">${c.name}</p>
-                        <p class="text-sm">${c.material} (${c.cooperage || 'N/A'})</p>
-                    </div>`).join('');
-                
-                allHistoryData = [...details.lab_analytics].sort((a,b) => new Date(b.analysis_date) - new Date(a.analysis_date));
-                renderHistory('aging-history', 'aging-pagination', historyCurrentPage);
-            }
+                try {
+                    await apiFetch(endpoint, { method: 'POST', body: JSON.stringify(formData) });
+                    modal.classList.remove('modal-active');
+                    await selectLot(selectedLotId);
+                } catch(error){ 
+                    alert(`Error al guardar: ${error.message}`); 
+                }
+            });
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            requireAuth();
-            document.getElementById('logout-btn').addEventListener('click', logout);
+        function openVinificationModal() {
+            const form = document.getElementById('vinification-form');
+            form.reset();
+            const lotSelector = form.querySelector('select[name="lot_id"]');
+            const detailsContainer = document.getElementById('vinification-lot-details');
+            detailsContainer.classList.add('hidden');
             
-            try {
-                lotsCache = await apiFetch('/api/laboratory/lots');
-                renderLotsList();
-            } catch (e) {
-                document.getElementById('lots-list').innerHTML = `<p class="text-red-500 p-4">${e.message}</p>`;
-            }
-
-            document.getElementById('lots-list').addEventListener('click', (e) => {
-                const lotCard = e.target.closest('[data-lot-id]');
-                if (lotCard) {
-                    selectLot(lotCard.dataset.lotId);
-                }
+            lotSelector.innerHTML = '<option value="">-- Elige un lote --</option>';
+            lotsCache.filter(lot => lot.status === 'En Fermentación').forEach(lot => {
+                const option = document.createElement('option');
+                option.value = lot.id;
+                option.textContent = lot.name;
+                lotSelector.appendChild(option);
             });
-
-            document.querySelector('main').addEventListener('click', (e) => {
-                const header = e.target.closest('.accordion-item-header');
-                if (header) {
-                    header.parentElement.classList.toggle('open');
+            
+            lotSelector.onchange = (e) => {
+                const selectedId = e.target.value;
+                const lot = lotsCache.find(l => l.id === selectedId);
+                if (lot) {
+                    detailsContainer.innerHTML = `
+                        <p><strong>Variedad:</strong> ${lot.grape_variety || 'N/A'}</p>
+                        <p><strong>Año:</strong> ${lot.vintage_year || 'N/A'}</p>
+                        <p><strong>Tipo:</strong> ${lot.wine_type || 'N/A'}</p>`;
+                    detailsContainer.classList.remove('hidden');
+                } else {
+                    detailsContainer.classList.add('hidden');
                 }
-            });
+            };
+            
+            document.getElementById('vinification-modal').classList.add('modal-active');
+        }
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const lotIdFromUrl = urlParams.get('lotId');
-            if (lotIdFromUrl) {
-                const checkLotsExist = setInterval(() => {
-                    if(lotsCache.length > 0) {
-                        clearInterval(checkLotsExist);
-                        selectLot(lotIdFromUrl);
-                    }
-                }, 100);
+        function openFermentationModal() {
+            const form = document.getElementById('fermentation-form');
+            form.reset();
+            form.querySelector('input[name="lot_id"]').value = lotData.id;
+            const tank = lotData.containers.find(c => c.type.trim() === 'Depósito');
+            if (tank) {
+                form.querySelector('input[name="container_id"]').value = tank.id;
+            } else {
+                alert("No hay un depósito asignado a este lote.");
+                return;
             }
-        });
+            form.querySelector('input[name="control_date"]').value = new Date().toISOString().split('T')[0];
+            document.getElementById('fermentation-modal').classList.add('modal-active');
+        }
+
+        function openAgingAnalyticModal(barrelId, barrelName) {
+            const form = document.getElementById('aging-analytic-form');
+            form.reset();
+            form.querySelector('input[name="lot_id"]').value = lotData.id;
+            form.querySelector('input[name="container_id"]').value = barrelId;
+            document.getElementById('aging-modal-barrel-name').textContent = barrelName;
+            form.querySelector('input[name="analysis_date"]').value = new Date().toISOString().split('T')[0];
+            document.getElementById('aging-analytic-modal').classList.add('modal-active');
+        }
     </script>
 </body>
 </html>
