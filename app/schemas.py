@@ -55,17 +55,13 @@ class FieldLog(FieldLogBase):
     class Config:
         from_attributes = True
 
-# =================================================================
-# INICIO DE LA CORRECCIÓN
-# Se consolidan las definiciones de Parcel en un solo lugar.
-# =================================================================
 # --- Esquemas de Parcelas ---
 class ParcelBase(BaseModel):
     name: str
     location: Optional[str] = None
     area_hectares: Optional[float] = None
     planting_year: Optional[int] = None
-    variety: Optional[str] = None  # CORRECCIÓN: Cambiado de grape_variety a variety
+    variety: Optional[str] = None
     geojson_coordinates: Optional[Any] = None
 
 class ParcelCreate(ParcelBase):
@@ -77,11 +73,13 @@ class Parcel(ParcelBase):
     geojson_coordinates: Optional[Any] = None
     class Config:
         from_attributes = True
+
 # --- Esquemas para la Arquitectura Central ---
 class WineLotBase(BaseModel):
     name: str
     grape_variety: Optional[str] = None
     vintage_year: Optional[int] = None
+    wine_type: Optional[str] = None
 
 class WineLotCreate(WineLotBase):
     initial_grape_kg: float
@@ -174,7 +172,37 @@ class BottlingToProductCreate(BaseModel):
     product_price: float
     bottles_produced: int
 
-# --- Esquemas para Trazabilidad Avanzada ---
+# --- Esquemas para Laboratorio ---
+class WinemakingLogBase(BaseModel):
+    lot_id: uuid.UUID
+    log_date: date
+    sugar_level: Optional[float] = None
+    total_acidity: Optional[float] = None
+    ph: Optional[float] = None
+    reception_temp: Optional[float] = None
+    added_so2: Optional[int] = None
+    turbidity: Optional[str] = None
+    color_intensity: Optional[str] = None
+    aromas: Optional[str] = None
+    destemming_type: Optional[str] = None
+    maceration_time: Optional[int] = None
+    maceration_temp: Optional[float] = None
+    pumping_overs: Optional[Dict[str, Any]] = None
+    corrections: Optional[str] = None
+    yeast_type: Optional[str] = None
+    enzymes_added: Optional[str] = None
+    must_sanitary_state: Optional[str] = None
+    sensory_observations: Optional[str] = None
+    incidents: Optional[str] = None
+
+class WinemakingLogCreate(WinemakingLogBase):
+    pass
+
+class WinemakingLog(WinemakingLogBase):
+    id: uuid.UUID
+    class Config:
+        from_attributes = True
+
 class FermentationControlBase(BaseModel):
     container_id: uuid.UUID
     lot_id: uuid.UUID
@@ -182,6 +210,15 @@ class FermentationControlBase(BaseModel):
     temperature: Optional[float] = None
     density: Optional[float] = None
     notes: Optional[str] = None
+    residual_sugar: Optional[float] = None
+    potential_alcohol: Optional[float] = None
+    yeast_activity: Optional[str] = None
+    nutrients_added: Optional[str] = None
+    malic_acid_before: Optional[float] = None
+    malic_acid_after: Optional[float] = None
+    lactic_acid_before: Optional[float] = None
+    lactic_acid_after: Optional[float] = None
+    inoculated_bacteria: Optional[str] = None
 
 class FermentationControlCreate(FermentationControlBase):
     pass

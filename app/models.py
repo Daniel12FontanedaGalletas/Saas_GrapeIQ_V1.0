@@ -1,4 +1,4 @@
-# Saas_GrapeIQ_V1.0/app/models.py (COMPLETO Y CORRECTO)
+# Saas_GrapeIQ_V1.0/app/models.py
 
 from sqlalchemy import Column, Integer, String, Numeric, Date, Text, ForeignKey, DateTime, Boolean
 from sqlalchemy.dialects.postgresql import UUID, JSONB
@@ -66,6 +66,7 @@ class WineLot(Base):
     liters_unassigned = Column(Numeric(10, 2))
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
     origin_parcel_id = Column(UUID(as_uuid=True), ForeignKey("parcels.id"), nullable=True)
+    wine_type = Column(String) # tinto, blanco, rosado
 
 class Container(Base):
     __tablename__ = "containers"
@@ -97,7 +98,38 @@ class Movement(Base):
     notes = Column(Text, nullable=True) # --- NUEVO CAMPO PARA NOTAS DE CATA ---
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
 
-# --- NUEVAS TABLAS PARA TRAZABILIDAD AVANZADA ---
+# --- TABLAS PARA LABORATORIO ---
+class WinemakingLog(Base):
+    __tablename__ = "winemaking_logs"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=False)
+    log_date = Column(Date, nullable=False, default=datetime.utcnow)
+    
+    # Parámetros de la uva/mosto
+    sugar_level = Column(Numeric(5, 2)) # Baumé o Brix
+    total_acidity = Column(Numeric(5, 2)) # g/L tartárico
+    ph = Column(Numeric(4, 2))
+    reception_temp = Column(Numeric(5, 2)) # °C
+    added_so2 = Column(Integer) # mg/L
+    turbidity = Column(String)
+    color_intensity = Column(String)
+    aromas = Column(Text)
+
+    # Operaciones de vinificación
+    destemming_type = Column(String)
+    maceration_time = Column(Integer) # horas
+    maceration_temp = Column(Numeric(5, 2)) # °C
+    pumping_overs = Column(JSONB) # { "frequency": 2, "duration": 15 }
+    corrections = Column(Text)
+    yeast_type = Column(String)
+    enzymes_added = Column(Text)
+    
+    # Observaciones
+    must_sanitary_state = Column(Text)
+    sensory_observations = Column(Text)
+    incidents = Column(Text)
+
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
 
 class FermentationControl(Base):
     __tablename__ = "fermentation_controls"
@@ -109,6 +141,17 @@ class FermentationControl(Base):
     density = Column(Numeric(6, 4))
     notes = Column(Text, nullable=True)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+    
+    # Nuevos campos
+    residual_sugar = Column(Numeric(5, 2), nullable=True)
+    potential_alcohol = Column(Numeric(4, 2), nullable=True)
+    yeast_activity = Column(String, nullable=True) # alta, media, baja, parada
+    nutrients_added = Column(String, nullable=True)
+    malic_acid_before = Column(Numeric(5, 2), nullable=True)
+    malic_acid_after = Column(Numeric(5, 2), nullable=True)
+    lactic_acid_before = Column(Numeric(5, 2), nullable=True)
+    lactic_acid_after = Column(Numeric(5, 2), nullable=True)
+    inoculated_bacteria = Column(String, nullable=True)
 
 class LabAnalytic(Base):
     __tablename__ = "lab_analytics"
@@ -150,7 +193,7 @@ class BottlingEvent(Base):
     retained_samples = Column(Integer, default=0)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
 
-# --- TABLAS DE COSTES, PRODUCTOS Y VENTAS (SIN CAMBIOS) ---
+# --- TABLAS DE COSTES, PRODUCTOS Y VENTAS ---
 
 class CostParameter(Base):
     __tablename__ = "cost_parameters"

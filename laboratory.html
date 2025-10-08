@@ -32,7 +32,13 @@
                 <span class="text-3xl font-light text-secondary">|</span>
                 <h1 class="text-3xl font-semibold">Laboratorio</h1>
             </a>
-            <button id="logout-btn" class="bg-dark text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <p class="font-bold text-lg">24°C</p>
+                    <p class="text-sm text-secondary">Humedad: 65%</p>
+                </div>
+                <button id="logout-btn" class="bg-dark text-white px-6 py-2 rounded-full font-semibold hover:opacity-90">Cerrar Sesión</button>
+            </div>
         </header>
         <div class="mb-8 border-b border-accent">
              <nav class="flex space-x-8 overflow-x-auto pb-2">
@@ -52,120 +58,77 @@
         </div>
 
         <main class="space-y-8">
-            <div class="card p-6 rounded-2xl shadow-lg flex justify-between items-start">
-                <div>
-                    <h2 class="text-3xl font-bold" id="lot-name-title">Cargando...</h2>
-                    <p class="text-secondary mt-1" id="lot-details"></p>
-                </div>
-                <div class="flex flex-col items-end gap-2">
-                     <button id="add-analytic-btn" class="cta-button px-4 py-2 rounded-full font-semibold text-sm">Añadir Analítica</button>
-                     <button id="add-action-btn" class="secondary-button px-4 py-2 rounded-full font-semibold text-sm">Registrar Acción</button>
-                </div>
-            </div>
-
-            <div id="vinification-section" class="hidden">
-                <h3 class="text-2xl font-bold mb-4">Fase de Vinificación</h3>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2 card p-6 rounded-2xl shadow-lg">
-                        <h4 class="text-xl font-bold mb-4">Historial y Controles</h4>
-                        <div id="vinification-history" class="space-y-4 max-h-[60vh] overflow-y-auto pr-4"></div>
-                    </div>
-                    <div class="space-y-8">
-                        <div id="vinification-containers" class="card p-6 rounded-2xl shadow-lg"></div>
-                        <div class="card p-6 rounded-2xl shadow-lg">
-                             <h4 class="text-xl font-bold mb-4">Curva de Fermentación</h4>
-                             <div id="fermentation-chart" style="width: 100%; height: 300px;"></div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="md:col-span-1">
+                    <div class="card p-4 rounded-2xl shadow-lg">
+                        <h2 class="text-xl font-bold mb-4">Lotes Activos</h2>
+                        <div id="lots-list" class="space-y-2 max-h-[80vh] overflow-y-auto">
+                            <p class="text-secondary text-center">Cargando lotes...</p>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div id="aging-section" class="hidden">
-                <h3 class="text-2xl font-bold mb-4">Fase de Crianza</h3>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2 card p-6 rounded-2xl shadow-lg">
-                        <h4 class="text-xl font-bold mb-4">Barricas Asignadas</h4>
-                        <div id="aging-containers" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <div class="md:col-span-3">
+                    <div id="lot-detail-view" class="hidden">
+                        <div class="card p-6 rounded-2xl shadow-lg flex justify-between items-start">
+                            <div>
+                                <h2 class="text-3xl font-bold" id="lot-name-title"></h2>
+                                <p class="text-secondary mt-1" id="lot-details"></p>
+                            </div>
+                            <div class="flex flex-col items-end gap-2">
+                                 <button id="add-analytic-btn" class="cta-button px-4 py-2 rounded-full font-semibold text-sm">Añadir Analítica</button>
+                                 <button id="add-action-btn" class="secondary-button text-black px-4 py-2 rounded-full font-semibold text-sm">Registrar Acción</button>
+                            </div>
+                        </div>
+
+                        <div id="vinification-section" class="mt-8 hidden">
+                            <h3 class="text-2xl font-bold mb-4">Fase de Vinificación</h3>
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <div class="lg:col-span-2 card p-6 rounded-2xl shadow-lg">
+                                    <h4 class="text-xl font-bold mb-4">Historial y Controles</h4>
+                                    <div id="vinification-history" class="space-y-4 max-h-[60vh] overflow-y-auto pr-4"></div>
+                                </div>
+                                <div class="space-y-8">
+                                    <div id="vinification-containers" class="card p-6 rounded-2xl shadow-lg"></div>
+                                    <div class="card p-6 rounded-2xl shadow-lg">
+                                         <h4 class="text-xl font-bold mb-4">Curva de Fermentación</h4>
+                                         <div id="fermentation-chart" style="width: 100%; height: 300px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="aging-section" class="mt-8 hidden">
+                            <h3 class="text-2xl font-bold mb-4">Fase de Crianza</h3>
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <div class="lg:col-span-2 card p-6 rounded-2xl shadow-lg">
+                                    <h4 class="text-xl font-bold mb-4">Barricas Asignadas</h4>
+                                    <div id="aging-containers" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                                </div>
+                                 <div class="card p-6 rounded-2xl shadow-lg">
+                                    <h4 class="text-xl font-bold mb-4">Historial de Analíticas</h4>
+                                    <div id="aging-history" class="space-y-4 max-h-[60vh] overflow-y-auto pr-4"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                     <div class="card p-6 rounded-2xl shadow-lg">
-                        <h4 class="text-xl font-bold mb-4">Historial de Crianza</h4>
-                        <div id="aging-history" class="space-y-4 max-h-[60vh] overflow-y-auto pr-4"></div>
+                    <div id="no-lot-selected" class="text-center py-20">
+                        <i class="fas fa-vial text-6xl text-gray-300"></i>
+                        <p class="mt-4 text-xl text-secondary">Selecciona un lote para ver sus detalles.</p>
                     </div>
                 </div>
             </div>
         </main>
     </div>
     
-    <div id="analytic-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50">
-        <div class="card p-8 rounded-2xl shadow-xl w-full max-w-lg m-4">
-            <h3 class="text-2xl font-bold mb-6">Nueva Analítica para: <span id="analytic-modal-lot-name"></span></h3>
-            <form id="analytic-form" class="space-y-4">
-                <input type="hidden" name="lot_id">
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm">Fecha</label><input type="date" name="analysis_date" required class="w-full mt-1 p-2 border rounded modal-input"></div>
-                    <div><label class="block text-sm">Grado Alc. (%)</label><input type="number" step="0.01" name="alcoholic_degree" class="w-full mt-1 p-2 border rounded modal-input"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm">Acidez Total (g/L)</label><input type="number" step="0.01" name="total_acidity" class="w-full mt-1 p-2 border rounded modal-input"></div>
-                    <div><label class="block text-sm">Acidez Volátil (g/L)</label><input type="number" step="0.01" name="volatile_acidity" class="w-full mt-1 p-2 border rounded modal-input"></div>
-                </div>
-                <div class="grid grid-cols-3 gap-4">
-                    <div><label class="block text-sm">pH</label><input type="number" step="0.01" name="ph" class="w-full mt-1 p-2 border rounded modal-input"></div>
-                    <div><label class="block text-sm">SO₂ Libre (mg/L)</label><input type="number" name="free_so2" class="w-full mt-1 p-2 border rounded modal-input"></div>
-                    <div><label class="block text-sm">SO₂ Total (mg/L)</label><input type="number" name="total_so2" class="w-full mt-1 p-2 border rounded modal-input"></div>
-                </div>
-                <div><label class="block text-sm">Notas Enólogo</label><textarea name="notes" rows="3" class="w-full mt-1 p-2 border rounded modal-input"></textarea></div>
-                <div class="flex justify-end gap-4 pt-4">
-                    <button type="button" class="modal-close-btn secondary-button px-5 py-2 rounded-full font-semibold">Cancelar</button>
-                    <button type="submit" class="cta-button px-5 py-2 rounded-full font-semibold">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="action-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50">
-         <div class="card p-8 rounded-2xl shadow-xl w-full max-w-lg m-4">
-            <h3 class="text-2xl font-bold mb-6">Registrar Acción de Vinificación</h3>
-            <form id="action-form" class="space-y-4">
-                 <input type="hidden" name="lot_id">
-                 <input type="hidden" name="container_id">
-                 <div><label class="block text-sm">Fecha</label><input type="date" name="control_date" required class="w-full mt-1 p-2 border rounded modal-input"></div>
-                 <div>
-                    <label class="block text-sm">Tipo de Acción</label>
-                    <select name="action_type" class="w-full mt-1 p-2 border rounded modal-input">
-                        <option value="remontado">Remontado</option>
-                        <option value="bazuqueo">Bazuqueo</option>
-                        <option value="adicion">Adición Enológica</option>
-                        <option value="otro">Otro</option>
-                    </select>
-                 </div>
-                 <div id="remontado-fields">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block text-sm">Frecuencia (veces/día)</label><input type="number" name="remontado_freq" class="w-full mt-1 p-2 border rounded modal-input"></div>
-                        <div><label class="block text-sm">Duración (minutos)</label><input type="number" name="remontado_dur" class="w-full mt-1 p-2 border rounded modal-input"></div>
-                    </div>
-                 </div>
-                 <div id="adicion-fields" class="hidden">
-                    <label class="block text-sm">Descripción de la Adición</label>
-                    <input type="text" name="adicion_desc" placeholder="Ej: 20g/hL de levadura X" class="w-full mt-1 p-2 border rounded modal-input">
-                 </div>
-                 <div><label class="block text-sm">Notas</label><textarea name="notes" rows="2" class="w-full mt-1 p-2 border rounded modal-input"></textarea></div>
-                <div class="flex justify-end gap-4 pt-4">
-                    <button type="button" class="modal-close-btn secondary-button px-5 py-2 rounded-full font-semibold">Cancelar</button>
-                    <button type="submit" class="cta-button px-5 py-2 rounded-full font-semibold">Guardar Acción</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <div id="analytic-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50"></div>
+    <div id="action-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50"></div>
     
     <script>
         const API_BASE_URL = 'http://127.0.0.1:8000';
         const TOKEN_KEY = 'accessToken';
-        let lotData = null;
-        let containersData = [];
-        let analyticsData = [];
-        let fermentationData = [];
-        let movementsData = [];
+        let lotsCache = [];
+        let selectedLotId = null;
+        let fermentationChart = null;
 
         function requireAuth() { if (!localStorage.getItem(TOKEN_KEY)) window.location.href = 'login.html'; }
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
@@ -178,204 +141,130 @@
             return resp.status === 204 ? null : resp.json();
         }
 
-        function renderUI() {
+        function renderLotsList() {
+            const listEl = document.getElementById('lots-list');
+            if (lotsCache.length === 0) {
+                listEl.innerHTML = '<p class="text-secondary text-center p-4">No hay lotes en vinificación o crianza.</p>';
+                return;
+            }
+            listEl.innerHTML = lotsCache.map(lot => `
+                <div class="border rounded-lg p-3 cursor-pointer hover:bg-gray-100 transition-colors ${lot.id === selectedLotId ? 'bg-indigo-100 border-indigo-400' : 'border-accent'}" data-lot-id="${lot.id}">
+                    <p class="font-bold">${lot.name}</p>
+                    <p class="text-sm text-secondary">${lot.status}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderFermentationChart(controls) {
+            const chartDom = document.getElementById('fermentation-chart');
+            if (fermentationChart) {
+                fermentationChart.dispose();
+            }
+            fermentationChart = echarts.init(chartDom);
+            const option = {
+                tooltip: { trigger: 'axis' },
+                legend: { data: ['Temperatura', 'Densidad'] },
+                xAxis: { type: 'category', data: controls.map(c => new Date(c.control_date).toLocaleDateString()) },
+                yAxis: [
+                    { type: 'value', name: 'Temp (°C)', position: 'left' },
+                    { type: 'value', name: 'Densidad', position: 'right', axisLabel: { formatter: '{value}' } }
+                ],
+                series: [
+                    { name: 'Temperatura', type: 'line', data: controls.map(c => c.temperature), yAxisIndex: 0 },
+                    { name: 'Densidad', type: 'line', data: controls.map(c => c.density), yAxisIndex: 1 }
+                ]
+            };
+            fermentationChart.setOption(option);
+        }
+
+        function renderHistory(containerId, title, data, renderer) {
+            const container = document.getElementById(containerId);
+            if (data.length === 0) {
+                container.innerHTML = `<p class="text-secondary text-center p-4">No hay ${title.toLowerCase()} registrados.</p>`;
+                return;
+            }
+            container.innerHTML = data.map(renderer).join('');
+        }
+        
+        async function selectLot(lotId) {
+            if (!lotId) return;
+            selectedLotId = lotId;
+            renderLotsList();
+
+            const lotData = lotsCache.find(l => l.id === lotId);
             if (!lotData) return;
+
+            document.getElementById('no-lot-selected').classList.add('hidden');
+            document.getElementById('lot-detail-view').classList.remove('hidden');
+
             document.getElementById('lot-name-title').textContent = lotData.name;
             document.getElementById('lot-details').textContent = `Variedad: ${lotData.grape_variety || 'N/A'} | Año: ${lotData.vintage_year || 'N/A'} | Estado: ${lotData.status}`;
+            
+            const details = await apiFetch(`/api/laboratory/lot-details/${lotId}`);
 
             if (lotData.status === 'En Fermentación') {
                 document.getElementById('vinification-section').classList.remove('hidden');
                 document.getElementById('aging-section').classList.add('hidden');
-                renderVinificationView();
-            } else if (lotData.status === 'En Crianza' || lotData.status === 'Listo para Embotellar') {
-                 document.getElementById('vinification-section').classList.add('hidden');
+                
+                renderHistory('vinification-history', 'Controles', details.fermentation_controls, item => `
+                    <div class="border-b pb-2">
+                        <p class="font-bold">${new Date(item.control_date).toLocaleDateString('es-ES', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}</p>
+                        <p><strong>Temp:</strong> ${item.temperature}°C | <strong>Densidad:</strong> ${item.density} | <strong>Azúcar Res:</strong> ${item.residual_sugar || 'N/A'} g/L</p>
+                        <p class="text-sm text-secondary">${item.notes || 'Sin notas'}</p>
+                    </div>`);
+                
+                document.getElementById('vinification-containers').innerHTML = `<h4 class="text-xl font-bold mb-4">Depósitos</h4>${lotData.containers.map(c => `<p>${c.name} (${c.current_volume} L)</p>`).join('')}`;
+                
+                renderFermentationChart(details.fermentation_controls);
+
+            } else if (lotData.status === 'En Crianza') {
+                document.getElementById('vinification-section').classList.add('hidden');
                 document.getElementById('aging-section').classList.remove('hidden');
-                renderAgingView();
+
+                document.getElementById('aging-containers').innerHTML = lotData.containers.map(c => `
+                    <div class="border p-2 rounded-lg">
+                        <p class="font-bold">${c.name}</p>
+                        <p class="text-sm">${c.material} (${c.cooperage || 'N/A'})</p>
+                    </div>`).join('');
+                
+                renderHistory('aging-history', 'Analíticas', details.lab_analytics, item => `
+                    <div class="border-b pb-2">
+                        <p class="font-bold">${new Date(item.analysis_date).toLocaleDateString()}</p>
+                        <p><strong>SO₂ Libre:</strong> ${item.free_so2} | <strong>SO₂ Total:</strong> ${item.total_so2}</p>
+                        <p class="text-sm text-secondary">${item.notes || 'Sin notas'}</p>
+                    </div>`);
             }
-        }
-        
-        function renderVinificationView() {
-            const historyContainer = document.getElementById('vinification-history');
-            const containersContainer = document.getElementById('vinification-containers');
-            const fermentationChartContainer = document.getElementById('fermentation-chart');
-
-            const tank = containersData.find(c => c.type.trim() === 'Depósito');
-            if (tank) {
-                containersContainer.innerHTML = `<h4 class="text-xl font-bold mb-2">Depósito Asignado</h4>
-                    <p><strong>Nombre:</strong> ${tank.name}</p>
-                    <p><strong>Volumen Actual:</strong> ${parseFloat(tank.current_volume).toFixed(0)} L</p>
-                    <p><strong>Material:</strong> ${tank.material}</p>`;
-            } else {
-                 containersContainer.innerHTML = `<h4 class="text-xl font-bold mb-2">Depósito Asignado</h4><p class="text-secondary">Sin depósito asignado.</p>`;
-            }
-            
-            const combinedHistory = [
-                ...analyticsData.map(a => ({ ...a, type: 'analytic', date: a.analysis_date })),
-                ...fermentationData.map(f => ({ ...f, type: 'control', date: f.control_date }))
-            ].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            historyContainer.innerHTML = combinedHistory.length ? combinedHistory.map(renderHistoryItem).join('') : '<p class="text-secondary text-center">Sin historial.</p>';
-            renderFermentationChart(fermentationData, fermentationChartContainer);
-        }
-
-        function renderAgingView() {
-            const containersContainer = document.getElementById('aging-containers');
-            const historyContainer = document.getElementById('aging-history');
-
-            const barrels = containersData.filter(c => c.type.trim() === 'Barrica');
-            containersContainer.innerHTML = barrels.length ? barrels.map(b => `
-                <div class="card p-4 rounded-lg border-accent">
-                    <p class="font-bold">${b.name}</p>
-                    <p class="text-sm"><strong>Volumen:</strong> ${parseFloat(b.current_volume).toFixed(0)} L</p>
-                    <p class="text-sm"><strong>Material:</strong> ${b.material} (${b.toast_level})</p>
-                    <p class="text-sm"><strong>Tonelería:</strong> ${b.cooperage || 'N/A'}</p>
-                </div>
-            `).join('') : '<p class="text-secondary">No hay barricas asignadas.</p>';
-
-            historyContainer.innerHTML = analyticsData.length ? analyticsData.map(renderHistoryItem).join('') : '<p class="text-secondary text-center">Sin historial.</p>';
-        }
-
-        function renderHistoryItem(item) {
-             const itemDate = new Date(item.date).toLocaleDateString();
-             let content = '';
-             switch(item.type) {
-                case 'analytic':
-                    content = `<div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                        <span><strong>pH:</strong> ${item.ph || '-'}</span>
-                        <span><strong>Ac. Total:</strong> ${item.total_acidity || '-'} g/L</span>
-                        <span><strong>SO₂ Libre:</strong> ${item.free_so2 || '-'} mg/L</span>
-                        <span><strong>SO₂ Total:</strong> ${item.total_so2 || '-'} mg/L</span>
-                       </div>`;
-                    break;
-                case 'control':
-                     content = `<p class="text-sm">Control de fermentación: Temp ${item.temperature}°C, Densidad ${item.density}</p>`;
-                     if(item.notes) content += `<p class="text-xs text-secondary italic mt-1">Nota: ${item.notes}</p>`;
-                    break;
-             }
-            return `<div class="border-l-4 pl-4 py-2 border-accent">
-                        <p class="font-bold text-sm">${itemDate} - <span class="capitalize font-medium text-secondary">${item.type}</span></p>
-                        <div class="mt-2">${content}</div>
-                    </div>`;
-        }
-        
-        function renderFermentationChart(data, container) {
-            let chart = echarts.getInstanceByDom(container);
-            if (!chart) chart = echarts.init(container);
-            
-            const option = {
-                tooltip: { trigger: 'axis' },
-                legend: { data: ['Temperatura', 'Densidad'] },
-                xAxis: { type: 'category', data: data.map(d => new Date(d.control_date).toLocaleDateString()) },
-                yAxis: [
-                    { type: 'value', name: '°C', position: 'left' },
-                    { type: 'value', name: 'g/mL', position: 'right', splitLine: { show: false } }
-                ],
-                series: [
-                    { name: 'Temperatura', type: 'line', yAxisIndex: 0, data: data.map(d => d.temperature) },
-                    { name: 'Densidad', type: 'line', yAxisIndex: 1, data: data.map(d => d.density) }
-                ]
-            };
-            chart.setOption(option);
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
             requireAuth();
             document.getElementById('logout-btn').addEventListener('click', logout);
-            const urlParams = new URLSearchParams(window.location.search);
-            const lotId = urlParams.get('lotId');
-
-            if (!lotId) {
-                document.getElementById('lot-name-title').textContent = "Error";
-                document.getElementById('lot-details').textContent = "No se ha especificado un lote.";
-                return;
+            
+            try {
+                lotsCache = await apiFetch('/api/laboratory/lots');
+                renderLotsList();
+            } catch (e) {
+                document.getElementById('lots-list').innerHTML = `<p class="text-red-500 p-4">${e.message}</p>`;
             }
 
-            try {
-                const [lots, allContainers] = await Promise.all([
-                    apiFetch('/api/traceability/wine-lots'),
-                    apiFetch('/api/cellar/containers')
-                ]);
-                lotData = lots.find(l => l.id === lotId);
-                containersData = allContainers.filter(c => c.current_lot_id === lotId);
-                
-                if (lotData.status === 'En Fermentación' && containersData.length > 0) {
-                    const tank = containersData.find(c => c.type.trim() === 'Depósito');
-                    if (tank) {
-                       fermentationData = await apiFetch(`/api/cellar/fermentation-controls/${lotId}/${tank.id}`);
-                    }
+            document.getElementById('lots-list').addEventListener('click', (e) => {
+                const lotCard = e.target.closest('[data-lot-id]');
+                if (lotCard) {
+                    selectLot(lotCard.dataset.lotId);
                 }
-                analyticsData = await apiFetch(`/api/traceability/lab-analytics/${lotId}`);
-                
-                renderUI();
-
-            } catch(e) { alert(`Error al cargar los datos: ${e.message}`); }
-            
-            // Lógica de Modales
-            const analyticModal = document.getElementById('analytic-modal');
-            const actionModal = document.getElementById('action-modal');
-
-            document.getElementById('add-analytic-btn').addEventListener('click', () => {
-                const form = document.getElementById('analytic-form');
-                form.reset();
-                form.querySelector('input[name="lot_id"]').value = lotId;
-                document.getElementById('analytic-modal-lot-name').textContent = lotData.name;
-                form.querySelector('input[name="analysis_date"]').value = new Date().toISOString().split('T')[0];
-                analyticModal.classList.add('modal-active');
-            });
-            
-             document.getElementById('add-action-btn').addEventListener('click', () => {
-                const form = document.getElementById('action-form');
-                form.reset();
-                const tank = containersData.find(c => c.type.trim() === 'Depósito');
-                if(!tank) { alert("No hay un depósito asignado a este lote para registrar acciones."); return; }
-                form.querySelector('input[name="lot_id"]').value = lotId;
-                form.querySelector('input[name="container_id"]').value = tank.id;
-                form.querySelector('input[name="control_date"]').value = new Date().toISOString().split('T')[0];
-                actionModal.classList.add('modal-active');
             });
 
-            document.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', () => {
-                analyticModal.classList.remove('modal-active');
-                actionModal.classList.remove('modal-active');
-            }));
-
-            document.getElementById('analytic-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const body = Object.fromEntries(new FormData(e.target).entries());
-                Object.keys(body).forEach(key => { if(key !== 'lot_id' && key !== 'analysis_date' && key !== 'notes') body[key] = body[key] ? parseFloat(body[key]) : null; });
-                try {
-                    await apiFetch('/api/traceability/lab-analytics/', { method: 'POST', body });
-                    analyticModal.classList.remove('modal-active');
-                    analyticsData = await apiFetch(`/api/traceability/lab-analytics/${lotId}`);
-                    renderUI();
-                } catch (error) { alert(`Error: ${error.message}`); }
-            });
-            
-             document.getElementById('action-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                const data = Object.fromEntries(formData.entries());
-                const body = {
-                    container_id: data.container_id, lot_id: data.lot_id, control_date: data.control_date, notes: data.notes,
-                    // Aquí empaquetamos los datos específicos de la acción
-                    pump_overs: { frequency: data.remontado_freq, duration: data.remontado_dur },
-                    enological_additions: { description: data.adicion_desc }
-                };
-                
-                try {
-                    // El endpoint es el de fermentation-controls, que ahora acepta más datos
-                    await apiFetch('/api/cellar/fermentation-controls/', { method: 'POST', body });
-                    actionModal.classList.remove('modal-active');
-                    const tank = containersData.find(c => c.type.trim() === 'Depósito');
-                    fermentationData = await apiFetch(`/api/cellar/fermentation-controls/${lotId}/${tank.id}`);
-                    renderUI();
-                } catch(error){ alert(`Error: ${error.message}`); }
-             });
-
-            document.querySelector('select[name="action_type"]').addEventListener('change', e => {
-                document.getElementById('remontado-fields').style.display = e.target.value === 'remontado' || e.target.value === 'bazuqueo' ? 'block' : 'none';
-                document.getElementById('adicion-fields').style.display = e.target.value === 'adicion' ? 'block' : 'none';
-            });
+            const urlParams = new URLSearchParams(window.location.search);
+            const lotIdFromUrl = urlParams.get('lotId');
+            if (lotIdFromUrl) {
+                // Esperar a que los lotes se carguen antes de seleccionar
+                const checkLotsExist = setInterval(() => {
+                    if(lotsCache.length > 0) {
+                        clearInterval(checkLotsExist);
+                        selectLot(lotIdFromUrl);
+                    }
+                }, 100);
+            }
         });
     </script>
 </body>

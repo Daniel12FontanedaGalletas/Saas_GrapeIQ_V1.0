@@ -1,4 +1,4 @@
-# Saas_GrapeIQ_V1.0/generador_datos.py (VERSIÓN CON TRAZABILIDAD COMPLETA)
+# Saas_GrapeIQ_V1.0/generador_datos.py (CORREGIDO Y MEJORADO)
 
 import os
 import sys
@@ -61,12 +61,12 @@ parcels_base = [
     {'name': 'Campo de Viento', 'area': 8.1, 'variety': 'Verdejo'}
 ]
 products_base = [
-    {'name': 'Alma de Golia', 'variety': 'Mencía', 'base_price': 15.99},
-    {'name': 'El Pájaro Rojo', 'variety': 'Mencía', 'base_price': 9.95},
-    {'name': 'Señorío de Nava', 'variety': 'Tempranillo', 'base_price': 8.75},
-    {'name': 'Cuatro Pasos', 'variety': 'Prieto Picudo', 'base_price': 7.50},
-    {'name': 'Pardevalles', 'variety': 'Albarín', 'base_price': 12.95},
-    {'name': 'Verdeal', 'variety': 'Verdejo', 'base_price': 7.90}
+    {'name': 'Alma de Golia', 'variety': 'Mencía', 'base_price': 15.99, 'wine_type': 'tinto'},
+    {'name': 'El Pájaro Rojo', 'variety': 'Mencía', 'base_price': 9.95, 'wine_type': 'tinto'},
+    {'name': 'Señorío de Nava', 'variety': 'Tempranillo', 'base_price': 8.75, 'wine_type': 'tinto'},
+    {'name': 'Cuatro Pasos', 'variety': 'Prieto Picudo', 'base_price': 7.50, 'wine_type': 'rosado'},
+    {'name': 'Pardevalles', 'variety': 'Albarín', 'base_price': 12.95, 'wine_type': 'blanco'},
+    {'name': 'Verdeal', 'variety': 'Verdejo', 'base_price': 7.90, 'wine_type': 'blanco'}
 ]
 container_definitions = { 'Depósito': ['Inox', 'Hormigón'], 'Barrica': ['Roble Francés', 'Roble Americano'] }
 cooperages = ['Radoux', 'Seguin Moreau', 'Taransaud', 'Demptos']
@@ -150,7 +150,7 @@ try:
     print("\n🔄 Simulando cosechas, costes y ciclo de vida por etapas...")
     start_year = date.today().year - SIM_YEARS + 1
     cur.execute("SELECT id, name, variety, area_hectares FROM parcels WHERE tenant_id = %s;", (tenant_id,)); db_parcels = cur.fetchall()
-    all_wine_lots_data, all_costs, all_field_logs, all_lab_analytics = [], [], [], []
+    all_wine_lots_data, all_costs, all_field_logs, all_lab_analytics, all_winemaking_logs = [], [], [], [], []
 
     for year in range(start_year, date.today().year + 1):
         for parcel_id, parcel_name, variety, area in db_parcels:
@@ -161,15 +161,29 @@ try:
                 all_costs.append((str(uuid.uuid4()), tenant_id, None, cost_type, round(float(area) * random.uniform(200, 600), 2), desc, date(year, random.randint(1, 12), 15), parcel_id))
             if prod_base := next((p for p in products_base if p['variety'] == variety), None):
                 initial_kg = float(area) * random.uniform(800, 1200); total_liters = initial_kg / 1.6; lot_id = str(uuid.uuid4())
-                all_wine_lots_data.append([lot_id, f"{variety} {year} ({parcel_name})", variety, year, 'Cosechado', tenant_id, parcel_id, initial_kg, total_liters, total_liters])
+                all_wine_lots_data.append([lot_id, f"{variety} {year} ({parcel_name})", variety, year, 'Cosechado', tenant_id, parcel_id, initial_kg, total_liters, total_liters, prod_base['wine_type']])
+                
+                all_winemaking_logs.append((
+                    str(uuid.uuid4()), lot_id, date(year, 9, 25), random.uniform(12.5, 14.0), random.uniform(5.0, 7.5),
+                    random.uniform(3.2, 3.6), random.uniform(18.0, 22.0), random.randint(30, 50),
+                    random.choice(['Limpio', 'Ligeramente turbio']), 'Intensidad media', 'Fruta roja, floral',
+                    'Total', random.randint(12, 72), random.uniform(20, 25), json.dumps({'frequency': 2, 'duration': 15}),
+                    'Ninguna', 'Autóctona', 'Pectolíticas', 'Correcto', 'Aromas limpios y francos', None, tenant_id
+                ))
+
                 for cost_type, desc, _ in cost_types['Vinificación']:
                     all_costs.append((str(uuid.uuid4()), tenant_id, lot_id, cost_type, round(total_liters * random.uniform(0.10, 0.25), 2), desc, date(year, 10, 5), None))
-                # Analítica post-fermentación
+                
                 all_lab_analytics.append((str(uuid.uuid4()), lot_id, date(year, 11, 15), round(random.uniform(12.5, 14.5), 1), round(random.uniform(4.5, 6.0), 1), round(random.uniform(0.3, 0.6), 2), round(random.uniform(3.3, 3.8), 2), random.randint(15, 25), random.randint(40, 80), "Análisis post-fermentación", tenant_id))
 
     execute_values(cur, "INSERT INTO field_logs (id, start_datetime, end_datetime, activity_type, description, tenant_id, parcel_id, all_day) VALUES %s", all_field_logs)
-    execute_values(cur, "INSERT INTO wine_lots (id, name, grape_variety, vintage_year, status, tenant_id, origin_parcel_id, initial_grape_kg, total_liters, liters_unassigned) VALUES %s", all_wine_lots_data)
-    
+    execute_values(cur, "INSERT INTO wine_lots (id, name, grape_variety, vintage_year, status, tenant_id, origin_parcel_id, initial_grape_kg, total_liters, liters_unassigned, wine_type) VALUES %s", all_wine_lots_data)
+    if all_winemaking_logs:
+        execute_values(cur, """
+            INSERT INTO winemaking_logs (id, lot_id, log_date, sugar_level, total_acidity, ph, reception_temp, added_so2, turbidity, color_intensity, aromas, destemming_type, maceration_time, maceration_temp, pumping_overs, corrections, yeast_type, enzymes_added, must_sanitary_state, sensory_observations, incidents, tenant_id)
+            VALUES %s
+        """, all_winemaking_logs)
+
     cur.execute("SELECT id, capacity_liters FROM containers WHERE tenant_id = %s AND type = 'Depósito'", (tenant_id,)); available_deposits = [list(d) for d in cur.fetchall()]
     cur.execute("SELECT id FROM containers WHERE tenant_id = %s AND type = 'Barrica'", (tenant_id,)); available_barrels = [row[0] for row in cur.fetchall()]
     cur.execute("SELECT id, total_liters, vintage_year FROM wine_lots WHERE tenant_id = %s AND status = 'Cosechado'", (tenant_id,)); lots_to_process = sorted(cur.fetchall(), key=lambda x: x[2])
@@ -208,9 +222,21 @@ try:
                 if deposit := next((d for d in available_deposits if d[1] >= float(total_liters)), None):
                     cur.execute("UPDATE wine_lots SET status = 'En Fermentación' WHERE id = %s", (lot_id,))
                     cur.execute("UPDATE containers SET status = 'ocupado', current_volume = %s, current_lot_id = %s WHERE id = %s", (float(total_liters), lot_id, deposit[0]))
-                    # Generar datos de fermentación para este lote
+                    
                     for day_offset in range(15):
-                        fermentation_controls.append((str(uuid.uuid4()), deposit[0], lot_id, date(vintage, 10, 10 + day_offset), round(18 + math.sin(day_offset / 2) * 4 + random.uniform(-0.5, 0.5), 1), round(1.090 - (day_offset * 0.0065) + random.uniform(-0.001, 0.001), 4), tenant_id))
+                        # --- MEJORA: Añadir más datos de fermentación ---
+                        current_density = round(1.090 - (day_offset * 0.0065) + random.uniform(-0.001, 0.001), 4)
+                        residual_sugar = max(0, (current_density - 1.000) * 131.25 * 1.5 - (15-day_offset) * 10)
+                        yeast_activity = 'alta' if day_offset < 8 else 'media' if day_offset < 12 else 'baja'
+
+                        fermentation_controls.append((
+                            str(uuid.uuid4()), deposit[0], lot_id, date(vintage, 10, 10 + day_offset),
+                            round(18 + math.sin(day_offset / 2) * 4 + random.uniform(-0.5, 0.5), 1),
+                            current_density,
+                            f"Control día {day_offset+1}", tenant_id,
+                            round(residual_sugar, 1), round(13.5 + random.uniform(-0.2, 0.2), 1),
+                            yeast_activity, None, None, None, None, None, None
+                        ))
                     available_deposits.remove(deposit)
 
     for year in range(start_year, date.today().year + 1):
@@ -219,7 +245,15 @@ try:
                 all_costs.append((str(uuid.uuid4()), tenant_id, None, cost_type, random.uniform(2000, 10000), desc, date(year, 12, 31), None))
     
     if all_costs: execute_values(cur, "INSERT INTO costs (id, tenant_id, related_lot_id, cost_type, amount, description, cost_date, related_parcel_id) VALUES %s", all_costs)
-    if fermentation_controls: execute_values(cur, "INSERT INTO fermentation_controls (id, container_id, lot_id, control_date, temperature, density, tenant_id) VALUES %s", [(fc[0], fc[1], fc[2], fc[3], fc[4], fc[5], fc[6]) for fc in fermentation_controls])
+    if fermentation_controls:
+        execute_values(cur, """
+            INSERT INTO fermentation_controls (
+                id, container_id, lot_id, control_date, temperature, density, notes, tenant_id, 
+                residual_sugar, potential_alcohol, yeast_activity, nutrients_added, 
+                malic_acid_before, malic_acid_after, lactic_acid_before, lactic_acid_after, 
+                inoculated_bacteria
+            ) VALUES %s
+        """, fermentation_controls)
     if all_lab_analytics: execute_values(cur, "INSERT INTO lab_analytics (id, lot_id, analysis_date, alcoholic_degree, total_acidity, volatile_acidity, ph, free_so2, total_so2, notes, tenant_id) VALUES %s", all_lab_analytics)
 
     print("\n📅 Creando eventos especiales históricos...")
@@ -253,13 +287,11 @@ try:
             product_id = str(uuid.uuid4())
             products_data.append((product_id, tenant_id, f"{prod_base['name']} {vintage}", f"{variety[:3].upper()}{vintage}{random.randint(100,999)}", round(price, 2), round(unit_cost, 2), lot_id, num_bottles, variety))
             
-            # ***** INICIO DE LA CORRECCIÓN *****
             bottling_date = datetime(vintage + 2, 3, random.randint(1, 28))
             bottling_events_data.append((str(uuid.uuid4()), lot_id, product_id, bottling_date, f"L-{vintage}-{random.randint(100, 999)}", round(random.uniform(0.1, 0.5), 2), random.choice(dry_goods_map['Botella']), random.choice(dry_goods_map['Corcho']), random.choice(dry_goods_map['Cápsula']), random.choice(dry_goods_map['Etiqueta']), random.randint(12, 24), tenant_id))
         
         execute_values(cur, "INSERT INTO products (id, tenant_id, name, sku, price, unit_cost, wine_lot_origin_id, stock_units, variety) VALUES %s", products_data)
         execute_values(cur, "INSERT INTO bottling_events (id, lot_id, product_id, bottling_date, official_lot_number, dissolved_oxygen, bottle_lot_id, cork_lot_id, capsule_lot_id, label_lot_id, retained_samples, tenant_id) VALUES %s", bottling_events_data)
-        # ***** FIN DE LA CORRECCIÓN *****
 
     cur.execute("SELECT id, price, variety FROM products WHERE tenant_id = %s;", (tenant_id,)); db_products = cur.fetchall()
     if db_products:
