@@ -5,6 +5,15 @@ from typing import List, Optional, Union, Dict, Any
 from datetime import date, datetime
 import uuid
 
+# --- NUEVO ESQUEMA PARA CONDICIONES DE SALA ---
+class RoomCondition(BaseModel):
+    room_name: str
+    temperature: float
+    humidity: float
+    timestamp: datetime
+    class Config:
+        from_attributes = True
+
 # --- Esquemas de Autenticación y Usuarios ---
 class Token(BaseModel):
     access_token: str
@@ -203,8 +212,47 @@ class FermentationControl(FermentationControlBase):
     class Config:
         from_attributes = True
 
+# --- NUEVO ESQUEMA PARA EL FORMULARIO UNIFICADO ---
+class FermentationControlUnifiedCreate(BaseModel):
+    lot_id: uuid.UUID
+    container_id: Optional[uuid.UUID] = None
+    log_date: date
+
+    # Parámetros de Uva/Mosto (antes en WinemakingLog)
+    sugar_level: Optional[float] = None
+    total_acidity: Optional[float] = None
+    reception_temp: Optional[float] = None
+    added_so2: Optional[int] = None
+    turbidity: Optional[str] = None
+    color_intensity: Optional[str] = None
+    aromas: Optional[str] = None
+    destemming_type: Optional[str] = None
+    maceration_time: Optional[int] = None
+    maceration_temp: Optional[float] = None
+    pumping_overs: Optional[str] = None
+    corrections: Optional[str] = None
+    yeast_type: Optional[str] = None
+    enzymes_added: Optional[str] = None
+    must_sanitary_state: Optional[str] = None
+    sensory_observations: Optional[str] = None
+    incidents: Optional[str] = None
+
+    # Parámetros de Control de Fermentación (antes en FermentationControl)
+    temperature: Optional[float] = None
+    density: Optional[float] = None
+    residual_sugar: Optional[float] = None
+    potential_alcohol: Optional[float] = None
+    ph: Optional[float] = None
+    volatile_acidity: Optional[float] = None
+    free_so2: Optional[int] = None
+    sensory_notes: Optional[str] = None
+    malic_acid: Optional[str] = None
+    lactic_acid: Optional[str] = None
+    notes: Optional[str] = None
+
 class LabAnalyticBase(BaseModel):
     lot_id: uuid.UUID
+    container_id: Optional[uuid.UUID] = None
     analysis_date: date
     alcoholic_degree: Optional[float] = None
     total_acidity: Optional[float] = None

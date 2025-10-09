@@ -1,14 +1,25 @@
 # Saas_GrapeIQ_V1.0/app/models.py
 
-from sqlalchemy import Column, Integer, String, Numeric, Date, Text, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, Numeric, Date, Text, ForeignKey, DateTime, Boolean, Float
 from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from datetime import datetime
 import uuid
 
 Base = declarative_base()
 
-# --- TABLA NUEVA PARA EVENTOS ESPECIALES ---
+# --- TABLA PARA DATOS DE TEMPERATURA Y HUMEDAD ---
+class RoomCondition(Base):
+    __tablename__ = "room_conditions"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
+    room_name = Column(String, nullable=False) # Ej: "Sala de Depósitos", "Bodega de Crianza"
+    temperature = Column(Float)
+    humidity = Column(Float)
+    timestamp = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+# --- TABLA PARA EVENTOS ESPECIALES ---
 class SpecialEvent(Base):
     __tablename__ = "special_events"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -39,7 +50,7 @@ class Parcel(Base):
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
     name = Column(String, nullable=False)
     variety = Column(String)
-    area_hectares = Column(Numeric(8, 4))
+    area_hectares = Column(Float)
     geojson_coordinates = Column(JSONB)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
@@ -61,9 +72,9 @@ class WineLot(Base):
     grape_variety = Column(String)
     vintage_year = Column(Integer)
     status = Column(String, default='Cosechado')
-    initial_grape_kg = Column(Numeric(10, 2))
-    total_liters = Column(Numeric(10, 2))
-    liters_unassigned = Column(Numeric(10, 2))
+    initial_grape_kg = Column(Float)
+    total_liters = Column(Float)
+    liters_unassigned = Column(Float)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
     origin_parcel_id = Column(UUID(as_uuid=True), ForeignKey("parcels.id"), nullable=True)
     wine_type = Column(String) # tinto, blanco, rosado
@@ -73,15 +84,13 @@ class Container(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String, nullable=False)
     type = Column(String, nullable=False) # Depósito, Barrica
-    capacity_liters = Column(Numeric(10, 2), nullable=False)
+    capacity_liters = Column(Float, nullable=False)
     material = Column(String) # Inox, Hormigón, Roble Francés, Roble Americano
     location = Column(String)
     status = Column(String, default='vacío') # vacío, ocupado, limpieza
-    current_volume = Column(Numeric(10, 2), default=0)
+    current_volume = Column(Float, default=0)
     current_lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=True)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
-    
-    # --- NUEVOS CAMPOS PARA CRIANZA ---
     barrel_age = Column(Integer, nullable=True) # Edad o número de usos de la barrica
     toast_level = Column(String, nullable=True) # Nivel de tostado: Ligero, Medio, Fuerte
     cooperage = Column(String, nullable=True) # Tonelería o fabricante
@@ -92,10 +101,10 @@ class Movement(Base):
     lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=False)
     source_container_id = Column(UUID(as_uuid=True), ForeignKey("containers.id"), nullable=True)
     destination_container_id = Column(UUID(as_uuid=True), ForeignKey("containers.id"), nullable=True)
-    volume = Column(Numeric(10, 2), nullable=False)
+    volume = Column(Float, nullable=False)
     movement_date = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     type = Column(String, nullable=False) # Llenado Inicial, Trasiego, Embotellado, Rellenado
-    notes = Column(Text, nullable=True) # --- NUEVO CAMPO PARA NOTAS DE CATA ---
+    notes = Column(Text, nullable=True)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
 
 # --- TABLAS PARA LABORATORIO ---
@@ -106,62 +115,47 @@ class WinemakingLog(Base):
     log_date = Column(Date, nullable=False, default=datetime.utcnow)
     
     # Parámetros de la uva/mosto
-    sugar_level = Column(Numeric(5, 2)) # Baumé o Brix
-    total_acidity = Column(Numeric(5, 2)) # g/L tartárico
-    ph = Column(Numeric(4, 2))
-    reception_temp = Column(Numeric(5, 2)) # °C
+    sugar_level = Column(Float) # Baumé o Brix
+    total_acidity = Column(Float) # g/L tartárico
+    ph = Column(Float, nullable=True) # pH se mide principalmente en control
+    reception_temp = Column(Float) # °C
     added_so2 = Column(Integer) # mg/L
-    turbidity = Column(String)
-    color_intensity = Column(String)
-    aromas = Column(Text)
-
-    # Operaciones de vinificación
-    destemming_type = Column(String)
-    maceration_time = Column(Integer) # horas
-    maceration_temp = Column(Numeric(5, 2)) # °C
-    pumping_overs = Column(JSONB) # { "frequency": 2, "duration": 15 }
-    corrections = Column(Text)
-    yeast_type = Column(String)
-    enzymes_added = Column(Text)
-    
-    # Observaciones
-    must_sanitary_state = Column(Text)
-    sensory_observations = Column(Text)
-    incidents = Column(Text)
-
+    turbidity = Column(String, nullable=True)
+    color_intensity = Column(String, nullable=True)
+    aromas = Column(Text, nullable=True)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
 
 class FermentationControl(Base):
     __tablename__ = "fermentation_controls"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    container_id = Column(UUID(as_uuid=True), ForeignKey("containers.id"), nullable=False)
+    container_id = Column(UUID(as_uuid=True), ForeignKey("containers.id"))
     lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=False)
     control_date = Column(Date, nullable=False, default=datetime.utcnow)
-    temperature = Column(Numeric(5, 2))
-    density = Column(Numeric(6, 4))
+    temperature = Column(Float)
+    density = Column(Float)
     notes = Column(Text, nullable=True)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
     
     # Nuevos campos
-    residual_sugar = Column(Numeric(5, 2), nullable=True)
-    potential_alcohol = Column(Numeric(4, 2), nullable=True)
-    yeast_activity = Column(String, nullable=True) # alta, media, baja, parada
-    nutrients_added = Column(String, nullable=True)
-    malic_acid_before = Column(Numeric(5, 2), nullable=True)
-    malic_acid_after = Column(Numeric(5, 2), nullable=True)
-    lactic_acid_before = Column(Numeric(5, 2), nullable=True)
-    lactic_acid_after = Column(Numeric(5, 2), nullable=True)
-    inoculated_bacteria = Column(String, nullable=True)
+    residual_sugar = Column(Float, nullable=True)
+    potential_alcohol = Column(Float, nullable=True)
+    ph = Column(Float, nullable=True)
+    volatile_acidity = Column(Float, nullable=True)
+    free_so2 = Column(Integer, nullable=True)
+    
+    # --- COLUMNA AÑADIDA Y CORREGIDA ---
+    total_acidity = Column(Float, nullable=True)
 
 class LabAnalytic(Base):
     __tablename__ = "lab_analytics"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=False)
+    container_id = Column(UUID(as_uuid=True), ForeignKey("containers.id"), nullable=True)
     analysis_date = Column(Date, nullable=False, default=datetime.utcnow)
-    alcoholic_degree = Column(Numeric(4, 2), nullable=True)
-    total_acidity = Column(Numeric(5, 2), nullable=True)
-    volatile_acidity = Column(Numeric(4, 2), nullable=True)
-    ph = Column(Numeric(4, 2), nullable=True)
+    alcoholic_degree = Column(Float, nullable=True)
+    total_acidity = Column(Float, nullable=True)
+    volatile_acidity = Column(Float, nullable=True)
+    ph = Column(Float, nullable=True)
     free_so2 = Column(Integer, nullable=True)
     total_so2 = Column(Integer, nullable=True)
     notes = Column(Text, nullable=True)
@@ -183,7 +177,7 @@ class BottlingEvent(Base):
     product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)
     bottling_date = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     official_lot_number = Column(String, nullable=False) # Lote impreso en la botella
-    dissolved_oxygen = Column(Numeric(5, 2), nullable=True)
+    dissolved_oxygen = Column(Float, nullable=True)
     
     bottle_lot_id = Column(UUID(as_uuid=True), ForeignKey("dry_goods.id"), nullable=True)
     cork_lot_id = Column(UUID(as_uuid=True), ForeignKey("dry_goods.id"), nullable=True)
@@ -194,14 +188,13 @@ class BottlingEvent(Base):
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
 
 # --- TABLAS DE COSTES, PRODUCTOS Y VENTAS ---
-
 class CostParameter(Base):
     __tablename__ = "cost_parameters"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
     parameter_name = Column(String, nullable=False)
     category = Column(String, nullable=False)
-    value = Column(Numeric(10, 2), nullable=False)
+    value = Column(Float, nullable=False)
     unit = Column(String)
     last_updated = Column(DateTime(timezone=True), default=datetime.utcnow)
 
@@ -212,7 +205,7 @@ class Cost(Base):
     related_lot_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=True)
     related_parcel_id = Column(UUID(as_uuid=True), ForeignKey("parcels.id"), nullable=True)
     cost_type = Column(String, nullable=False)
-    amount = Column(Numeric(10, 2), nullable=False)
+    amount = Column(Float, nullable=False)
     description = Column(Text)
     cost_date = Column(Date, default=datetime.utcnow)
 
@@ -223,8 +216,8 @@ class Product(Base):
     name = Column(String, nullable=False)
     sku = Column(String, unique=True)
     description = Column(Text)
-    price = Column(Numeric(10, 2))
-    unit_cost = Column(Numeric(10, 4))
+    price = Column(Float)
+    unit_cost = Column(Float)
     wine_lot_origin_id = Column(UUID(as_uuid=True), ForeignKey("wine_lots.id"), nullable=True)
     stock_units = Column(Integer, default=0)
     variety = Column(String, nullable=True)
@@ -235,11 +228,11 @@ class Sale(Base):
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
     sale_date = Column(Date, default=datetime.utcnow)
     customer_name = Column(String, nullable=True)
-    total_amount = Column(Numeric(10, 2), nullable=False)
+    total_amount = Column(Float, nullable=False)
     notes = Column(Text, nullable=True)
     is_weekend = Column(Boolean, default=False)
     holiday_name = Column(String, nullable=True)
-    avg_temperature = Column(Numeric(4, 1), nullable=True)
+    avg_temperature = Column(Float, nullable=True)
     channel = Column(String, nullable=True)
 
 class SaleDetail(Base):
@@ -248,7 +241,7 @@ class SaleDetail(Base):
     sale_id = Column(UUID(as_uuid=True), ForeignKey("sales.id"), nullable=False)
     product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)
     quantity = Column(Integer, nullable=False)
-    unit_price = Column(Numeric(10, 2), nullable=False)
+    unit_price = Column(Float, nullable=False)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
     on_promotion = Column(Boolean, default=False)
-    discount_percentage = Column(Numeric(5, 2), default=0.0)
+    discount_percentage = Column(Float, default=0.0)

@@ -147,6 +147,13 @@ try:
     cost_parameters_data = [(str(uuid.uuid4()), tenant_id, name, random.uniform(10, 100), unit, category, datetime.now()) for category, costs in cost_types.items() for name, _, unit in costs]
     execute_values(cur, "INSERT INTO cost_parameters (id, tenant_id, parameter_name, value, unit, category, last_updated) VALUES %s", cost_parameters_data)
     
+    print("\n🌡️  Generando datos de condiciones ambientales...")
+    room_conditions_data = [
+        (str(uuid.uuid4()), tenant_id, 'Sala de Depósitos', round(random.uniform(18.5, 20.5), 1), round(random.uniform(65.0, 75.0), 1), datetime.now()),
+        (str(uuid.uuid4()), tenant_id, 'Bodega de Crianza', round(random.uniform(14.0, 16.0), 1), round(random.uniform(78.0, 85.0), 1), datetime.now())
+    ]
+    execute_values(cur, "INSERT INTO room_conditions (id, tenant_id, room_name, temperature, humidity, timestamp) VALUES %s", room_conditions_data)
+
     print("\n🔄 Simulando cosechas, costes y ciclo de vida por etapas...")
     start_year = date.today().year - SIM_YEARS + 1
     cur.execute("SELECT id, name, variety, area_hectares FROM parcels WHERE tenant_id = %s;", (tenant_id,)); db_parcels = cur.fetchall()
@@ -163,33 +170,39 @@ try:
                 initial_kg = float(area) * random.uniform(800, 1200); total_liters = initial_kg / 1.6; lot_id = str(uuid.uuid4())
                 all_wine_lots_data.append([lot_id, f"{variety} {year} ({parcel_name})", variety, year, 'Cosechado', tenant_id, parcel_id, initial_kg, total_liters, total_liters, prod_base['wine_type']])
                 
-                is_tinto = prod_base['wine_type'] == 'tinto'
+                initial_total_acidity = round(random.uniform(4.5, 8.0), 2)
+                
+                # Se registran solo los parámetros iniciales de la uva/mosto
                 all_winemaking_logs.append((
-                    str(uuid.uuid4()), lot_id, date(year, 9, 25), random.uniform(12.5, 14.0), random.uniform(5.0, 7.5),
-                    random.uniform(3.2, 3.6), random.uniform(18.0, 22.0), random.randint(30, 50),
-                    random.choice(['Limpio', 'Ligeramente turbio']), 'Intensidad media-alta', 'Fruta roja, notas florales',
-                    random.choice(['Total', 'Parcial', 'Sin despalillar']), random.randint(12, 120) if is_tinto else 0, random.uniform(18, 26) if is_tinto else None, 
-                    Json({'frequency': 2, 'duration': 15}) if is_tinto else None,
-                    random.choice(['Ninguna', 'Acidificación tartárica']), random.choice(['Autóctona', 'Seleccionada (QA23)', 'Seleccionada (RC212)']), 
-                    random.choice(['Pectolíticas', 'Glucanasas', 'Ninguna']), 'Correcto', 'Aromas limpios y francos', 
-                    random.choice([None, 'Ligera oxidación inicial', 'Reducción al final de la maceración']) if random.random() > 0.8 else None, tenant_id
+                    str(uuid.uuid4()), lot_id, date(year, 9, 25),
+                    # Parámetros de Uva/Mosto
+                    round(random.uniform(11.5, 14.5), 2),  # sugar_level
+                    initial_total_acidity,   # total_acidity
+                    round(random.uniform(15.0, 25.0), 1), # reception_temp
+                    random.randint(20, 60),     # added_so2
+                    random.choice(['Limpio', 'Algo turbio', 'Turbio']), # turbidity
+                    random.choice(['Baja', 'Media', 'Alta', 'Muy Alta']), # color_intensity
+                    fake.sentence(nb_words=5),  # aromas
+                    tenant_id
                 ))
 
                 for cost_type, desc, _ in cost_types['Vinificación']:
                     all_costs.append((str(uuid.uuid4()), tenant_id, lot_id, cost_type, round(total_liters * random.uniform(0.10, 0.25), 2), desc, date(year, 10, 5), None))
                 
-                all_lab_analytics.append((str(uuid.uuid4()), lot_id, date(year, 11, 15), round(random.uniform(12.5, 14.5), 1), round(random.uniform(4.5, 6.0), 1), round(random.uniform(0.3, 0.6), 2), round(random.uniform(3.3, 3.8), 2), random.randint(15, 25), random.randint(40, 80), "Análisis post-fermentación alcohólica.", tenant_id))
+                all_lab_analytics.append((str(uuid.uuid4()), lot_id, None, date(year, 11, 15), round(random.uniform(12.5, 14.5), 1), round(random.uniform(4.5, 6.0), 1), round(random.uniform(0.3, 0.6), 2), round(random.uniform(3.3, 3.8), 2), random.randint(15, 25), random.randint(40, 80), "Análisis post-fermentación alcohólica.", tenant_id))
 
     execute_values(cur, "INSERT INTO field_logs (id, start_datetime, end_datetime, activity_type, description, tenant_id, parcel_id, all_day) VALUES %s", all_field_logs)
     execute_values(cur, "INSERT INTO wine_lots (id, name, grape_variety, vintage_year, status, tenant_id, origin_parcel_id, initial_grape_kg, total_liters, liters_unassigned, wine_type) VALUES %s", all_wine_lots_data)
     if all_winemaking_logs:
         execute_values(cur, """
-            INSERT INTO winemaking_logs (id, lot_id, log_date, sugar_level, total_acidity, ph, reception_temp, added_so2, turbidity, color_intensity, aromas, destemming_type, maceration_time, maceration_temp, pumping_overs, corrections, yeast_type, enzymes_added, must_sanitary_state, sensory_observations, incidents, tenant_id)
-            VALUES %s
+            INSERT INTO winemaking_logs (
+                id, lot_id, log_date, sugar_level, total_acidity, reception_temp, added_so2,
+                turbidity, color_intensity, aromas, tenant_id
+            ) VALUES %s
         """, all_winemaking_logs)
 
     cur.execute("SELECT id, capacity_liters FROM containers WHERE tenant_id = %s AND type = 'Depósito'", (tenant_id,)); available_deposits = [list(d) for d in cur.fetchall()]
-    cur.execute("SELECT id FROM containers WHERE tenant_id = %s AND type = 'Barrica'", (tenant_id,)); available_barrels = [row[0] for row in cur.fetchall()]
+    cur.execute("SELECT id FROM containers WHERE tenant_id = %s AND type = 'Barrica'", (tenant_id,)); available_barrels_ids = [row[0] for row in cur.fetchall()]
     cur.execute("SELECT id, total_liters, vintage_year, wine_type FROM wine_lots WHERE tenant_id = %s AND status = 'Cosechado'", (tenant_id,)); lots_to_process = sorted(cur.fetchall(), key=lambda x: x[2])
     lots_by_age = {i: [] for i in range(SIM_YEARS)}; [lots_by_age[date.today().year - lot[2]].append(lot) for lot in lots_to_process if (date.today().year - lot[2]) in lots_by_age]
     
@@ -211,14 +224,17 @@ try:
             for lot_id, total_liters, vintage, _ in lots_for_aging:
                 liters = float(total_liters)
                 barrels_needed = int(liters / 225) + (1 if liters % 225 > 0 else 0)
-                if len(available_barrels) >= barrels_needed:
+                if len(available_barrels_ids) >= barrels_needed:
                     cur.execute("UPDATE wine_lots SET status = 'En Crianza' WHERE id = %s", (lot_id,))
-                    barrels = [available_barrels.pop(0) for _ in range(barrels_needed)]
-                    for b_id in barrels:
+                    barrels_for_lot = [available_barrels_ids.pop(0) for _ in range(barrels_needed)]
+                    for b_id in barrels_for_lot:
                         cur.execute("UPDATE containers SET status = 'ocupado', current_volume = 225, current_lot_id = %s WHERE id = %s", (lot_id, b_id))
+                        for i in range(random.randint(2, 5)):
+                            analysis_date = date(vintage + 1, random.randint(3,11), random.randint(1,28))
+                            all_lab_analytics.append((str(uuid.uuid4()), lot_id, b_id, analysis_date, round(random.uniform(13.0, 14.0), 1), round(random.uniform(5.0, 6.5), 1), round(random.uniform(0.4, 0.7), 2), round(random.uniform(3.5, 3.9), 2), random.randint(25, 35), random.randint(70, 100), f"Control de crianza #{i+1}. Se mantiene estable.", tenant_id))
+
                     for cost_type, desc, _ in cost_types['Crianza y Almacenamiento']:
                         all_costs.append((str(uuid.uuid4()), tenant_id, lot_id, cost_type, round(barrels_needed * random.uniform(20, 50), 2), desc, date(vintage + 1, 6, 1), None))
-                    all_lab_analytics.append((str(uuid.uuid4()), lot_id, date(vintage + 1, 9, 10), None, round(random.uniform(5.0, 6.5), 1), round(random.uniform(0.4, 0.7), 2), round(random.uniform(3.5, 3.9), 2), random.randint(25, 35), random.randint(70, 100), "Control SO2 y volátil a mitad de crianza", tenant_id))
                 else:
                     cur.execute("UPDATE wine_lots SET status = 'Listo para Embotellar' WHERE id = %s", (lot_id,))
         elif age == 0:
@@ -227,27 +243,22 @@ try:
                     cur.execute("UPDATE wine_lots SET status = 'En Fermentación' WHERE id = %s", (lot_id,))
                     cur.execute("UPDATE containers SET status = 'ocupado', current_volume = %s, current_lot_id = %s WHERE id = %s", (float(total_liters), lot_id, deposit[0]))
                     
-                    malolactic_done = False
+                    lot_initial_acidity = next((log[4] for log in all_winemaking_logs if log[1] == lot_id), 6.0)
+
                     for day_offset in range(15):
                         current_density = round(1.090 - (day_offset * 0.0065) + random.uniform(-0.001, 0.001), 4)
                         residual_sugar = max(0, (current_density - 1.000) * 131.25 * 1.5 - (15-day_offset) * 10)
-                        yeast_activity = 'alta' if day_offset < 8 else 'media' if day_offset < 12 else 'baja'
+                        current_total_acidity = round(lot_initial_acidity - (day_offset * 0.03) + random.uniform(-0.02, 0.02), 2)
                         
-                        malic_before, malic_after, lactic_before, lactic_after, bacteria = None, None, None, None, None
-                        if wine_type == 'tinto' and day_offset > 12 and not malolactic_done and random.random() > 0.5:
-                            malic_before = round(random.uniform(2.5, 4.0), 1)
-                            malic_after = round(random.uniform(0.1, 0.3), 1)
-                            lactic_before = round(random.uniform(0.1, 0.2), 1)
-                            lactic_after = round(random.uniform(1.5, 2.0), 1)
-                            bacteria = random.choice(['Oenococcus oeni B28', 'Selección propia'])
-                            malolactic_done = True
-
                         fermentation_controls.append((
                             str(uuid.uuid4()), deposit[0], lot_id, date(vintage, 10, 10 + day_offset),
                             round(18 + math.sin(day_offset / 2) * 4 + random.uniform(-0.5, 0.5), 1), current_density,
                             f"Control día {day_offset+1}. Olores limpios, reductivos.", tenant_id,
-                            round(residual_sugar, 1), round(13.5 + random.uniform(-0.2, 0.2), 1), yeast_activity, 
-                            "Actiferm" if day_offset == 3 else None, malic_before, malic_after, lactic_before, lactic_after, bacteria
+                            round(residual_sugar, 1), round(13.5 + random.uniform(-0.2, 0.2), 1),
+                            round(random.uniform(3.4, 3.6) - (day_offset * 0.02), 2),
+                            round(random.uniform(0.2, 0.4) + (day_offset * 0.01), 2),
+                            random.randint(10, 20),
+                            current_total_acidity # Nuevo campo añadido
                         ))
                     available_deposits.remove(deposit)
 
@@ -259,10 +270,12 @@ try:
     if all_costs: execute_values(cur, "INSERT INTO costs (id, tenant_id, related_lot_id, cost_type, amount, description, cost_date, related_parcel_id) VALUES %s", all_costs)
     if fermentation_controls:
         execute_values(cur, """
-            INSERT INTO fermentation_controls (id, container_id, lot_id, control_date, temperature, density, notes, tenant_id, residual_sugar, potential_alcohol, yeast_activity, nutrients_added, malic_acid_before, malic_acid_after, lactic_acid_before, lactic_acid_after, inoculated_bacteria)
-            VALUES %s
+            INSERT INTO fermentation_controls (
+                id, container_id, lot_id, control_date, temperature, density, notes, tenant_id, 
+                residual_sugar, potential_alcohol, ph, volatile_acidity, free_so2, total_acidity
+            ) VALUES %s
         """, fermentation_controls)
-    if all_lab_analytics: execute_values(cur, "INSERT INTO lab_analytics (id, lot_id, analysis_date, alcoholic_degree, total_acidity, volatile_acidity, ph, free_so2, total_so2, notes, tenant_id) VALUES %s", all_lab_analytics)
+    if all_lab_analytics: execute_values(cur, "INSERT INTO lab_analytics (id, lot_id, container_id, analysis_date, alcoholic_degree, total_acidity, volatile_acidity, ph, free_so2, total_so2, notes, tenant_id) VALUES %s", all_lab_analytics)
 
     print("\n📅 Creando eventos especiales históricos...")
     special_events_to_insert = []
